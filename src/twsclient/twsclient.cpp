@@ -32,6 +32,7 @@ bool TwsClient::connect(const QString &host, int port, int clientId)
     // trying to connect
     qDebug().nospace() <<  "Connecting to " << host << ":" << port << " with clientId=" << clientId;
 
+    client->setConnectOptions("+PACEAPI");
     connected = client->eConnect( host.toStdString().c_str(), port, clientId);
 
     if (connected) {
@@ -106,7 +107,7 @@ void TwsClient::stopPositionsUpdates()
 
 void TwsClient::requestManagedAccounts()
 {
-
+    client->reqManagedAccts();
 }
 
 void TwsClient::currentTime(long time)
