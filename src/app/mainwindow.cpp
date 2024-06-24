@@ -5,15 +5,15 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
-      client(new IBClient),
-      readerThread(new IBClientReaderThread(client))
+      client(new TwsClient),
+      readerThread(new TwsReaderThread(client))
 {
     client->moveToThread(readerThread);
     ui->setupUi(this);
 
     connect(ui->connectPushButton, &QPushButton::clicked, this, &MainWindow::connectClient);
     connect(ui->disconnectPushButton, &QPushButton::clicked, this, &MainWindow::disconnectClient);
-    connect(ui->checkTimePushButton, &QPushButton::clicked, client, &IBClient::requestCurrentTime);
+    connect(ui->checkTimePushButton, &QPushButton::clicked, client, &TwsClient::requestCurrentTime);
 
     readerThread->start();
 }

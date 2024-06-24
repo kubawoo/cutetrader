@@ -1,5 +1,6 @@
 qt_add_executable(testrunner
     multitests.h
+    helper.h
     testrunner.cpp
 )
 

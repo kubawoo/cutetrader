@@ -2,8 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <ibclient.h>
-#include <ibclientreaderthread.h>
+#include <twsclient.h>
+#include <twsreaderthread.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -24,7 +24,7 @@ public slots:
 
 private:
     Ui::MainWindow *ui;
-    IBClient * client;
-    IBClientReaderThread * readerThread;
+    TwsClient * client;
+    TwsReaderThread * readerThread;
 };
 #endif // MAINWINDOW_H

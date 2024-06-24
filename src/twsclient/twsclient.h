@@ -1,5 +1,5 @@
-#ifndef IBCLIENT_H
-#define IBCLIENT_H
+#ifndef TWSCLIENT_H
+#define TWSCLIENT_H
 
 #include <QObject>
 #include <QDateTime>
@@ -7,16 +7,20 @@
 #include "EReaderOSSignal.h"
 #include "EReader.h"
 
-class IBClient : public QObject, public DefaultEWrapper
+class TwsClient : public QObject, public DefaultEWrapper
 {
     Q_OBJECT
 public:
-    explicit IBClient(QObject *parent = nullptr);
-    ~IBClient();
+    explicit TwsClient(QObject *parent = nullptr);
+    ~TwsClient();
 
 public slots:
-    void requestCurrentTime();
     void checkMessages();
+    void requestCurrentTime();
+    void startAccountUpdates();
+    void stopAccountUpdates();
+    void startPositionsUpdates();
+    void stopPositionsUpdates();
 
 public:
     bool connect(const QString& host, int port, int clientId = 0);
@@ -30,6 +34,15 @@ public:
     virtual void currentTime(long time);
     virtual void managedAccounts( const std::string& accountsList);
     virtual void error(int id, int errorCode, const std::string& errorString, const std::string& advancedOrderRejectJson);
+    virtual void updateAccountValue(const std::string& key, const std::string& val,
+        const std::string& currency, const std::string& accountName);
+    virtual void updatePortfolio( const Contract& contract, Decimal position,
+        double marketPrice, double marketValue, double averageCost,
+        double unrealizedPNL, double realizedPNL, const std::string& accountName);
+    virtual void updateAccountTime(const std::string& timeStamp);
+    virtual void accountDownloadEnd(const std::string& accountName);
+    virtual void position( const std::string& account, const Contract& contract, Decimal position, double avgCost);
+    virtual void positionEnd();
 
 
 
@@ -48,6 +61,7 @@ private:
     OrderId nextOrderId;
     EReader * reader;
     bool connected;
+    QString account;
 };
 
-#endif // IBCLIENT_H
+#endif // TWSCLIENT_H

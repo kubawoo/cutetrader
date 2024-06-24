@@ -19,7 +19,7 @@ QPair<qreal, qreal> LinearRegression::calculate(const QList<qreal> &x, const QLi
        sum_xy = sum_xy + x[i]*y[i];
     }
 
-    qreal b = (n*sum_xy-sum_x*sum_y)/(n*sum_x2-sum_x*sum_x);
-    qreal a = (sum_y - b*sum_x)/n;
+    qreal a = (n*sum_xy-sum_x*sum_y)/(n*sum_x2-sum_x*sum_x);
+    qreal b = (sum_y - a*sum_x)/n;
     return QPair<qreal, qreal>(a, b);
 }
