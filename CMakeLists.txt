@@ -9,13 +9,14 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Test)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Test Sql)
 qt_standard_project_setup()
 
 add_subdirectory(src/twsapi)
+add_subdirectory(src/twsclient)
+add_subdirectory(src/data)
 add_subdirectory(src/quant)
 add_subdirectory(src/app)
-add_subdirectory(src/twsclient)
 
 add_subdirectory(test/testrunner)
 add_subdirectory(test/quant)

@@ -50,12 +50,12 @@ bool TwsClient::connect(const QString &host, int port, int clientId)
 void TwsClient::disconnect()
 {
     if(isConnected()) {
+        stopAccountUpdates(); //TODO: remove
+        stopPositionsUpdates();
         qDebug() << "Trying to disconnect client" << client->clientId();
         client->eDisconnect();
         emit disconnectedSignal();
         qDebug().nospace() << "Client disconnected";
-        stopAccountUpdates(); //TODO: remove
-        stopPositionsUpdates();
     } else {
         qDebug() << "Already disconnected";
     }
@@ -71,10 +71,6 @@ bool TwsClient::isConnected()
     return res;
 }
 
-void TwsClient::setConnectOptions(const QString& connectOptions)
-{
-    client->setConnectOptions(connectOptions.toStdString());
-}
 
 void TwsClient::nextValidId( OrderId orderId)
 {

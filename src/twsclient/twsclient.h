@@ -26,7 +26,6 @@ public slots:
 public:
     bool connect(const QString& host, int port, int clientId = 0);
     void disconnect();
-    void setConnectOptions(const QString&);
     bool isConnected();
 
 public:

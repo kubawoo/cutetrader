@@ -8,6 +8,13 @@ qt_add_executable(cutetrader
     ${PROJECT_SOURCES}
 )
 
-target_link_libraries(cutetrader PRIVATE Qt6::Widgets twsapi quant twsclient)
+target_link_libraries(cutetrader PRIVATE
+    Qt6::Widgets
+    Qt6::Sql
+    twsapi
+    quant
+    twsclient
+    data
+)
 
 qt_finalize_executable(cutetrader)
