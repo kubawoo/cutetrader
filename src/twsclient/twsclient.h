@@ -6,6 +6,7 @@
 #include "DefaultEWrapper.h"
 #include "EReaderOSSignal.h"
 #include "EReader.h"
+#include "cache.h"
 
 class TwsClient : public QObject, public DefaultEWrapper
 {
@@ -23,43 +24,43 @@ public slots:
     void startPositionsUpdates();
     void stopPositionsUpdates();
     void requestManagedAccounts();
-    long requestHistoricalData(const Contract &contract, const QString &endDateTime,
-                               const QString &durationString, const QString &barSizeSetting);
 
 public:
     bool connect(const QString& host, int port, int clientId = 0);
     void disconnect();
     bool isConnected();
+    long requestHistoricalData(const Contract &contract, const QString &endDateTime,
+                               const QString &durationString, const QString &barSizeSetting);
+
 
 public:
     // EWrapper methods
-    virtual void nextValidId(OrderId orderId);
-    virtual void currentTime(long time);
-    virtual void managedAccounts( const std::string& accountsList);
+    virtual void nextValidId(OrderId orderId) override;
+    virtual void currentTime(long time) override;
+    virtual void managedAccounts( const std::string& accountsList) override;
     virtual void error(int id, int errorCode, const std::string& errorString,
-                       const std::string& advancedOrderRejectJson);
+                       const std::string& advancedOrderRejectJson) override;
     virtual void updateAccountValue(const std::string& key, const std::string& val,
-        const std::string& currency, const std::string& accountName);
+        const std::string& currency, const std::string& accountName) override;
     virtual void updatePortfolio( const Contract& contract, Decimal position,
         double marketPrice, double marketValue, double averageCost,
-        double unrealizedPNL, double realizedPNL, const std::string& accountName);
-    virtual void updateAccountTime(const std::string& timeStamp);
-    virtual void accountDownloadEnd(const std::string& accountName);
-    virtual void position( const std::string& account, const Contract& contract, Decimal position, double avgCost);
-    virtual void positionEnd();
-    virtual void historicalData(long reqId, const Bar& bar);
-    virtual void historicalDataEnd(long reqId, const std::string& startDateStr, const std::string& endDateStr);
-
-
+        double unrealizedPNL, double realizedPNL, const std::string& accountName) override;
+    virtual void updateAccountTime(const std::string& timeStamp) override;
+    virtual void accountDownloadEnd(const std::string& accountName) override;
+    virtual void position( const std::string& account, const Contract& contract,
+                           Decimal position, double avgCost) override;
+    virtual void positionEnd() override;
+    virtual void historicalData(long reqId, const Bar& bar) override;
+    virtual void historicalDataEnd(int reqId, const std::string& startDateStr,
+                                   const std::string& endDateStr) override;
 
 
 signals:
     void connectedSignal();
     void disconnectedSignal();
-    void nextValidIdSignal(long orderId);
     void currentTimeSignal(const QDateTime& time);
     void managedAccountsSignal(const QStringList & accounts);
-
+    void historicalDataReadySignal(long requestId, QList<Bar> *bars);
 
 
 private:
@@ -69,7 +70,8 @@ private:
     EReader * _reader;
     bool _connected;
     QString _account;
-    long _requestId;
+    int _requestId;
+    Cache _cache;
 };
 
 #endif // TWSCLIENT_H

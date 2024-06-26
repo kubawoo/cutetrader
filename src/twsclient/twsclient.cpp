@@ -11,9 +11,7 @@ TwsClient::TwsClient(QObject *parent)
       _nextOrderId(-1),
       _reader(nullptr),
       _requestId(0)
-{
-
-}
+{}
 
 
 TwsClient::~TwsClient()
@@ -51,8 +49,6 @@ bool TwsClient::connect(const QString &host, int port, int clientId)
 void TwsClient::disconnect()
 {
     if(isConnected()) {
-        stopAccountUpdates(); //TODO: remove
-        stopPositionsUpdates();
         qDebug() << "Trying to disconnect client" << _client->clientId();
         _client->eDisconnect();
         emit disconnectedSignal();
@@ -73,14 +69,10 @@ bool TwsClient::isConnected()
 }
 
 
-void TwsClient::nextValidId( OrderId orderId)
+void TwsClient::nextValidId(OrderId orderId)
 {
     qDebug().nospace() << "Next Valid Id:" << orderId;
     _nextOrderId = orderId;
-    emit nextValidIdSignal(orderId);
-//     startAccountUpdates(); //TODO: remove
-//     startPositionsUpdates();
-
 }
 
 void TwsClient::requestCurrentTime() {
@@ -185,11 +177,13 @@ void TwsClient::positionEnd()
 void TwsClient::historicalData(long reqId, const Bar &bar)
 {
     qDebug() << "historicalData" << reqId << bar.time.c_str() << bar.close;
+    _cache.addBar(reqId, bar);
 }
 
-void TwsClient::historicalDataEnd(long reqId, const std::string &startDateStr, const std::string &endDateStr)
+void TwsClient::historicalDataEnd(int reqId, const std::string &startDateStr, const std::string &endDateStr)
 {
     qDebug() << "historicalDataEnd" << reqId << startDateStr.c_str() << endDateStr.c_str();
+    emit historicalDataReadySignal(reqId, _cache.bars(reqId));
 }
 
 
@@ -204,5 +198,5 @@ void TwsClient::checkMessages()
 void TwsClient::cleanup()
 {
     qDebug() << "Running cleanup task";
-    //TODO
+    _cache.cleanup();
 }
