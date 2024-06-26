@@ -7,16 +7,7 @@
 
 #include "mainwindow.h"
 
-void setupDatabase() {
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("cutetrader.db");
-    db.open();
-
-    DbBuilder dbBuilder(db);
-    dbBuilder.addMigration(new Migration_001);
-    dbBuilder.addMigration(new Migration_002);
-    dbBuilder.runMigrations();
-}
+void setupDatabase();
 
 int main(int argc, char *argv[])
 {
@@ -31,3 +22,13 @@ int main(int argc, char *argv[])
     return a.exec();
 }
 
+void setupDatabase() {
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName("cutetrader.db");
+    db.open();
+
+    DbBuilder dbBuilder(db);
+    dbBuilder.addMigration(new Migration_001);
+    dbBuilder.addMigration(new Migration_002);
+    dbBuilder.runMigrations();
+}
