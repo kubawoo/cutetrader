@@ -1,5 +1,6 @@
 #include "dbbuilder.h"
 
+#include <QSqlError>
 #include <QDateTime>
 
 DbMigration::~DbMigration()
@@ -8,47 +9,48 @@ DbMigration::~DbMigration()
 DbMigration::DbMigration()
 {}
 
-DbBuilder &DbBuilder::instance()
+DbBuilder::DbBuilder(QSqlDatabase & db)
+    :_db(db)
 {
-    static DbBuilder INSTANCE;
-    return INSTANCE;
+    QString initSql = "CREATE TABLE IF NOT EXISTS _migrations ("
+                      "id INTEGER PRIMARY KEY,"
+                      "timestamp TEXT NOT NULL"
+                      ");";
+    qDebug() << "Creating initial structure";
+    _initialized = executeSql(initSql);
 }
+
 
 DbBuilder::~DbBuilder()
 {
     foreach (auto migration, _migrations) {
         delete migration;
     }
+    _migrations.clear();
 }
 
 void DbBuilder::runMigrations()
 {
+    if(!_initialized) {
+        qDebug() << "Not initialized, not running";
+        return;
+    }
+
     QList<int> executedMigrations = findExecutedMigrations();
     foreach (auto migration, _migrations) {
         if(executedMigrations.contains(migration->id())) {
             qDebug() << "Migration" << migration->id() << "already executed";
-        } else {
-            QSqlQuery query(db);
-            qDebug() << "Running migration" << migration->id() << ": " << migration->sql();
-            bool ok = query.exec(migration->sql());
-            if(!ok) {
-                qDebug() << "Failed to execute migration";
-            } else {
-                QString sql = "INSERT INTO _migrations(id, timestamp) VALUES (";
-                sql.append(QString::number(migration->id()));
-                sql.append(", \"");
-                sql.append(QDateTime::currentDateTime().toString(Qt::ISODateWithMs));
-                sql.append("\");");
-                qDebug() << "Executing" << sql;
-                ok = query.exec(sql);
-                if(!ok) {
-                    qDebug() << "Failed";
-                }
-            }
+            continue;
         }
-        delete migration;
+
+        qDebug() << "Running migration" << migration->id();
+        bool ok = executeSql(migration->sql());
+        if(ok) {
+            saveMigration(migration);
+        } else {
+            break;
+        }
     }
-    _migrations.clear();
 }
 
 void DbBuilder::addMigration(DbMigration *migration)
@@ -56,25 +58,11 @@ void DbBuilder::addMigration(DbMigration *migration)
     _migrations.append(migration);
 }
 
-DbBuilder::DbBuilder()
-{
-    QString initSql = "CREATE TABLE IF NOT EXISTS _migrations ("
-            "id INTEGER PRIMARY KEY,"
-            "timestamp TEXT NOT NULL"
-            ");";
-    db = QSqlDatabase::database();
-    QSqlQuery query(db);
-    qDebug() << "Creating initial structure";
-    bool ok = query.exec(initSql);
-    if(!ok) {
-        qDebug() << "Failed to create initial structure";
-    }
-}
 
 QList<int> DbBuilder::findExecutedMigrations()
 {
     QString sql = "SELECT id FROM _migrations;";
-    QSqlQuery query(db);
+    QSqlQuery query(_db);
     query.exec(sql);
 
     QList<int> ids;
@@ -87,5 +75,26 @@ QList<int> DbBuilder::findExecutedMigrations()
     return ids;
 }
 
+void DbBuilder::saveMigration(DbMigration *migration)
+{
+    QString sql = "INSERT INTO _migrations(id, timestamp) VALUES (";
+    sql.append(QString::number(migration->id()));
+    sql.append(", \"");
+    sql.append(QDateTime::currentDateTime().toString(Qt::ISODateWithMs));
+    sql.append("\");");
+    QSqlQuery query(_db);
+    executeSql(sql);
+}
 
-
+bool DbBuilder::executeSql(const QString &sql)
+{
+    qDebug() << "Executing SQL"<< sql;
+    QSqlQuery query(_db);
+    bool ok = query.exec(sql);
+    if(!ok) {
+        qDebug() << "Failed to execute" << query.lastQuery()
+                 << "Error:" << query.lastError().text();
+    }
+    query.finish();
+    return ok;
+}

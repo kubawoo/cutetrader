@@ -19,16 +19,19 @@ protected:
 class DbBuilder
 {
 public:
-    static DbBuilder& instance();
+    DbBuilder(QSqlDatabase & db);
     ~DbBuilder();
     void runMigrations();
     void addMigration(DbMigration * migration);
 
 private:
-    DbBuilder();
     QList<int> findExecutedMigrations();
+    void saveMigration(DbMigration * migration);
+    bool executeSql(const QString & sql);
+
     QList<DbMigration*> _migrations;
-    QSqlDatabase db;
+    QSqlDatabase _db;
+    bool _initialized;
 };
 
 
