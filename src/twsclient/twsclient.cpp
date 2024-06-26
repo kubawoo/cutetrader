@@ -6,10 +6,11 @@
 
 TwsClient::TwsClient(QObject *parent)
     : QObject{parent},
-      readerSignal(200),
-      client(new EClientSocket(this, &readerSignal)),
-      nextOrderId(0),
-      reader(nullptr)
+      _readerSignal(200),
+      _client(new EClientSocket(this, &_readerSignal)),
+      _nextOrderId(-1),
+      _reader(nullptr),
+      _requestId(0)
 {
 
 }
@@ -18,12 +19,12 @@ TwsClient::TwsClient(QObject *parent)
 TwsClient::~TwsClient()
 {
     // destroy the reader before the client
-    if(reader) {
-        delete reader;
+    if(_reader) {
+        delete _reader;
     }
 
     disconnect();
-    delete client;
+    delete _client;
 }
 
 
@@ -32,19 +33,19 @@ bool TwsClient::connect(const QString &host, int port, int clientId)
     // trying to connect
     qDebug().nospace() <<  "Connecting to " << host << ":" << port << " with clientId=" << clientId;
 
-    client->setConnectOptions("+PACEAPI");
-    connected = client->eConnect( host.toStdString().c_str(), port, clientId);
+    _client->setConnectOptions("+PACEAPI");
+    _connected = _client->eConnect( host.toStdString().c_str(), port, clientId);
 
-    if (connected) {
-        qDebug().nospace() << "Connected to " << client->host().c_str() << ":" << client->port();
-        reader = new EReader(client, &readerSignal);
-        reader->start();
+    if (_connected) {
+        qDebug().nospace() << "Connected to " << _client->host().c_str() << ":" << _client->port();
+        _reader = new EReader(_client, &_readerSignal);
+        _reader->start();
         emit connectedSignal();
     } else {
         qDebug().nospace() << "Failed connecting to " << host << ":" << port;
     }
 
-    return connected;
+    return _connected;
 }
 
 void TwsClient::disconnect()
@@ -52,8 +53,8 @@ void TwsClient::disconnect()
     if(isConnected()) {
         stopAccountUpdates(); //TODO: remove
         stopPositionsUpdates();
-        qDebug() << "Trying to disconnect client" << client->clientId();
-        client->eDisconnect();
+        qDebug() << "Trying to disconnect client" << _client->clientId();
+        _client->eDisconnect();
         emit disconnectedSignal();
         qDebug().nospace() << "Client disconnected";
     } else {
@@ -63,9 +64,9 @@ void TwsClient::disconnect()
 
 bool TwsClient::isConnected()
 {
-    bool res = client->isConnected();
-    if(connected && !res) {
-        connected = false;
+    bool res = _client->isConnected();
+    if(_connected && !res) {
+        _connected = false;
         emit disconnectedSignal();
     }
     return res;
@@ -75,35 +76,52 @@ bool TwsClient::isConnected()
 void TwsClient::nextValidId( OrderId orderId)
 {
     qDebug().nospace() << "Next Valid Id:" << orderId;
-    nextOrderId = orderId;
+    _nextOrderId = orderId;
     emit nextValidIdSignal(orderId);
-     startAccountUpdates(); //TODO: remove
-     startPositionsUpdates();
+//     startAccountUpdates(); //TODO: remove
+//     startPositionsUpdates();
+
 }
 
 void TwsClient::requestCurrentTime() {
     qDebug() << "requestCurrentTime";
-    client->reqCurrentTime();
+    _client->reqCurrentTime();
+    Contract c;
+    c.secType = "STK";
+    c.symbol = "SPY";
+    c.currency = "USD";
+    c.exchange = "SMART";
+    int reqId = requestHistoricalData(c, "", "30 D", "1 day");
+    qDebug() << "requestHistoricalData" << reqId;
 }
 
 void TwsClient::startAccountUpdates() {
-    client->reqAccountUpdates(true, account.toStdString());
+    _client->reqAccountUpdates(true, _account.toStdString());
 }
 void TwsClient::stopAccountUpdates() {
-    client->reqAccountUpdates(false, account.toStdString());
+    _client->reqAccountUpdates(false, _account.toStdString());
 }
 void TwsClient::startPositionsUpdates()
 {
-    client->reqPositions();
+    _client->reqPositions();
 }
 void TwsClient::stopPositionsUpdates()
 {
-    client->cancelPositions();
+    _client->cancelPositions();
 }
 
 void TwsClient::requestManagedAccounts()
 {
-    client->reqManagedAccts();
+    _client->reqManagedAccts();
+}
+
+long TwsClient::requestHistoricalData(const Contract &contract, const QString &endDateTime,
+                                      const QString &durationString, const QString &barSizeSetting)
+{
+    _client->reqHistoricalData(_requestId, contract, endDateTime.toStdString(),
+                              durationString.toStdString(), barSizeSetting.toStdString(),
+                              "TRADES", 1, 1, false, TagValueListSPtr());
+    return _requestId++;
 }
 
 void TwsClient::currentTime(long time)
@@ -117,7 +135,7 @@ void TwsClient::managedAccounts( const std::string& accountsList)
 {
     qDebug() << "managedAccounts" << accountsList.c_str();
     QStringList accounts = QString::fromStdString(accountsList).split(",");
-    this->account = accounts[0];
+    this->_account = accounts[0];
     emit managedAccountsSignal(accounts);
 }
 
@@ -164,11 +182,27 @@ void TwsClient::positionEnd()
     qDebug() << "positionEnd";
 }
 
+void TwsClient::historicalData(long reqId, const Bar &bar)
+{
+    qDebug() << "historicalData" << reqId << bar.time.c_str() << bar.close;
+}
+
+void TwsClient::historicalDataEnd(long reqId, const std::string &startDateStr, const std::string &endDateStr)
+{
+    qDebug() << "historicalDataEnd" << reqId << startDateStr.c_str() << endDateStr.c_str();
+}
+
 
 void TwsClient::checkMessages()
 {
-    if(reader && isConnected()) {
-        readerSignal.waitForSignal();
-        reader->processMsgs();
+    if(_reader && isConnected()) {
+        _readerSignal.waitForSignal();
+        _reader->processMsgs();
     }
+}
+
+void TwsClient::cleanup()
+{
+    qDebug() << "Running cleanup task";
+    //TODO
 }

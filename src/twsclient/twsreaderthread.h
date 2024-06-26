@@ -15,8 +15,11 @@ public:
     void run();
 
 private:
-    TwsClient * client;
-    QTimer * timer;
+    QTimer * setupTimer(int msec, void (TwsClient::*funcPtr)(void));
+
+    TwsClient * _client;
+    QTimer * _readTimer;
+    QTimer * _cleanupTimer;
 };
 
 #endif // TWSREADERTHREAD_H

@@ -4,7 +4,7 @@
 
 #include <dbbuilder.h>
 #include <migrations.h>
-
+#include <model.h>
 #include "mainwindow.h"
 
 void setupDatabase();
@@ -30,5 +30,6 @@ void setupDatabase() {
     DbBuilder dbBuilder(db);
     dbBuilder.addMigration(new Migration_001);
     dbBuilder.addMigration(new Migration_002);
+    dbBuilder.addMigration(new Migration_003);
     dbBuilder.runMigrations();
 }

@@ -2,8 +2,9 @@
 
 TwsReaderThread::TwsReaderThread(TwsClient * client)
     : QThread{nullptr},
-      client(client),
-      timer(nullptr)
+      _client(client),
+      _readTimer(nullptr),
+      _cleanupTimer(nullptr)
 {
     this->setObjectName("TwsReaderThread");
 }
@@ -13,11 +14,18 @@ TwsReaderThread::~TwsReaderThread() {
 }
 
 void TwsReaderThread::run() {
-    timer = new QTimer();
+    _readTimer = setupTimer(250, &TwsClient::checkMessages);
+    _cleanupTimer = setupTimer(60000, &TwsClient::cleanup);
+    exec();
+}
+
+QTimer *TwsReaderThread::setupTimer(int msec, void (TwsClient::*funcPtr)(void))
+{
+    QTimer * timer = new QTimer();
     timer->moveToThread(this);
-    QObject::connect(timer, &QTimer::timeout, client, &TwsClient::checkMessages);
+    QObject::connect(timer, &QTimer::timeout, _client, funcPtr);
     QObject::connect(this, &QThread::finished, timer, &QTimer::stop);
     QObject::connect(this, &QThread::finished, timer, &QTimer::deleteLater);
-    timer->start(250);
-    exec();
+    timer->start(msec);
+    return timer;
 }
