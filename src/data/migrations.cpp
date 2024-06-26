@@ -1,7 +1,7 @@
 #include "migrations.h"
 
 
-const int Migration_001::order() const
+const int Migration_001::id() const
 {
     return 1;
 }
@@ -14,7 +14,7 @@ const QString Migration_001::sql() const
             ");";
 }
 
-const int Migration_002::order() const
+const int Migration_002::id() const
 {
     return 2;
 }

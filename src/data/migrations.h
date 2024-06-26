@@ -6,7 +6,7 @@
 class Migration_001 : public DbMigration
 {
 public:
-    const int order() const;
+    const int id() const;
     const QString sql() const;
 };
 
@@ -14,7 +14,7 @@ public:
 class Migration_002 : public DbMigration
 {
 public:
-    const int order() const;
+    const int id() const;
     const QString sql() const;
 };
 
