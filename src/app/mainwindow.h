@@ -21,6 +21,7 @@ public slots:
     void connectClient();
     void disconnectClient();
     void quit();
+    void accountInfoUpdated(AccountInfoType type);
 
 private:
     Ui::MainWindow *ui;

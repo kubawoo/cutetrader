@@ -32,6 +32,8 @@ public:
     bool isConnected();
     long requestHistoricalData(const Contract &contract, const QString &endDateTime,
                                const QString &durationString, const QString &barSizeSetting);
+    double accountInfo(AccountInfoType type);
+    QString accountBaseCurrency();
 
 
 public:
@@ -62,6 +64,7 @@ signals:
     void currentTimeSignal(const QDateTime& time);
     void managedAccountsSignal(const QStringList & accounts);
     void historicalDataReadySignal(long requestId, QList<Bar> *bars);
+    void accountInfoUpdated(AccountInfoType type);
 
 
 private:

@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->connectPushButton, &QPushButton::clicked, this, &MainWindow::connectClient);
     connect(ui->disconnectPushButton, &QPushButton::clicked, this, &MainWindow::disconnectClient);
     connect(ui->checkTimePushButton, &QPushButton::clicked, client, &TwsClient::requestCurrentTime);
+    connect(client, &TwsClient::accountInfoUpdated, this, &MainWindow::accountInfoUpdated);
 
     readerThread->start();
 }
@@ -56,4 +57,17 @@ void MainWindow::quit()
     delete readerThread;
     client->disconnect();
     delete client;
+}
+
+void MainWindow::accountInfoUpdated(AccountInfoType type)
+{
+    switch(type) {
+    case AccountInfoType::NetLiquidation:
+        qDebug() << "FOOOO";
+
+        ui->netLiquidation->setText(QString::number(client->accountInfo(AccountInfoType::NetLiquidation)));
+        break;
+    default:
+        break;
+    }
 }

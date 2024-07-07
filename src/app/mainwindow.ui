@@ -85,6 +85,32 @@
      <string>Disconnect</string>
     </property>
    </widget>
+   <widget class="QLabel" name="netLiquidationLabel">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>140</y>
+      <width>101</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Net Liquidation</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="netLiquidation">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>140</y>
+      <width>54</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

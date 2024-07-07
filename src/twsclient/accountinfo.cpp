@@ -17,22 +17,23 @@ AccountInfo::AccountInfo()
     _mappings.insert("UnrealizedPnL", AccountInfoType::UnrealizedPnL);
 }
 
-void AccountInfo::updateValue(const QString &type, const QString & value)
+AccountInfoType AccountInfo::updateValue(const QString &type, const QString & value)
 {
     if(!_mappings.contains(type)) {
-        return;
+        return AccountInfoType::NONE;
     }
-
 
     bool ok;
     double val = value.toDouble(&ok);
     if(ok) {
         AccountInfoType t = _mappings.value(type);
         _values.insert(t, val);
+        qDebug() << "Updated" << type << "to" << val;
+        return t;
     } else {
         qDebug() << "Failed to convert" << value << "to double";
+        return AccountInfoType::NONE;
     }
-    qDebug() << "Updated" << type << "to" << val;
 }
 
 double AccountInfo::value(AccountInfoType type)

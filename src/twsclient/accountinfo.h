@@ -7,6 +7,7 @@
 
 enum class AccountInfoType
 {
+    NONE,
     AccruedDividend,    //Total portfolio value of dividends accrued
     CashBalance,        //Cash recognized at the time of trade + futures PNL
     Cushion,            //Excess liquidity as a percentage of net liquidation value
@@ -24,7 +25,7 @@ class AccountInfo
 public:
     AccountInfo();
 
-    void updateValue(const QString & type, const QString & value);
+    AccountInfoType updateValue(const QString & type, const QString & value);
     double value(AccountInfoType type);
 
     QString accountId();

@@ -117,6 +117,16 @@ long TwsClient::requestHistoricalData(const Contract &contract, const QString &e
     return _requestId++;
 }
 
+double TwsClient::accountInfo(AccountInfoType type)
+{
+    return _account.value(type);
+}
+
+QString TwsClient::accountBaseCurrency()
+{
+    return _account.baseCurrency();
+}
+
 void TwsClient::currentTime(long time)
 {
     auto dateTime = QDateTime::fromSecsSinceEpoch(time, Qt::LocalTime);
@@ -145,7 +155,10 @@ void TwsClient::updateAccountValue(const std::string& key, const std::string& va
 
     if(accountName == _account.accountId().toStdString()
        && (currency == _account.baseCurrency().toStdString() || currency.empty())) {
-        _account.updateValue(key.c_str(), val.c_str());
+        AccountInfoType updated = _account.updateValue(key.c_str(), val.c_str());
+        if(updated != AccountInfoType::NONE) {
+            emit accountInfoUpdated(updated);
+        }
     }
 
 }
