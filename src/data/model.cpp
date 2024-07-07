@@ -85,65 +85,65 @@ Quote &Quote::withDate(const QDate &newDate)
     return *this;
 }
 
-qreal Quote::open() const
+double Quote::open() const
 {
     return _open;
 }
 
-void Quote::setOpen(qreal newOpen)
+void Quote::setOpen(double newOpen)
 {
     _open = newOpen;
 }
 
-Quote &Quote::withOpen(qreal newOpen)
+Quote &Quote::withOpen(double newOpen)
 {
     _open = newOpen;
     return *this;
 }
 
-qreal Quote::close() const
+double Quote::close() const
 {
     return _close;
 }
 
-void Quote::setClose(qreal newClose)
+void Quote::setClose(double newClose)
 {
     _close = newClose;
 }
 
-Quote &Quote::withClose(qreal newClose)
+Quote &Quote::withClose(double newClose)
 {
     _close = newClose;
     return *this;
 }
 
-qreal Quote::low() const
+double Quote::low() const
 {
     return _low;
 }
 
-void Quote::setLow(qreal newLow)
+void Quote::setLow(double newLow)
 {
     _low = newLow;
 }
 
-Quote &Quote::withLow(qreal newLow)
+Quote &Quote::withLow(double newLow)
 {
     _low = newLow;
     return *this;
 }
 
-qreal Quote::high() const
+double Quote::high() const
 {
     return _high;
 }
 
-void Quote::setHigh(qreal newHigh)
+void Quote::setHigh(double newHigh)
 {
     _high = newHigh;
 }
 
-Quote &Quote::withHigh(qreal newHigh)
+Quote &Quote::withHigh(double newHigh)
 {
     _high = newHigh;
     return *this;

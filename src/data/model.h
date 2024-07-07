@@ -38,21 +38,21 @@ public:
     void setDate(const QDate &newDate);
     Quote& withDate(const QDate &newDate);
 
-    qreal open() const;
-    void setOpen(qreal newOpen);
-    Quote& withOpen(qreal newOpen);
+    double open() const;
+    void setOpen(double newOpen);
+    Quote& withOpen(double newOpen);
 
-    qreal close() const;
-    void setClose(qreal newClose);
-    Quote& withClose(qreal newClose);
+    double close() const;
+    void setClose(double newClose);
+    Quote& withClose(double newClose);
 
-    qreal low() const;
-    void setLow(qreal newLow);
-    Quote& withLow(qreal newLow);
+    double low() const;
+    void setLow(double newLow);
+    Quote& withLow(double newLow);
 
-    qreal high() const;
-    void setHigh(qreal newHigh);
-    Quote& withHigh(qreal newHigh);
+    double high() const;
+    void setHigh(double newHigh);
+    Quote& withHigh(double newHigh);
 
     long volume() const;
     void setVolume(long newVolume);
@@ -62,10 +62,10 @@ private:
     int _id;
     QString _securityId;
     QDate _date;
-    qreal _open;
-    qreal _close;
-    qreal _low;
-    qreal _high;
+    double _open;
+    double _close;
+    double _low;
+    double _high;
     long _volume;
 };
 

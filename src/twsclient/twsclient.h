@@ -7,6 +7,7 @@
 #include "EReaderOSSignal.h"
 #include "EReader.h"
 #include "cache.h"
+#include "accountinfo.h"
 
 class TwsClient : public QObject, public DefaultEWrapper
 {
@@ -69,7 +70,7 @@ private:
     long _nextOrderId;
     EReader * _reader;
     bool _connected;
-    QString _account;
+    AccountInfo _account;
     int _requestId;
     Cache _cache;
 };

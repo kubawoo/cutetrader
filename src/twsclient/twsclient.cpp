@@ -39,6 +39,7 @@ bool TwsClient::connect(const QString &host, int port, int clientId)
         _reader = new EReader(_client, &_readerSignal);
         _reader->start();
         emit connectedSignal();
+        startAccountUpdates();
     } else {
         qDebug().nospace() << "Failed connecting to " << host << ":" << port;
     }
@@ -78,20 +79,20 @@ void TwsClient::nextValidId(OrderId orderId)
 void TwsClient::requestCurrentTime() {
     qDebug() << "requestCurrentTime";
     _client->reqCurrentTime();
-    Contract c;
-    c.secType = "STK";
-    c.symbol = "SPY";
-    c.currency = "USD";
-    c.exchange = "SMART";
-    int reqId = requestHistoricalData(c, "", "30 D", "1 day");
-    qDebug() << "requestHistoricalData" << reqId;
+//    Contract c;
+//    c.secType = "STK";
+//    c.symbol = "SPY";
+//    c.currency = "USD";
+//    c.exchange = "SMART";
+//    int reqId = requestHistoricalData(c, "", "30 D", "1 day");
+//    qDebug() << "requestHistoricalData" << reqId;
 }
 
 void TwsClient::startAccountUpdates() {
-    _client->reqAccountUpdates(true, _account.toStdString());
+    _client->reqAccountUpdates(true, _account.accountId().toStdString());
 }
 void TwsClient::stopAccountUpdates() {
-    _client->reqAccountUpdates(false, _account.toStdString());
+    _client->reqAccountUpdates(false, _account.accountId().toStdString());
 }
 void TwsClient::startPositionsUpdates()
 {
@@ -127,7 +128,7 @@ void TwsClient::managedAccounts( const std::string& accountsList)
 {
     qDebug() << "managedAccounts" << accountsList.c_str();
     QStringList accounts = QString::fromStdString(accountsList).split(",");
-    this->_account = accounts[0];
+    this->_account.setAccountId(accounts[0]);
     emit managedAccountsSignal(accounts);
 }
 
@@ -141,6 +142,12 @@ void TwsClient::updateAccountValue(const std::string& key, const std::string& va
     const std::string& currency, const std::string& accountName)
 {
     qDebug() << "updateAccountValue" << key.c_str() << val.c_str() << currency.c_str() << accountName.c_str();
+
+    if(accountName == _account.accountId().toStdString()
+       && (currency == _account.baseCurrency().toStdString() || currency.empty())) {
+        _account.updateValue(key.c_str(), val.c_str());
+    }
+
 }
 
 void TwsClient::updatePortfolio( const Contract& contract, Decimal position,
