@@ -100,6 +100,7 @@ public:
 	bool decodePegBestPegMidOrderAttributes(const char*& ptr, const char* endPtr);
 	bool decodeCustomerAccount(const char*& ptr, const char* endPtr);
 	bool decodeProfessionalCustomer(const char*& ptr, const char* endPtr);
+	bool decodeBondAccruedInterest(const char*& ptr, const char* endPtr);
 
 private:
 	Contract* m_contract;

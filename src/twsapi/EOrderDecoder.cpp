@@ -801,3 +801,11 @@ bool EOrderDecoder::decodeProfessionalCustomer(const char*& ptr, const char* end
 
     return true;
 }
+
+bool EOrderDecoder::decodeBondAccruedInterest(const char*& ptr, const char* endPtr) {
+    if (m_serverVersion >= MIN_SERVER_VER_BOND_ACCRUED_INTEREST) {
+        DECODE_FIELD(m_order->bondAccruedInterest);
+    }
+
+    return true;
+}

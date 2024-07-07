@@ -245,6 +245,10 @@ struct Order
 	double midOffsetAtHalf = UNSET_DOUBLE;
 	std::string customerAccount = "";
 	bool professionalCustomer = false;
+	std::string bondAccruedInterest = "";
+
+	std::string externalUserId = "";
+	int manualOrderIndicator = UNSET_INTEGER;
 
 public:
 

@@ -1,4 +1,4 @@
-/* Copyright (C) 2023 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 #pragma once
@@ -8,6 +8,9 @@
 #include "TagValue.h"
 #include "Decimal.h"
 #include "CommonDefs.h"
+#include "IneligibilityReason.h"
+
+#define UNSET_INTEGER INT_MAX
 
 /*
 	SAME_POS    = open/close leg value is same as combo
@@ -123,6 +126,7 @@ struct ContractDetails
 		, priceMagnifier(0)
 		, underConId(0)
 		, evMultiplier(0)
+		, aggGroup(UNSET_INTEGER)
 		, minSize(UNSET_DECIMAL)
 		, sizeIncrement(UNSET_DECIMAL)
 		, suggestedSizeIncrement(UNSET_DECIMAL)
@@ -134,6 +138,9 @@ struct ContractDetails
 		, fundClosed(false)
 		, fundClosedForNewInvestors(false)
 		, fundClosedForNewMoney(false)
+		, fundDistributionPolicyIndicator(FundDistributionPolicyIndicator::None)
+		, fundAssetType(FundAssetType::None)
+		, ineligibilityReasonList(NULL)
 	{
 	}
 
@@ -202,6 +209,9 @@ struct ContractDetails
 	std::string fundBlueSkyTerritories;
 	FundDistributionPolicyIndicator fundDistributionPolicyIndicator;
 	FundAssetType fundAssetType;
+
+	// ineligibility reason list
+	IneligibilityReasonListSPtr ineligibilityReasonList;
 };
 
 struct ContractDescription

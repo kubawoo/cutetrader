@@ -142,12 +142,15 @@ const int MIN_SERVER_VER_OPEN_ORDER_AD_STRATEGY      = 181;
 const int MIN_SERVER_VER_LAST_TRADE_DATE             = 182;
 const int MIN_SERVER_VER_CUSTOMER_ACCOUNT            = 183;
 const int MIN_SERVER_VER_PROFESSIONAL_CUSTOMER       = 184;
+const int MIN_SERVER_VER_BOND_ACCRUED_INTEREST       = 185;
+const int MIN_SERVER_VER_INELIGIBILITY_REASONS       = 186;
+const int MIN_SERVER_VER_RFQ_FIELDS                  = 187;
 
 /* 100+ messaging */
 // 100 = enhanced handshake, msg length prefixes
 
 const int MIN_CLIENT_VER = 100;
-const int MAX_CLIENT_VER = MIN_SERVER_VER_PROFESSIONAL_CUSTOMER;
+const int MAX_CLIENT_VER = MIN_SERVER_VER_RFQ_FIELDS;
 
 
 // incoming msg id's

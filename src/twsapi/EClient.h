@@ -14,6 +14,7 @@
 #include "TagValue.h"
 #include "Contract.h"
 #include "WshEventData.h"
+#include "OrderCancel.h"
 
 namespace ibapi {
 namespace client_constants {
@@ -252,6 +253,7 @@ public:
 
 	const std::string& host() const { return m_host; }
 	int port() const { return m_port; }
+	void validateInvalidSymbols(const std::string& host);
 
 public:
 
@@ -274,7 +276,7 @@ public:
 		const std::string& genericTicks, bool snapshot, bool regulatorySnaphsot, const TagValueListSPtr& mktDataOptions);
 	void cancelMktData(TickerId id);
 	void placeOrder(OrderId id, const Contract& contract, const Order& order);
-	void cancelOrder(OrderId id, const std::string& manualOrderCancelTime);
+	void cancelOrder(OrderId id, const OrderCancel& orderCancel);
 	void reqOpenOrders();
 	void reqAccountUpdates(bool subscribe, const std::string& acctCode);
 	void reqExecutions(int reqId, const ExecutionFilter& filter);

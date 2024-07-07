@@ -1,4 +1,4 @@
-/* Copyright (C) 2023 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 #include "StdAfx.h"
@@ -15,6 +15,7 @@
 #include "PriceIncrement.h"
 #include "EOrderDecoder.h"
 #include "Utils.h"
+#include "IneligibilityReason.h"
 
 #include <string.h>
 #include <cstdlib>
@@ -411,7 +412,8 @@ const char* EDecoder::processOpenOrderMsg(const char* ptr, const char* endPtr) {
           && eOrderDecoder.decodeAutoCancelParent(ptr, endPtr, MIN_SERVER_VER_AUTO_CANCEL_PARENT)
           && eOrderDecoder.decodePegBestPegMidOrderAttributes(ptr, endPtr)
           && eOrderDecoder.decodeCustomerAccount(ptr, endPtr)
-          && eOrderDecoder.decodeProfessionalCustomer(ptr, endPtr);
+          && eOrderDecoder.decodeProfessionalCustomer(ptr, endPtr)
+          && eOrderDecoder.decodeBondAccruedInterest(ptr, endPtr);
 
         if (!success) {
           return nullptr;
@@ -633,6 +635,22 @@ const char* EDecoder::processContractDataMsg(const char* ptr, const char* endPtr
 		std::string fundAssetType;
 		DECODE_FIELD(fundAssetType);
 		contract.fundAssetType = Utils::getFundAssetType(fundAssetType);
+	}
+
+	if (m_serverVersion >= MIN_SERVER_VER_INELIGIBILITY_REASONS) {
+		int ineligibilityReasonCount = 0;
+		DECODE_FIELD(ineligibilityReasonCount);
+		if (ineligibilityReasonCount > 0) {
+			IneligibilityReasonListSPtr ineligibilityReasonList(new IneligibilityReasonList);
+			ineligibilityReasonList->reserve(ineligibilityReasonCount);
+			for (int i = 0; i < ineligibilityReasonCount; ++i) {
+				IneligibilityReasonSPtr ineligibilityReason(new IneligibilityReason());
+				DECODE_FIELD(ineligibilityReason->id);
+				DECODE_FIELD(ineligibilityReason->description);
+				ineligibilityReasonList->push_back(ineligibilityReason);
+			}
+			contract.ineligibilityReasonList = ineligibilityReasonList;
+		}
 	}
 
 	m_pEWrapper->contractDetails( reqId, contract);

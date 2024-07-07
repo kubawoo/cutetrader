@@ -1637,6 +1637,14 @@ void EClient::placeOrder( OrderId id, const Contract& contract, const Order& ord
         return;
     }
 
+    if (m_serverVersion < MIN_SERVER_VER_RFQ_FIELDS) {
+        if (!order.externalUserId.empty() || order.manualOrderIndicator != UNSET_INTEGER) {
+            m_pEWrapper->error(id, UPDATE_TWS.code(), UPDATE_TWS.msg() +
+                "  It does not support external user id and manual order indicator parameters", "");
+            return;
+        }
+    }
+
     std::stringstream msg;
     prepareBuffer( msg);
 
@@ -2101,6 +2109,11 @@ void EClient::placeOrder( OrderId id, const Contract& contract, const Order& ord
         if (m_serverVersion >= MIN_SERVER_VER_PROFESSIONAL_CUSTOMER) {
             ENCODE_FIELD(order.professionalCustomer);
         }
+
+        if (m_serverVersion >= MIN_SERVER_VER_RFQ_FIELDS) {
+            ENCODE_FIELD(order.externalUserId);
+            ENCODE_FIELD(order.manualOrderIndicator);
+        }
     }
     catch (EClientException& ex) {
         m_pEWrapper->error(id, ex.error().code(), ex.error().msg() + ex.text(), "");
@@ -2110,7 +2123,7 @@ void EClient::placeOrder( OrderId id, const Contract& contract, const Order& ord
     closeAndSend(msg.str());
 }
 
-void EClient::cancelOrder( OrderId id, const std::string& manualOrderCancelTime)
+void EClient::cancelOrder(OrderId id, const OrderCancel& orderCancel)
 {
     // not connected?
     if( !isConnected()) {
@@ -2118,23 +2131,43 @@ void EClient::cancelOrder( OrderId id, const std::string& manualOrderCancelTime)
         return;
     }
 
-    if (m_serverVersion < MIN_SERVER_VER_MANUAL_ORDER_TIME && !manualOrderCancelTime.empty()) {
+    if (m_serverVersion < MIN_SERVER_VER_MANUAL_ORDER_TIME && !orderCancel.manualOrderCancelTime.empty()) {
         m_pEWrapper->error(id, UPDATE_TWS.code(), UPDATE_TWS.msg() + " It does not support manual order cancel time attribute", "");
         return;
     }
 
-    const int VERSION = 1;
+    if (m_serverVersion < MIN_SERVER_VER_RFQ_FIELDS) {
+        if (!orderCancel.extOperator.empty() || !orderCancel.externalUserId.empty() || orderCancel.manualOrderIndicator != UNSET_INTEGER) {
+            m_pEWrapper->error(id, UPDATE_TWS.code(), UPDATE_TWS.msg() +
+                "  It does not support ext operator, external user id and manual order indicator parameters", "");
+            return;
+        }
+    }
 
     // send cancel order msg
     std::stringstream msg;
-    prepareBuffer( msg);
+    prepareBuffer(msg);
 
-    ENCODE_FIELD( CANCEL_ORDER);
-    ENCODE_FIELD( VERSION);
-    ENCODE_FIELD( id);
+    try {
+        const int VERSION = 1;
 
-    if (m_serverVersion >= MIN_SERVER_VER_MANUAL_ORDER_TIME) {
-        ENCODE_FIELD(manualOrderCancelTime);
+        ENCODE_FIELD( CANCEL_ORDER);
+        ENCODE_FIELD( VERSION);
+        ENCODE_FIELD( id);
+
+        if (m_serverVersion >= MIN_SERVER_VER_MANUAL_ORDER_TIME) {
+            ENCODE_FIELD(orderCancel.manualOrderCancelTime);
+        }
+
+        if (m_serverVersion >= MIN_SERVER_VER_RFQ_FIELDS) {
+            ENCODE_FIELD(orderCancel.extOperator);
+            ENCODE_FIELD(orderCancel.externalUserId);
+            ENCODE_FIELD(orderCancel.manualOrderIndicator);
+        }
+    }
+    catch (EClientException& ex) {
+        m_pEWrapper->error(id, ex.error().code(), ex.error().msg() + ex.text(), "");
+        return;
     }
 
     closeAndSend( msg.str());
@@ -3771,21 +3804,27 @@ void EClient::reqWshEventData(int reqId, const WshEventData &wshEventData) {
     std::stringstream msg;
     prepareBuffer(msg);
 
-    ENCODE_FIELD(REQ_WSH_EVENT_DATA)
-    ENCODE_FIELD(reqId)
-    ENCODE_FIELD(wshEventData.conId)
+    try {
+        ENCODE_FIELD(REQ_WSH_EVENT_DATA)
+        ENCODE_FIELD(reqId)
+        ENCODE_FIELD(wshEventData.conId)
 
-    if (m_serverVersion >= MIN_SERVER_VER_WSH_EVENT_DATA_FILTERS) {
-        ENCODE_FIELD(wshEventData.filter);
-        ENCODE_FIELD(wshEventData.fillWatchlist);
-        ENCODE_FIELD(wshEventData.fillPortfolio);
-        ENCODE_FIELD(wshEventData.fillCompetitors);
+        if (m_serverVersion >= MIN_SERVER_VER_WSH_EVENT_DATA_FILTERS) {
+            ENCODE_FIELD(wshEventData.filter);
+            ENCODE_FIELD(wshEventData.fillWatchlist);
+            ENCODE_FIELD(wshEventData.fillPortfolio);
+            ENCODE_FIELD(wshEventData.fillCompetitors);
+        }
+
+        if (m_serverVersion >= MIN_SERVER_VER_WSH_EVENT_DATA_FILTERS_DATE) {
+            ENCODE_FIELD(wshEventData.startDate);
+            ENCODE_FIELD(wshEventData.endDate);
+            ENCODE_FIELD(wshEventData.totalLimit);
+        }
     }
-
-    if (m_serverVersion >= MIN_SERVER_VER_WSH_EVENT_DATA_FILTERS_DATE) {
-        ENCODE_FIELD(wshEventData.startDate);
-        ENCODE_FIELD(wshEventData.endDate);
-        ENCODE_FIELD(wshEventData.totalLimit);
+    catch (EClientException& ex) {
+        m_pEWrapper->error(reqId, ex.error().code(), ex.error().msg() + ex.text(), "");
+        return;
     }
 
     closeAndSend(msg.str());
@@ -3851,6 +3890,21 @@ void EClient::reqUserInfo(int reqId) {
         ENCODE_FIELD(reqId)
 
         closeAndSend(msg.str());
+}
+
+void EClient::validateInvalidSymbols(const std::string& host) {
+
+    if (!host.empty() && !isAsciiPrintable(host)) {
+        throw EClientException(INVALID_SYMBOL, host);
+    }
+
+    if (!m_connectOptions.empty() && !isAsciiPrintable(m_connectOptions)) {
+        throw EClientException(INVALID_SYMBOL, m_connectOptions);
+    }
+
+    if (!m_optionalCapabilities.empty() && !isAsciiPrintable(m_optionalCapabilities)) {
+        throw EClientException(INVALID_SYMBOL, m_optionalCapabilities);
+    }
 }
 
 bool EClient::extraAuth() {
