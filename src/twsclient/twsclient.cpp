@@ -32,19 +32,17 @@ bool TwsClient::connect(const QString &host, int port, int clientId)
     qDebug().nospace() <<  "Connecting to " << host << ":" << port << " with clientId=" << clientId;
 
     _client->setConnectOptions("+PACEAPI");
-    _connected = _client->eConnect( host.toStdString().c_str(), port, clientId);
+    bool connected = _client->eConnect( host.toStdString().c_str(), port, clientId);
 
-    if (_connected) {
+    if (connected) {
         qDebug().nospace() << "Connected to " << _client->host().c_str() << ":" << _client->port();
         _reader = new EReader(_client, &_readerSignal);
         _reader->start();
-        emit connectedSignal();
-        startAccountUpdates();
     } else {
         qDebug().nospace() << "Failed connecting to " << host << ":" << port;
     }
 
-    return _connected;
+    return connected;
 }
 
 void TwsClient::disconnect()
@@ -74,6 +72,11 @@ void TwsClient::nextValidId(OrderId orderId)
 {
     qDebug().nospace() << "Next Valid Id:" << orderId;
     _nextOrderId = orderId;
+    if(!_connected) {
+        _connected = true;
+        emit connectedSignal();
+        startAccountUpdates();
+    }
 }
 
 void TwsClient::requestCurrentTime() {
@@ -86,7 +89,7 @@ void TwsClient::requestCurrentTime() {
 //    c.exchange = "SMART";
 //    int reqId = requestHistoricalData(c, "", "30 D", "1 day");
 //    qDebug() << "requestHistoricalData" << reqId;
-}
+    }
 
 void TwsClient::startAccountUpdates() {
     _client->reqAccountUpdates(true, _account.accountId().toStdString());
@@ -167,9 +170,32 @@ void TwsClient::updatePortfolio( const Contract& contract, Decimal position,
     double marketPrice, double marketValue, double averageCost,
     double unrealizedPNL, double realizedPNL, const std::string& accountName)
 {
-    qDebug() << "updatePortfolio" << contract.symbol.c_str() << DecimalFunctions::decimalToDouble(position)
+    qDebug() << "updatePortfolio" << contract.secType.c_str()
+             << contract.symbol.c_str() << DecimalFunctions::decimalToDouble(position)
              << marketPrice << marketValue << averageCost
              <<unrealizedPNL << realizedPNL << accountName.c_str();
+    if(contract.secType == "OPT") {
+        qDebug() << "Option:" << contract.lastTradeDateOrContractMonth.c_str()
+                 << contract.lastTradeDate.c_str()
+                 << contract.strike
+                 << contract.right.c_str()
+                 << contract.multiplier.c_str()
+                 << contract.comboLegsDescrip.c_str();
+
+        QDate expiration = QDate::currentDate(); //TODO
+        OptionType type = contract.right == "C" ? OptionType::CALL : OptionType::PUT;
+        double mul = 100.0; //TODO
+
+        Option opt(contract.conId, contract.symbol.c_str(), DecimalFunctions::decimalToDouble(position),
+                   marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL, expiration, contract.strike,
+                   type, mul);
+        _portfolio.updatePortfolio(opt);
+
+    } else if(contract.secType == "STK") {
+        Stock stk(contract.conId, contract.symbol.c_str(), DecimalFunctions::decimalToDouble(position),
+                   marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL);
+        _portfolio.updatePortfolio(stk);
+    }
 }
 
 

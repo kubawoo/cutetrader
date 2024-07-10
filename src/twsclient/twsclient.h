@@ -8,6 +8,7 @@
 #include "EReader.h"
 #include "cache.h"
 #include "accountinfo.h"
+#include "portfolio.h"
 
 class TwsClient : public QObject, public DefaultEWrapper
 {
@@ -74,6 +75,7 @@ private:
     EReader * _reader;
     bool _connected;
     AccountInfo _account;
+    Portfolio _portfolio;
     int _requestId;
     Cache _cache;
 };

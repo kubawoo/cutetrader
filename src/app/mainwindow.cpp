@@ -63,8 +63,6 @@ void MainWindow::accountInfoUpdated(AccountInfoType type)
 {
     switch(type) {
     case AccountInfoType::NetLiquidation:
-        qDebug() << "FOOOO";
-
         ui->netLiquidation->setText(QString::number(client->accountInfo(AccountInfoType::NetLiquidation)));
         break;
     default:

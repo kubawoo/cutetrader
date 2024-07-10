@@ -1,32 +1,52 @@
 #include "accountinfo.h"
 #include <QDebug>
 
+
+QMap<QString, AccountInfoType>  AccountInfo::_MAPPINGS {
+    {"AccruedCash", AccountInfoType::AccruedCash},
+    {"AccruedDividend", AccountInfoType::AccruedDividend},
+    {"AvailableFunds", AccountInfoType::AvailableFunds},
+    {"Billable", AccountInfoType::Billable},
+    {"BuyingPower", AccountInfoType::BuyingPower},
+    {"CashBalance", AccountInfoType::CashBalance},
+    {"CorporateBondValue", AccountInfoType::CorporateBondValue},
+    {"Cushion", AccountInfoType::Cushion},
+    {"EquityWithLoanValue", AccountInfoType::EquityWithLoanValue},
+    {"ExcessLiquidity", AccountInfoType::ExcessLiquidity},
+    {"FundValue", AccountInfoType::FundValue},
+    {"FutureOptionValue", AccountInfoType::FutureOptionValue},
+    {"FuturesPNL", AccountInfoType::FuturesPNL},
+    {"GrossPositionValue", AccountInfoType::GrossPositionValue},
+    {"InitMarginReq", AccountInfoType::InitMarginReq},
+    {"Leverage-S", AccountInfoType::Leverage},
+    {"MaintMarginReq", AccountInfoType::MaintMarginReq},
+    {"NetDividend", AccountInfoType::NetDividend},
+    {"NetLiquidation", AccountInfoType::NetLiquidation},
+    {"OptionMarketValue", AccountInfoType::OptionMarketValue},
+    {"RealizedPnL", AccountInfoType::RealizedPnL},
+    {"StockMarketValue", AccountInfoType::StockMarketValue},
+    {"TBondValue", AccountInfoType::TBondValue},
+    {"TBillValue", AccountInfoType::TBillValue},
+    {"TotalCashBalance", AccountInfoType::TotalCashBalance},
+    {"UnrealizedPnL", AccountInfoType::UnrealizedPnL}
+};
+
 AccountInfo::AccountInfo()
     : _accountId(""),
       _baseCurrency("USD")
 {
-    _mappings.insert("AccruedDividend", AccountInfoType::AccruedDividend);
-    _mappings.insert("CashBalance", AccountInfoType::CashBalance);
-    _mappings.insert("Cushion", AccountInfoType::Cushion);
-    _mappings.insert("ExcessLiquidity", AccountInfoType::ExcessLiquidity);
-    _mappings.insert("FuturesPNL", AccountInfoType::FuturesPNL);
-    _mappings.insert("InitMarginReq", AccountInfoType::InitMarginReq);
-    _mappings.insert("MaintMarginReq", AccountInfoType::MaintMarginReq);
-    _mappings.insert("NetLiquidation", AccountInfoType::NetLiquidation);
-    _mappings.insert("OptionMarketValue", AccountInfoType::OptionMarketValue);
-    _mappings.insert("UnrealizedPnL", AccountInfoType::UnrealizedPnL);
 }
 
 AccountInfoType AccountInfo::updateValue(const QString &type, const QString & value)
 {
-    if(!_mappings.contains(type)) {
+    if(!_MAPPINGS.contains(type)) {
         return AccountInfoType::NONE;
     }
 
     bool ok;
     double val = value.toDouble(&ok);
     if(ok) {
-        AccountInfoType t = _mappings.value(type);
+        AccountInfoType t = _MAPPINGS.value(type);
         _values.insert(t, val);
         qDebug() << "Updated" << type << "to" << val;
         return t;
