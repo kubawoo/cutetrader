@@ -10,8 +10,7 @@ void BlackScholesTest::test()
     double volatility = 0.3;
     double riskFreeRate = 0.1;
 
-    quant::BlackScholes model;
-
-    double modelValue = model.calculate(stockPrice, strike, dte, volatility, riskFreeRate);
-    kCompare(modelValue, 0.7746, 4);
+    auto result = quant::BlackScholes::calculate(stockPrice, strike, dte, volatility, riskFreeRate);
+    kCompare(result.value(), 0.7746, 4);
+    kCompare(result.delta(), 0.2513, 4);
 }

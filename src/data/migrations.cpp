@@ -1,5 +1,12 @@
 #include "migrations.h"
 
+namespace data {
+
+DbMigration::~DbMigration()
+{}
+
+DbMigration::DbMigration()
+{}
 
 const int Migration_001::id() const
 {
@@ -54,4 +61,6 @@ const QString Migration_003::sql() const
             " ON DELETE CASCADE ON UPDATE NO ACTION,"
             "UNIQUE(security_id1, security_id2) ON CONFLICT REPLACE"
             ");";
+}
+
 }

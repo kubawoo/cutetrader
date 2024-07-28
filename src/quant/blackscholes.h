@@ -3,15 +3,26 @@
 
 namespace quant {
 
-class BlackScholes
-{
+class BlackSholesResult {
 public:
-    BlackScholes();
-
-    double calculate(double stockPrice, double strike, int dte, double volatility, double riskFreeRate);
+    BlackSholesResult(double value, double delta);
+    double value() const;
+    double delta() const;
 
 private:
-    double cumulativeNormalDistribution(double x);
+    double _value;
+    double _delta;
+};
+
+class BlackScholes
+{
+private:
+    BlackScholes();
+public:
+    static BlackSholesResult calculate(double stockPrice, double strike, int dte, double volatility, double riskFreeRate);
+
+private:
+    static double cumulativeNormalDistribution(double x);
 };
 
 }

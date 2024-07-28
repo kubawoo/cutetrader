@@ -20,3 +20,4 @@ add_subdirectory(src/app)
 
 add_subdirectory(test/testrunner)
 add_subdirectory(test/quant)
+add_subdirectory(test/data)

@@ -6,12 +6,28 @@
 
 namespace quant {
 
+BlackSholesResult::BlackSholesResult(double value, double delta)
+    : _value(value),
+    _delta(delta)
+{}
+
+double BlackSholesResult::value() const
+{
+    return _value;
+}
+
+double BlackSholesResult::delta() const
+{
+    return _delta;
+}
+
+
 BlackScholes::BlackScholes()
 {
 
 }
 
-double BlackScholes::calculate(double p, double s, int dte, double v, double r)
+BlackSholesResult BlackScholes::calculate(double p, double s, int dte, double v, double r)
 {
     double t = dte / 365.0;
     double d1 = (log(p/s) + (r + pow(v, 2)/2) * t) / (v * sqrt(t));
@@ -20,7 +36,8 @@ double BlackScholes::calculate(double p, double s, int dte, double v, double r)
     double nd1 = cumulativeNormalDistribution(d1);
     double nd2 = cumulativeNormalDistribution(d2);
 
-    return p * nd1 - s*exp(-r*t) * nd2;
+    double value = p * nd1 - s*exp(-r*t) * nd2;
+    return BlackSholesResult(value, nd1);
 }
 
 double BlackScholes::cumulativeNormalDistribution(double x)
@@ -33,6 +50,7 @@ double BlackScholes::cumulativeNormalDistribution(double x)
 
     return x < 0 ? 1.0 - w : w;
 }
+
 
 
 }

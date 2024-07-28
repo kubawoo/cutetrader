@@ -1,5 +1,7 @@
 #include "model.h"
 
+namespace data {
+
 Security::Security()
 {
 
@@ -163,4 +165,6 @@ Quote &Quote::withVolume(long newVolume)
 {
     _volume = newVolume;
     return *this;
+}
+
 }

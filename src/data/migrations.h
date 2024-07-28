@@ -1,7 +1,20 @@
-#ifndef MIGRATIONS_H
-#define MIGRATIONS_H
+#ifndef DATA_MIGRATIONS_H
+#define DATA_MIGRATIONS_H
 
-#include "dbbuilder.h"
+#include <QString>
+
+namespace data {
+
+class DbMigration
+{
+public:
+    virtual ~DbMigration();
+    virtual const int id() const = 0;
+    virtual const QString sql() const = 0;
+protected:
+    DbMigration();
+};
+
 
 class Migration_001 : public DbMigration
 {
@@ -26,5 +39,5 @@ public:
     const QString sql() const;
 };
 
-
-#endif // MIGRATIONS_H
+}
+#endif // DATA_MIGRATIONS_H

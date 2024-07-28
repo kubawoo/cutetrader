@@ -1,8 +1,11 @@
-#ifndef MODEL_H
-#define MODEL_H
+#ifndef DATA_MODEL_H
+#define DATA_MODEL_H
 
 #include <QString>
 #include <QDate>
+
+namespace data {
+
 
 class Security
 {
@@ -69,4 +72,5 @@ private:
     long _volume;
 };
 
-#endif // MODEL_H
+}
+#endif // DATA_MODEL_H

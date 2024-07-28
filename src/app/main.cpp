@@ -27,9 +27,6 @@ void setupDatabase() {
     db.setDatabaseName("cutetrader.db");
     db.open();
 
-    DbBuilder dbBuilder(db);
-    dbBuilder.addMigration(new Migration_001);
-    dbBuilder.addMigration(new Migration_002);
-    dbBuilder.addMigration(new Migration_003);
+    data::DbBuilder dbBuilder(db);
     dbBuilder.runMigrations();
 }

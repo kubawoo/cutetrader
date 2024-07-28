@@ -1,13 +1,9 @@
 #include "dbbuilder.h"
+#include "utils.h"
 
-#include <QSqlError>
 #include <QDateTime>
 
-DbMigration::~DbMigration()
-{}
-
-DbMigration::DbMigration()
-{}
+namespace data {
 
 DbBuilder::DbBuilder(QSqlDatabase & db)
     :_db(db)
@@ -17,7 +13,17 @@ DbBuilder::DbBuilder(QSqlDatabase & db)
                       "timestamp TEXT NOT NULL"
                       ");";
     qDebug() << "Creating initial structure";
-    _initialized = executeSql(initSql);
+    _initialized = Utils::execute(_db, initSql);
+    if(_initialized) {
+        addMigrations();
+    }
+}
+
+void DbBuilder::addMigrations()
+{
+    addMigration(new Migration_001());
+    addMigration(new Migration_002());
+    addMigration(new Migration_003());
 }
 
 
@@ -44,7 +50,7 @@ void DbBuilder::runMigrations()
         }
 
         qDebug() << "Running migration" << migration->id();
-        bool ok = executeSql(migration->sql());
+        bool ok = Utils::execute(_db, migration->sql());
         if(ok) {
             saveMigration(migration);
         } else {
@@ -62,14 +68,12 @@ void DbBuilder::addMigration(DbMigration *migration)
 QList<int> DbBuilder::findExecutedMigrations()
 {
     QString sql = "SELECT id FROM _migrations;";
-    QSqlQuery query(_db);
-    query.exec(sql);
+    auto results = Utils::query(_db, sql);
 
     QList<int> ids;
 
-    while (query.next()) {
-        int id = query.value(0).toInt();
-        ids.append(id);
+    for(auto row : results) {
+        ids.append(row[0].toInt());
     }
 
     return ids;
@@ -77,24 +81,12 @@ QList<int> DbBuilder::findExecutedMigrations()
 
 void DbBuilder::saveMigration(DbMigration *migration)
 {
-    QString sql = "INSERT INTO _migrations(id, timestamp) VALUES (";
-    sql.append(QString::number(migration->id()));
-    sql.append(", \"");
-    sql.append(QDateTime::currentDateTime().toString(Qt::ISODateWithMs));
-    sql.append("\");");
+    QString sql = QString("INSERT INTO _migrations(id, timestamp) VALUES (%1, \"%2\");")
+            .arg(QString::number(migration->id()))
+            .arg(QDateTime::currentDateTime().toString(Qt::ISODateWithMs));
+
     QSqlQuery query(_db);
-    executeSql(sql);
+    Utils::execute(_db, sql);
 }
 
-bool DbBuilder::executeSql(const QString &sql)
-{
-    qDebug() << "Executing SQL"<< sql;
-    QSqlQuery query(_db);
-    bool ok = query.exec(sql);
-    if(!ok) {
-        qDebug() << "Failed to execute" << query.lastQuery()
-                 << "Error:" << query.lastError().text();
-    }
-    query.finish();
-    return ok;
 }
