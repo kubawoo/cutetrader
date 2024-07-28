@@ -123,10 +123,32 @@ void CalculateTest::testVariance()
 
 void CalculateTest::testVarianceExpectedValue()
 {
-    std::vector<int> x{2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    std::vector<int> x{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     std::vector<double> p{1/36.0, 2/36.0, 3/36.0, 4/36.0, 5/36.0, 6/36.0, 5/36.0, 4/36.0, 3/36.0, 2/36.0, 1/36.0};
 
     double variance = quant::Calculate::variance(x, p);
     kCompare(variance, 5.833333);
+}
+
+void CalculateTest::testStdDev()
+{
+    std::vector<int> x{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    std::vector<double> p{1/36.0, 2/36.0, 3/36.0, 4/36.0, 5/36.0, 6/36.0, 5/36.0, 4/36.0, 3/36.0, 2/36.0, 1/36.0};
+
+    double stdDev = quant::Calculate::stdDev(x, p);
+    kCompare(stdDev, 2.41522938);
+}
+
+void CalculateTest::testSkew()
+{
+    double skew = quant::Calculate::skew(std::vector<double> {1, 2, 3, 4, 5, 6});
+    kCompare(skew, 0.0);
+}
+
+void CalculateTest::testPolynomial()
+{
+    std::vector<int> a{2, -6, 2, -1};
+    double result = quant::Calculate::polynomial(a, 3.0);
+    QCOMPARE(result, 5);
 }
 

@@ -234,6 +234,8 @@ namespace MultiTests {
 
 
         QDateTime start = QDateTime::currentDateTime();
+        qWarning() << qPrintable(
+                QString("Started at %1").arg(start.toString()));
         casesToRun = selectTestCasesToRun(arguments);
 
         // If option -functions, need a global running
@@ -260,8 +262,9 @@ namespace MultiTests {
             updateOutputFile(arguments,caseIndex);
         }
 
-        int nbMsecs = start.msecsTo( QDateTime::currentDateTime() );
-        int nbSecs = start.secsTo( QDateTime::currentDateTime() );
+        QDateTime finish = QDateTime::currentDateTime();
+        int nbMsecs = start.msecsTo(finish);
+        int nbSecs = start.secsTo(finish);
 
         if( ret>0 ){
             qCritical() << "========================================";
@@ -276,6 +279,8 @@ namespace MultiTests {
             qWarning() << qPrintable(
                     QString("======= All tests succeed (%1 tests cases)  =======").arg(casesToRun.size()));
         }
+        qWarning() << qPrintable(
+                QString("Finished at %1").arg(finish.toString()));
         qWarning() << qPrintable(
                 QString("Executed in %1 seconds (%2 ms)").arg(nbSecs).arg(nbMsecs)
                 );

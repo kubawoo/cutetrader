@@ -13,7 +13,9 @@ private slots:
     void testExpectedValue();
     void testVariance();
     void testVarianceExpectedValue();
-
+    void testStdDev();
+    void testSkew();
+    void testPolynomial();
 };
 
 
