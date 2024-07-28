@@ -152,3 +152,62 @@ void CalculateTest::testPolynomial()
     QCOMPARE(result, 5);
 }
 
+void CalculateTest::testCorrelation()
+{
+    QList<double> x, y;
+    x.append(15.0);
+    x.append(18.0);
+    x.append(21.0);
+    x.append(24.0);
+    x.append(27.0);
+
+    y.append(25.0);
+    y.append(25.0);
+    y.append(27.0);
+    y.append(31.0);
+    y.append(32.0);
+
+    double correlation = quant::Calculate::correlation(x, y);
+    kCompare(correlation, 0.953462589246);
+}
+
+void CalculateTest::testBeta1()
+{
+    QList<qreal> x, y;
+    x.append(0); y.append(0);
+    x.append(1); y.append(1);
+    x.append(2); y.append(2);
+    x.append(3); y.append(3);
+    x.append(4); y.append(4);
+
+    double result = quant::Calculate::beta(x, y);
+    QCOMPARE(result, 1.0);
+}
+
+void CalculateTest::testBeta2()
+{
+    QList<qreal> x, y;
+    x.append(0); y.append(0);
+    x.append(1); y.append(-1);
+    x.append(2); y.append(-2);
+    x.append(3); y.append(-3);
+    x.append(4); y.append(-4);
+
+    double result = quant::Calculate::beta(x, y);
+    QCOMPARE(result, -1.0);
+}
+
+void CalculateTest::testBeta3()
+{
+    QList<qreal> x, y;
+    x.append(0); y.append(5);
+    x.append(1); y.append(4);
+    x.append(2); y.append(3);
+    x.append(3); y.append(2);
+    x.append(4); y.append(1);
+
+    double result = quant::Calculate::beta(x, y);
+    QCOMPARE(result, -1.0);
+}
+
+

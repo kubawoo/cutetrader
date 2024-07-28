@@ -16,6 +16,10 @@ private slots:
     void testStdDev();
     void testSkew();
     void testPolynomial();
+    void testCorrelation();
+    void testBeta1();
+    void testBeta2();
+    void testBeta3();
 };
 
 
