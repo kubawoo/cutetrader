@@ -4,6 +4,7 @@
 
 #include <QTest>
 
+
 class DbBuilderTest : public QObject
 {
     Q_OBJECT

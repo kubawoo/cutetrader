@@ -20,13 +20,16 @@ bool Utils::execute(QSqlDatabase &db, const QString &sql)
 
 QList<DbResult> Utils::query(QSqlDatabase &db, const QString &sql)
 {
-    QSqlQuery query(db);
-    bool ok = query.exec(sql);
-    if(!ok) {
-
-    }
+    qDebug() << "Executing SQL"<< sql;
 
     QList<DbResult> results;
+    QSqlQuery query(db);
+
+    bool ok = doExecute(db, query, sql);
+    if(!ok) {
+        return results;
+    }
+
     int columns = query.record().count();
     if(columns <= 0) {
         qDebug() << "No columns returned for" <<sql;

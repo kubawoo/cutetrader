@@ -3,7 +3,10 @@
 
 #include "../testrunner/multitests.h"
 #include "test_dbbuilder.h"
+#include "test_datamanager.h"
+
 
 TEST_DECLARE(DbBuilderTest);
+TEST_DECLARE(DataManagerTest);
 
 #endif // QUANT_TESTS_H

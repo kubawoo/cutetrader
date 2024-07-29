@@ -1,17 +1,12 @@
 /*
- * https://github.com/e-j/qt-multiple-tests
+ * Based on https://github.com/e-j/qt-multiple-tests
  */
 
 
 #ifndef MULTITESTS_H
 #define MULTITESTS_H
 
-#if QT_VERSION >= 0x050000
 #include <QTest>
-#else
-#include <QtTest/QtTest>
-#endif
-
 #include <QList>
 #include <QString>
 #include <QSharedPointer>
@@ -19,10 +14,6 @@
 #include <QMetaObject>
 #include <QMetaMethod>
 
-#ifndef nullptr
-// If C++ is not C++11 compatible
-#define nullptr 0
-#endif
 
 namespace MultiTests {
     typedef QList<QObject*> TestCasesList;
@@ -104,11 +95,7 @@ namespace MultiTests {
                 /*|| sl.returnType() != QMetaType::Void*/ || sl.methodType() != QMetaMethod::Slot)
             return false;
         QByteArray name;
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-        name = QByteArray::fromRawData(sl.signature(),2048);
-#else
         name = sl.methodSignature();
-#endif
         if (name.isEmpty() || name.size()<2 )
             return false;
         name.remove(name.size()-2,2);
@@ -127,11 +114,7 @@ namespace MultiTests {
         for (int i = 0; i < testObj->metaObject()->methodCount(); ++i) {
             QMetaMethod sl = testObj->metaObject()->method(i);
             if (isValidTestSlot(sl)) {
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-                qDebug() << sl.signature();
-#else
                 qDebug() << sl.methodSignature();
-#endif
             }
         }
     }
@@ -228,10 +211,7 @@ namespace MultiTests {
         TestCasesList casesToRun;
         QStringList arguments = argumentsToList(argc,argv);
 
-#if QT_VERSION >= 0x050000
         qApp->setAttribute(Qt::AA_Use96Dpi, true);
-#endif
-
 
         QDateTime start = QDateTime::currentDateTime();
         qWarning() << qPrintable(

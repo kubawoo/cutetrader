@@ -63,4 +63,16 @@ const QString Migration_003::sql() const
             ");";
 }
 
+
+const int Migration_004::id() const
+{
+    return 4;
+}
+
+const QString Migration_004::sql() const
+{
+    return "CREATE UNIQUE INDEX idx_securities_symbol"
+           " ON securities (symbol);";
+}
+
 }

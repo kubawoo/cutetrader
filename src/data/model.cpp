@@ -3,6 +3,7 @@
 namespace data {
 
 Security::Security()
+    :_id(-1), _symbol("")
 {
 
 }

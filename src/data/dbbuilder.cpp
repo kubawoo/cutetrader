@@ -24,6 +24,7 @@ void DbBuilder::addMigrations()
     addMigration(new Migration_001());
     addMigration(new Migration_002());
     addMigration(new Migration_003());
+    addMigration(new Migration_004());
 }
 
 

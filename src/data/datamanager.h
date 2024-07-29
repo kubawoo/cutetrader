@@ -10,18 +10,19 @@ namespace data {
 class DataManager
 {
 public:
+    DataManager();
     DataManager(QSqlDatabase & db);
+
     bool createSecurity(const Security& security);
-//    Security getSecurity(int id);
-//    Security getSecurity(const QString & symbol);
-//    bool removeSecurity(int id);
-//    QList<Security> getAllSecurities();
+    Security getSecurity(int id);
+    Security getSecurity(const QString & symbol);
+    bool removeSecurity(int id);
+    QList<Security> getAllSecurities();
 
 private:
+    Security toSecurity(DbResult & data);
 
-//    Security toSecurity(DbResult data);
-
-    QSqlDatabase & _db;
+    QSqlDatabase _db;
 
 };
 

@@ -39,5 +39,12 @@ public:
     const QString sql() const;
 };
 
+class Migration_004 : public DbMigration
+{
+public:
+    const int id() const;
+    const QString sql() const;
+};
+
 }
 #endif // DATA_MIGRATIONS_H
