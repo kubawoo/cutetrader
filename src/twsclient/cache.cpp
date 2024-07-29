@@ -4,15 +4,11 @@
 
 CacheEntry::CacheEntry()
     : CacheEntry(0)
-{
-
-}
+{}
 
 CacheEntry::CacheEntry(long expiry)
     : _expiry(expiry)
-{
-
-}
+{}
 
 long CacheEntry::expiry()
 {
@@ -28,9 +24,8 @@ void Cache::cleanup()
 {
     qDebug() << "Before cleanup" << _cache.keys();
     long now = QDateTime::currentSecsSinceEpoch();
-    _cache.removeIf([now](std::pair<const long &, CacheEntry &> entry)
-                    {
-                        return entry.second.expiry() < now;
+    _cache.removeIf([now](std::pair<const long &, CacheEntry &> entry) {
+        return entry.second.expiry() < now;
     });
     qDebug() << "After cleanup" << _cache.keys();
 
@@ -48,4 +43,9 @@ void Cache::addBar(long requestId, const Bar &bar)
 QList<Bar> *Cache::bars(long requestId)
 {
     return _cache[requestId].bars();
+}
+
+void Cache::remove(long requestId)
+{
+    _cache.remove(requestId);
 }

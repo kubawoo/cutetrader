@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include <dbbuilder.h>
 
+#include <QSqlDatabase>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -8,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
       client(new TwsClient),
       readerThread(new TwsReaderThread(client))
 {
+    setupDatabase();
     client->moveToThread(readerThread);
     ui->setupUi(this);
 
@@ -22,7 +25,6 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete ui;
-
 }
 
 void MainWindow::connectClient() {
@@ -57,6 +59,7 @@ void MainWindow::quit()
     delete readerThread;
     client->disconnect();
     delete client;
+    _db.close();
 }
 
 void MainWindow::accountInfoUpdated(AccountInfoType type)
@@ -68,4 +71,15 @@ void MainWindow::accountInfoUpdated(AccountInfoType type)
     default:
         break;
     }
+}
+
+void MainWindow::setupDatabase()
+{
+    _db = QSqlDatabase::addDatabase("QSQLITE");
+    _db.setDatabaseName("cutetrader.db");
+    _db.open();
+
+    data::DbBuilder dbBuilder(_db);
+    dbBuilder.runMigrations();
+    _dataManager = data::DataManager(_db);
 }

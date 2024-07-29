@@ -111,6 +111,11 @@ void TwsClient::requestManagedAccounts()
     _client->reqManagedAccts();
 }
 
+void TwsClient::cleanHistoricalData(long requestId)
+{
+    _cache.remove(requestId);
+}
+
 long TwsClient::requestHistoricalData(const Contract &contract, const QString &endDateTime,
                                       const QString &durationString, const QString &barSizeSetting)
 {

@@ -23,7 +23,6 @@ private:
     Security toSecurity(DbResult & data);
 
     QSqlDatabase _db;
-
 };
 
 }

@@ -24,6 +24,7 @@ public:
     void cleanup();
     void addBar(long requestId, const Bar &bar);
     QList<Bar> *bars(long requestId);
+    void remove(long requestId);
 private:
     QMap<long, CacheEntry> _cache;
 };

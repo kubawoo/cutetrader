@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <twsclient.h>
 #include <twsreaderthread.h>
+#include <QSqlDatabase>
+#include <datamanager.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -24,8 +26,12 @@ public slots:
     void accountInfoUpdated(AccountInfoType type);
 
 private:
+    void setupDatabase();
+
     Ui::MainWindow *ui;
     TwsClient * client;
     TwsReaderThread * readerThread;
+    QSqlDatabase _db;
+    data::DataManager _dataManager;
 };
 #endif // MAINWINDOW_H

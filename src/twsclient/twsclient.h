@@ -26,6 +26,7 @@ public slots:
     void startPositionsUpdates();
     void stopPositionsUpdates();
     void requestManagedAccounts();
+    void cleanHistoricalData(long requestId);
 
 public:
     bool connect(const QString& host, int port, int clientId = 0);
