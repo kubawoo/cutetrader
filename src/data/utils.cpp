@@ -18,15 +18,16 @@ bool Utils::execute(QSqlDatabase &db, const QString &sql)
     return ok;
 }
 
-QList<DbResult> Utils::query(QSqlDatabase &db, const QString &sql)
+QList<DbResult> Utils::query(QSqlDatabase &db, const QString &sql, bool *ok)
 {
     qDebug() << "Executing SQL"<< sql;
 
     QList<DbResult> results;
     QSqlQuery query(db);
 
-    bool ok = doExecute(db, query, sql);
-    if(!ok) {
+    *ok = false;
+    bool ret = doExecute(db, query, sql);
+    if(!ret) {
         return results;
     }
 
@@ -46,6 +47,7 @@ QList<DbResult> Utils::query(QSqlDatabase &db, const QString &sql)
 
     query.finish();
 
+    *ok = true;
     return results;
 }
 

@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QList>
+#include <QPair>
 #include <QSqlDatabase>
 #include "migrations.h"
 namespace data {
@@ -12,10 +13,10 @@ class DbBuilder
 public:
     DbBuilder(QSqlDatabase & db);
     ~DbBuilder();
-    void runMigrations();
+    bool runMigrations();
 
 private:
-    QList<int> findExecutedMigrations();
+    QMap<int, QString> findExecutedMigrations(bool *ok = nullptr);
     void saveMigration(DbMigration * migration);
     void addMigrations();
     void addMigration(DbMigration * migration);

@@ -35,7 +35,8 @@ bool TwsClient::connect(const QString &host, int port, int clientId)
     bool connected = _client->eConnect( host.toStdString().c_str(), port, clientId);
 
     if (connected) {
-        qDebug().nospace() << "Connected to " << _client->host().c_str() << ":" << _client->port();
+        qDebug().nospace() << "Connected to " << _client->host().c_str() << ":" << _client->port()
+                           << "Server version: " << _client->EClient::serverVersion();
         _reader = new EReader(_client, &_readerSignal);
         _reader->start();
     } else {

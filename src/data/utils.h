@@ -14,7 +14,7 @@ private:
     Utils();
 public:
     static bool execute(QSqlDatabase &db, const QString & sql);
-    static QList<DbResult> query(QSqlDatabase &db, const QString & sql);
+    static QList<DbResult> query(QSqlDatabase &db, const QString & sql, bool *ok = nullptr);
 
 private:
     static bool doExecute(QSqlDatabase &db, QSqlQuery & query, const QString & sql);

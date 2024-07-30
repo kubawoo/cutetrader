@@ -1,7 +1,9 @@
 #include "dbbuilder.h"
 #include "utils.h"
 
+#include <QException>
 #include <QDateTime>
+#include <QPair>
 
 namespace data {
 
@@ -10,6 +12,7 @@ DbBuilder::DbBuilder(QSqlDatabase & db)
 {
     QString initSql = "CREATE TABLE IF NOT EXISTS _migrations ("
                       "id INTEGER PRIMARY KEY,"
+                      "sha256hash TEXT NOT NULL,"
                       "timestamp TEXT NOT NULL"
                       ");";
     qDebug() << "Creating initial structure";
@@ -36,28 +39,44 @@ DbBuilder::~DbBuilder()
     _migrations.clear();
 }
 
-void DbBuilder::runMigrations()
+bool DbBuilder::runMigrations()
 {
     if(!_initialized) {
         qDebug() << "Not initialized, not running";
-        return;
+        return false;
     }
 
-    QList<int> executedMigrations = findExecutedMigrations();
-    foreach (auto migration, _migrations) {
+    bool ok;
+    QMap<int, QString> executedMigrations = findExecutedMigrations(&ok);
+    if(!ok) {
+        qDebug() << "Failed to find executed migratins";
+        return false;
+    }
+
+    for(auto migration : _migrations) {
         if(executedMigrations.contains(migration->id())) {
-            qDebug() << "Migration" << migration->id() << "already executed";
-            continue;
+            QString hash = executedMigrations[migration->id()];
+            if(hash == migration->hash()) {
+                qDebug() << "Migration" << migration->id() << "already executed";
+                continue;
+            } else {
+                qDebug() << "Migration" << migration->id() << "already executed, but hashes do not match"
+                         << "Expected:" << migration->hash() << "Actual: " << hash;
+                return false;
+            }
         }
 
         qDebug() << "Running migration" << migration->id();
-        bool ok = Utils::execute(_db, migration->sql());
-        if(ok) {
-            saveMigration(migration);
-        } else {
-            break;
+        for(auto sql : migration->sql()) {
+            bool ok = Utils::execute(_db, sql);
+            if(!ok) {
+                return false;
+            }
         }
+
+        saveMigration(migration);
     }
+    return true;
 }
 
 void DbBuilder::addMigration(DbMigration *migration)
@@ -66,24 +85,25 @@ void DbBuilder::addMigration(DbMigration *migration)
 }
 
 
-QList<int> DbBuilder::findExecutedMigrations()
+QMap<int, QString> DbBuilder::findExecutedMigrations(bool *ok)
 {
-    QString sql = "SELECT id FROM _migrations;";
-    auto results = Utils::query(_db, sql);
+    QString sql = "SELECT id, sha256hash FROM _migrations;";
+    auto results = Utils::query(_db, sql, ok);
 
-    QList<int> ids;
+    QMap<int, QString> migrations;
 
     for(auto row : results) {
-        ids.append(row[0].toInt());
+        migrations[row[0].toInt()] = row[1].toString();
     }
 
-    return ids;
+    return migrations;
 }
 
 void DbBuilder::saveMigration(DbMigration *migration)
 {
-    QString sql = QString("INSERT INTO _migrations(id, timestamp) VALUES (%1, \"%2\");")
+    QString sql = QString("INSERT INTO _migrations(id, sha256hash, timestamp) VALUES (%1, \"%2\", \"%3\");")
             .arg(QString::number(migration->id()))
+            .arg(migration->hash())
             .arg(QDateTime::currentDateTime().toString(Qt::ISODateWithMs));
 
     QSqlQuery query(_db);

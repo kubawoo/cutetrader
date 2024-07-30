@@ -11,7 +11,8 @@ void DbBuilderTest::test()
     db.open();
 
     data::DbBuilder dbBuilder(db);
-    dbBuilder.runMigrations();
+    bool ok = dbBuilder.runMigrations();
+    QVERIFY(ok);
 
     auto results = data::Utils::query(db, "SELECT id FROM _migrations;");
     QCOMPARE(results.size(), 4);

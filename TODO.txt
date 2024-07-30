@@ -1,0 +1,8 @@
+ 1) Move AccountInfo and Portfolio to separate module
+ 2) Finish Quotes implementation in DataManager
+ 3) Add HV and IV to quotes
+ 4) Implement calcOptValue call
+ 5) Display Portfolio positions in the app
+ 6) Load data into DB
+ 7) Calculate beta and correlation
+ 8)

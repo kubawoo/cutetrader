@@ -1,3 +1,4 @@
 CMakeLists.txt.user
 *.log
 build/
+*.o

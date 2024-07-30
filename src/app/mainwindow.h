@@ -16,7 +16,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(QApplication *a, QWidget *parent = nullptr);
     ~MainWindow();
 
 public slots:
@@ -25,13 +25,18 @@ public slots:
     void quit();
     void accountInfoUpdated(AccountInfoType type);
 
+private slots:
+    void init();
+
 private:
-    void setupDatabase();
+    bool setupDatabase();
 
     Ui::MainWindow *ui;
     TwsClient * client;
     TwsReaderThread * readerThread;
     QSqlDatabase _db;
     data::DataManager _dataManager;
+    QApplication * _app;
+
 };
 #endif // MAINWINDOW_H

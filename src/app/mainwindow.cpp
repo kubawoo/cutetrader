@@ -1,16 +1,16 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include <dbbuilder.h>
-
+#include <QException>
+#include <QMessageBox>
 #include <QSqlDatabase>
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent),
+MainWindow::MainWindow(QApplication * app, QWidget *parent)
+    : QMainWindow(parent), _app(app),
       ui(new Ui::MainWindow),
       client(new TwsClient),
       readerThread(new TwsReaderThread(client))
 {
-    setupDatabase();
     client->moveToThread(readerThread);
     ui->setupUi(this);
 
@@ -20,6 +20,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(client, &TwsClient::accountInfoUpdated, this, &MainWindow::accountInfoUpdated);
 
     readerThread->start();
+
+    QTimer::singleShot(0, this, &MainWindow::init);
 }
 
 MainWindow::~MainWindow()
@@ -73,13 +75,22 @@ void MainWindow::accountInfoUpdated(AccountInfoType type)
     }
 }
 
-void MainWindow::setupDatabase()
+void MainWindow::init()
+{
+    if(!setupDatabase()) {
+        auto ret = QMessageBox::critical(this, "Error", "Failed to initialize database",
+                                         QMessageBox::StandardButton::Close);
+        _app->quit();
+    }
+}
+
+bool MainWindow::setupDatabase()
 {
     _db = QSqlDatabase::addDatabase("QSQLITE");
     _db.setDatabaseName("cutetrader.db");
     _db.open();
 
-    data::DbBuilder dbBuilder(_db);
-    dbBuilder.runMigrations();
     _dataManager = data::DataManager(_db);
+    data::DbBuilder dbBuilder(_db);
+    return dbBuilder.runMigrations();
 }
