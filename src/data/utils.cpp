@@ -25,7 +25,10 @@ QList<DbResult> Utils::query(QSqlDatabase &db, const QString &sql, bool *ok)
     QList<DbResult> results;
     QSqlQuery query(db);
 
-    *ok = false;
+    if(ok) {
+        *ok = false;
+    }
+
     bool ret = doExecute(db, query, sql);
     if(!ret) {
         return results;
@@ -47,7 +50,9 @@ QList<DbResult> Utils::query(QSqlDatabase &db, const QString &sql, bool *ok)
 
     query.finish();
 
-    *ok = true;
+    if(ok) {
+        *ok = true;
+    }
     return results;
 }
 

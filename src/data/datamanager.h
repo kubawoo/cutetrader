@@ -21,6 +21,24 @@ public:
 
 private:
     Security toSecurity(DbResult & data);
+    Quote toQuote(DbResult & data);
+
+    template <typename T, typename P>
+    bool setValue(T& t, void (T::*setter)(P), QVariant& d, P (QVariant::*getter)(bool *) const) {
+        bool ok;
+        P value = (d.*getter)(&ok);
+        if(ok) {
+            (t.*setter)(value);
+        }
+        return ok;
+    }
+
+    template <typename T, typename P>
+    bool setValue(T& t, void (T::*setter)(const P&), QVariant &d, P (QVariant::*getter)() const) {
+        P value = (d.*getter)();
+        (t.*setter)(value);
+        return true;
+    }
 
     QSqlDatabase _db;
 };

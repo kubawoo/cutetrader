@@ -5,14 +5,11 @@ namespace data {
 
 DataManager::DataManager()
     :_db(QSqlDatabase::database())
-{
-}
+{}
 
 DataManager::DataManager(QSqlDatabase &db)
     :_db(db)
-{
-
-}
+{}
 
 bool DataManager::createSecurity(const Security &security)
 {
@@ -60,13 +57,45 @@ QList<Security> DataManager::getAllSecurities()
 
 Security DataManager::toSecurity(DbResult &data)
 {
-    bool ok;
-    int id = data[0].toInt(&ok);
+    Security security;
+
+    bool ok = setValue(security, &Security::setId, data[0], &QVariant::toInt);
+    ok &= setValue(security, &Security::setSymbol, data[1], &QVariant::toString);
     if(!ok) {
         return Security();
     }
-    QString symbol = data[1].toString();
-    return Security().withId(id).withSymbol(symbol);
+    return security;
+}
+
+/*
+ *
+                           "id INTEGER PRIMARY KEY,"
+                           "security_id  INTEGER NOT NULL,"
+                           "date TEXT NOT NULL,"
+                           "open REAL NOT NULL,"
+                           "high REAL NOT NULL,"
+                           "low REAL NOT NULL,"
+                           "close REAL NOT NULL,"
+                           "volume INTEGER NOT NULL,"
+*/
+
+Quote DataManager::toQuote(DbResult &data)
+{
+    Quote quote;
+
+    bool ok = setValue(quote, &Quote::setId, data[0], &QVariant::toInt);
+    ok &= setValue(quote, &Quote::setSecurityId, data[1], &QVariant::toInt);
+    ok &= setValue(quote, &Quote::setDate, data[2], &QVariant::toDate);
+    ok &= setValue(quote, &Quote::setOpen, data[3], &QVariant::toDouble);
+    ok &= setValue(quote, &Quote::setHigh, data[3], &QVariant::toDouble);
+    ok &= setValue(quote, &Quote::setLow, data[3], &QVariant::toDouble);
+    ok &= setValue(quote, &Quote::setClose, data[3], &QVariant::toDouble);
+    ok &= setValue(quote, &Quote::setVolume, data[0], &QVariant::toInt);
+
+    if(!ok) {
+        return Quote();
+    }
+    return quote;
 }
 
 

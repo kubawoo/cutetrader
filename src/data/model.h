@@ -33,9 +33,9 @@ public:
     void setId(int newId);
     Quote& withId(int newId);
 
-    QString securityId() const;
-    void setSecurityId(const QString &newSecurityId);
-    Quote& withSecurityId(const QString &newSecurityId);
+    int securityId() const;
+    void setSecurityId(int newSecurityId);
+    Quote& withSecurityId(int newSecurityId);
 
     QDate date() const;
     void setDate(const QDate &newDate);
@@ -57,19 +57,19 @@ public:
     void setHigh(double newHigh);
     Quote& withHigh(double newHigh);
 
-    long volume() const;
-    void setVolume(long newVolume);
-    Quote& withVolume(long newVolume);
+    int volume() const;
+    void setVolume(int newVolume);
+    Quote& withVolume(int newVolume);
 
 private:
     int _id;
-    QString _securityId;
+    int _securityId;
     QDate _date;
     double _open;
     double _close;
     double _low;
     double _high;
-    long _volume;
+    int _volume;
 };
 
 }

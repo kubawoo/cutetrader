@@ -40,6 +40,10 @@ Security &Security::withSymbol(const QString &symbol)
     return *this;
 }
 
+Quote::Quote()
+{
+}
+
 int Quote::id() const
 {
     return _id;
@@ -56,17 +60,17 @@ Quote &Quote::withId(int newId)
     return *this;
 }
 
-QString Quote::securityId() const
+int Quote::securityId() const
 {
     return _securityId;
 }
 
-void Quote::setSecurityId(const QString &newSecurityId)
+void Quote::setSecurityId(int newSecurityId)
 {
     _securityId = newSecurityId;
 }
 
-Quote &Quote::withSecurityId(const QString &newSecurityId)
+Quote &Quote::withSecurityId(int newSecurityId)
 {
     _securityId = newSecurityId;
     return *this;
@@ -152,17 +156,17 @@ Quote &Quote::withHigh(double newHigh)
     return *this;
 }
 
-long Quote::volume() const
+int Quote::volume() const
 {
     return _volume;
 }
 
-void Quote::setVolume(long newVolume)
+void Quote::setVolume(int newVolume)
 {
     _volume = newVolume;
 }
 
-Quote &Quote::withVolume(long newVolume)
+Quote &Quote::withVolume(int newVolume)
 {
     _volume = newVolume;
     return *this;
