@@ -19,6 +19,9 @@ public:
     bool removeSecurity(int id);
     QList<Security> getAllSecurities();
 
+    bool createQuote(const Quote& quote);
+    QList<Quote> getQuotes(const Security & security);
+
 private:
     Security toSecurity(DbResult & data);
     Quote toQuote(DbResult & data);

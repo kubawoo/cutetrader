@@ -49,7 +49,7 @@ const QStringList Migration_002::sql() const
                            "low REAL NOT NULL,"
                            "close REAL NOT NULL,"
                            "volume INTEGER NOT NULL,"
-                           "FOREIGN KEY (security_id) REFERENCES securities (security_id)"
+                           "FOREIGN KEY (security_id) REFERENCES securities (id)"
                            " ON DELETE CASCADE ON UPDATE NO ACTION,"
                            "UNIQUE(security_id, date) ON CONFLICT REPLACE"
                            ");"});
@@ -68,9 +68,9 @@ const QStringList Migration_003::sql() const
                            "security_id2  INTEGER NOT NULL,"
                            "correlation REAL,"
                            "beta REAL,"
-                           "FOREIGN KEY (security_id1) REFERENCES securities (security_id)"
+                           "FOREIGN KEY (security_id1) REFERENCES securities (id)"
                            " ON DELETE CASCADE ON UPDATE NO ACTION,"
-                           "FOREIGN KEY (security_id2) REFERENCES securities (security_id)"
+                           "FOREIGN KEY (security_id2) REFERENCES securities (id)"
                            " ON DELETE CASCADE ON UPDATE NO ACTION,"
                            "UNIQUE(security_id1, security_id2) ON CONFLICT REPLACE"
                            ");"});

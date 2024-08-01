@@ -11,20 +11,36 @@ void DbBuilderTest::test()
     db.open();
 
     data::DbBuilder dbBuilder(db);
-    bool ok = dbBuilder.runMigrations();
+
+    //check foreign keys support
+    bool ok;
+    auto results = data::Utils::query(db, "PRAGMA foreign_keys;", &ok);
+    QVERIFY(ok);
+    QCOMPARE(results[0][0].toInt(&ok), 1);
     QVERIFY(ok);
 
-    auto results = data::Utils::query(db, "SELECT id FROM _migrations;");
+    ok = dbBuilder.runMigrations();
+    QVERIFY(ok);
+
+    results = data::Utils::query(db, "SELECT id FROM _migrations;");
     QCOMPARE(results.size(), 4);
 
     QList<int> ids;
     for(auto row : results) {
-        ids.append(row[0].toInt());
+        ids.append(row[0].toInt(&ok));
+        QVERIFY(ok);
     }
 
     for(int i = 0; i < results.size(); i++) {
         QCOMPARE(ids[i], i+1);
     }
+
+    //mess up with migrations hash
+    ok = data::Utils::execute(db, "UPDATE _migrations SET sha256hash = \"123\" WHERE id=1;");
+    QVERIFY(ok);
+    ok = dbBuilder.runMigrations();
+    QVERIFY(!ok);
+
     db.close();
 }
 

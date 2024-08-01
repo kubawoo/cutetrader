@@ -16,6 +16,8 @@ private slots:
 
     void testSecurities();
     void testQuotes();
+    void testQuoteWithNoSecurity();
+    void testDeleteSecurityWithQuotes();
 
 private:
     QSqlDatabase _db;

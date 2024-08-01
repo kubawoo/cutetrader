@@ -10,11 +10,22 @@ namespace data {
 DbBuilder::DbBuilder(QSqlDatabase & db)
     :_db(db)
 {
+    if(_db.driverName() == "QSQLITE") {
+        qDebug() << "Enabling foreign keys";
+        if(!Utils::execute(_db, "PRAGMA foreign_keys = ON;")) {
+            qDebug() << "Failed to enable foreign keys";
+            return;
+        }
+    }
+
     QString initSql = "CREATE TABLE IF NOT EXISTS _migrations ("
                       "id INTEGER PRIMARY KEY,"
                       "sha256hash TEXT NOT NULL,"
                       "timestamp TEXT NOT NULL"
                       ");";
+
+
+
     qDebug() << "Creating initial structure";
     _initialized = Utils::execute(_db, initSql);
     if(_initialized) {
