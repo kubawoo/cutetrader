@@ -29,6 +29,23 @@ void Account::setBaseCurrency(const QString &currency)
     _baseCurrency = currency;
 }
 
+Stock Account::updateStockPosition(const common::PortfolioPositionDTO &position)
+{
+    Stock stock(position.contractId, position.symbol, position.position, position.marketPrice, position.marketValue,
+                position.averageCost, position.unrealizedPNL, position.realizedPNL);
+    _portfolio.updatePortfolio(stock);
+    return stock;
+}
+
+Option Account::updateOptionPosition(const common::PortfolioPositionDTO &position)
+{
+    Option option(position.contractId, position.symbol, position.position, position.marketPrice, position.marketValue,
+                position.averageCost, position.unrealizedPNL, position.realizedPNL, position.expiration,
+                  position.strike, position.right, position.multiplier);
+    _portfolio.updatePortfolio(option);
+    return option;
+}
+
 double Account::accountInfo(AccountInfoType type)
 {
     return _accountInfo.value(type);
@@ -48,37 +65,23 @@ void Account::updateAccountValue(const QString & key, const QString & value, con
 
 }
 
-//void TwsClient::updatePortfolio( const Contract& contract, Decimal position,
-//    double marketPrice, double marketValue, double averageCost,
-//    double unrealizedPNL, double realizedPNL, const std::string& accountName)
-//{
-//    qDebug() << "updatePortfolio" << contract.secType.c_str()
-//             << contract.symbol.c_str() << DecimalFunctions::decimalToDouble(position)
-//             << marketPrice << marketValue << averageCost
-//             <<unrealizedPNL << realizedPNL << accountName.c_str();
-//    if(contract.secType == "OPT") {
-//        qDebug() << "Option:" << contract.lastTradeDateOrContractMonth.c_str()
-//                 << contract.lastTradeDate.c_str()
-//                 << contract.strike
-//                 << contract.right.c_str()
-//                 << contract.multiplier.c_str()
-//                 << contract.comboLegsDescrip.c_str();
-
-//        QDate expiration = QDate::currentDate(); //TODO
-//        OptionType type = contract.right == "C" ? OptionType::CALL : OptionType::PUT;
-//        double mul = 100.0; //TODO
-
-//        Option opt(contract.conId, contract.symbol.c_str(), DecimalFunctions::decimalToDouble(position),
-//                   marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL, expiration, contract.strike,
-//                   type, mul);
-//        _portfolio.updatePortfolio(opt);
-
-//    } else if(contract.secType == "STK") {
-//        Stock stk(contract.conId, contract.symbol.c_str(), DecimalFunctions::decimalToDouble(position),
-//                   marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL);
-//        _portfolio.updatePortfolio(stk);
-//    }
-//}
+void Account::updatePortfolioPosition(const common::PortfolioPositionDTO &position)
+{
+    switch(position.securityType) {
+    case common::SecurityType::STOCK: {
+        Stock stock = updateStockPosition(position);
+        emit stockPositionUpdated(stock);
+        break;
+    }
+    case common::SecurityType::OPTION: {
+        Option option = updateOptionPosition(position);
+        emit optionPositionUpdated(option);
+        break;
+    }
+    default:
+        break;
+    }
+}
 
 
 }

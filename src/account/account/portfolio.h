@@ -1,14 +1,17 @@
 #ifndef ACCOUNT_PORTFOLIO_H
 #define ACCOUNT_PORTFOLIO_H
 
-#include <QList>
+#include <QMap>
 #include <QDate>
+#include <QList>
+#include <common.h>
 
 namespace account {
 
 class BaseSecurity
 {
 public:
+    BaseSecurity();
     BaseSecurity(long contractId, const QString &symbol, double position, double marketPrice, double marketValue,
              double averageCost, double unrealizedPNL, double realizedPNL);
 
@@ -36,29 +39,28 @@ private:
 class Stock : public BaseSecurity
 {
 public:
+    Stock();
     Stock(long contractId, const QString &symbol, double position, double marketPrice, double marketValue,
              double averageCost, double unrealizedPNL, double realizedPNL);
 };
 
-enum class OptionType {
-    PUT, CALL
-};
 
 class Option : public BaseSecurity
 {
 public:
+    Option();
     Option(long contractId, const QString &symbol, double position, double marketPrice, double marketValue,
            double averageCost, double unrealizedPNL, double realizedPNL,
-           const QDate & expiration, double strike, OptionType type, double multiplier);
+           const QDate & expiration, double strike, common::OptionType type, double multiplier);
     QDate expiration() const;
     double strike() const;
-    OptionType type() const;
+    common::OptionType type() const;
     double multiplier() const;
 
 private:
     QDate _expiration;
     double _strike;
-    OptionType _type;
+    common::OptionType _type;
     double _multiplier;
 };
 
@@ -67,16 +69,14 @@ class Portfolio
 public:
     Portfolio();
 
-    double cash() const;
-    void setCash(double newCash);
-
     void updatePortfolio(const Stock & stock);
     void updatePortfolio(const Option & option);
+    QList<Stock> stocks();
+    QList<Option> options();
 
 private:
-    QList<Stock> _stocks;
-    QList<Option> _options;
-    double _cash;
+    QMap<long, Stock> _stocks;
+    QMap<long, Option> _options;
 };
 }
 

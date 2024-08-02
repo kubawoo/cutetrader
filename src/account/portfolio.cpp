@@ -7,26 +7,32 @@ Portfolio::Portfolio()
 
 }
 
-double Portfolio::cash() const
-{
-    return _cash;
-}
-
-void Portfolio::setCash(double newCash)
-{
-    _cash = newCash;
-}
 
 void Portfolio::updatePortfolio(const Stock &stock)
 {
-//TODO
     qDebug() << "Updating portfolio stock";
+    _stocks[stock.contractId()] = stock;
 }
 
 void Portfolio::updatePortfolio(const Option &option)
 {
-//TODO
     qDebug() << "Updating portfolio option";
+    _options[option.contractId()] = option;
+}
+
+QList<Stock> Portfolio::stocks()
+{
+    return _stocks.values();
+}
+
+QList<Option> Portfolio::options()
+{
+    return _options.values();
+}
+
+BaseSecurity::BaseSecurity()
+    :_contractId(-1)
+{
 
 }
 
@@ -82,14 +88,24 @@ double BaseSecurity::realizedPNL() const
     return _realizedPNL;
 }
 
+Stock::Stock()
+{
+
+}
+
 Stock::Stock(long contractId, const QString &symbol, double position, double marketPrice, double marketValue,
              double averageCost, double unrealizedPNL, double realizedPNL)
 : BaseSecurity(contractId, symbol, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL)
 {}
 
+Option::Option()
+{
+
+}
+
 Option::Option(long contractId, const QString &symbol, double position, double marketPrice, double marketValue,
                double averageCost, double unrealizedPNL, double realizedPNL, const QDate &expiration,
-               double strike, OptionType type, double multiplier)
+               double strike, common::OptionType type, double multiplier)
     : BaseSecurity(contractId, symbol, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL),
       _expiration(expiration),
       _strike(strike),
@@ -109,7 +125,7 @@ double Option::strike() const
     return _strike;
 }
 
-OptionType Option::type() const
+common::OptionType Option::type() const
 {
     return _type;
 }
