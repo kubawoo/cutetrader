@@ -18,7 +18,8 @@ private slots:
     void testQuotes();
     void testQuoteWithNoSecurity();
     void testDeleteSecurityWithQuotes();
-
+    void testGetQuotesFrom();
+    void testGetQuotesFromTo();
 private:
     QSqlDatabase _db;
     data::DataManager _manager;

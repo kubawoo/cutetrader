@@ -149,7 +149,7 @@ void DataManagerTest::testDeleteSecurityWithQuotes()
 
     Quote q1 = Quote()
             .withSecurityId(1)
-            .withDate(QDate(2023,8, 1))
+            .withDate(QDate(2023, 8, 1))
             .withOpen(550.1)
             .withClose(555.2)
             .withHigh(558.3)
@@ -168,6 +168,72 @@ void DataManagerTest::testDeleteSecurityWithQuotes()
     quotes = _manager.getQuotes(spy);
     QCOMPARE(quotes.size(), 0);
 
+}
+
+void DataManagerTest::testGetQuotesFrom()
+{
+    Security spy = Security().withSymbol("SPY");
+
+    bool ok = _manager.createSecurity(spy);
+    QVERIFY(ok);
+
+    spy = _manager.getSecurity(1);
+    QCOMPARE(spy.id(), 1);
+    QCOMPARE(spy.symbol(), "SPY");
+
+    for(int i = 1; i <= 10; i++) {
+        Quote qutoe = Quote()
+                .withSecurityId(1)
+                .withDate(QDate(2023, 8, i))
+                .withOpen(550.1)
+                .withClose(555.2)
+                .withHigh(558.3)
+                .withLow(545.4)
+                .withVolume(1000);
+
+        ok = _manager.createQuote(qutoe);
+        QVERIFY(ok);
+    }
+
+
+    auto quotes = _manager.getQuotes(spy, QDate(2023, 8, 6));
+    QCOMPARE(quotes.size(), 5);
+    for(int i = 6; i <= 10; i++) {
+        QCOMPARE(quotes[i-6].date().day(), i);
+    }
+}
+
+void DataManagerTest::testGetQuotesFromTo()
+{
+    Security spy = Security().withSymbol("SPY");
+
+    bool ok = _manager.createSecurity(spy);
+    QVERIFY(ok);
+
+    spy = _manager.getSecurity(1);
+    QCOMPARE(spy.id(), 1);
+    QCOMPARE(spy.symbol(), "SPY");
+
+    for(int i = 1; i <= 10; i++) {
+        Quote qutoe = Quote()
+                .withSecurityId(1)
+                .withDate(QDate(2023, 8, i))
+                .withOpen(550.1)
+                .withClose(555.2)
+                .withHigh(558.3)
+                .withLow(545.4)
+                .withVolume(1000);
+
+        ok = _manager.createQuote(qutoe);
+        QVERIFY(ok);
+    }
+
+
+    auto quotes = _manager.getQuotes(spy, QDate(2023, 8, 6), QDate(2023, 8, 8));
+    QCOMPARE(quotes.size(), 2);
+    for(int i = 6; i <= 7; i++) {
+        QCOMPARE(quotes[i-6].date().day(), i);
+    }
 }
 
 void DataManagerTest::init()

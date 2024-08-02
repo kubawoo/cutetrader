@@ -75,14 +75,26 @@ QList<Quote> DataManager::getQuotes(const Security &security)
     QString sql = QString("SELECT id, security_id, date, open, high, low, close, volume "
                           "FROM quotes WHERE security_id=%1 ORDER BY date;")
             .arg(security.id());
+    return doGetQuotes(sql);
+}
 
-    auto results = Utils::query(_db, sql);
+QList<Quote> DataManager::getQuotes(const Security &security, const QDate &from)
+{
+    QString sql = QString("SELECT id, security_id, date, open, high, low, close, volume "
+                          "FROM quotes WHERE security_id=%1 AND date >= \"%2\" ORDER BY date;")
+            .arg(security.id())
+            .arg(from.toString(Qt::DateFormat::ISODate));
+    return doGetQuotes(sql);
+}
 
-    QList<Quote> quotes;
-    for(auto r : results) {
-        quotes.append(toQuote(r));
-    }
-    return quotes;
+QList<Quote> DataManager::getQuotes(const Security &security, const QDate &from, const QDate &to)
+{
+    QString sql = QString("SELECT id, security_id, date, open, high, low, close, volume "
+                          "FROM quotes WHERE security_id=%1 AND date >= \"%2\" AND date < \"%3\" ORDER BY date;")
+            .arg(security.id())
+            .arg(from.toString(Qt::DateFormat::ISODate))
+            .arg(to.toString(Qt::DateFormat::ISODate));
+    return doGetQuotes(sql);
 }
 
 Security DataManager::toSecurity(DbResult &data)
@@ -116,6 +128,17 @@ Quote DataManager::toQuote(DbResult &data)
         return Quote();
     }
     return quote;
+}
+
+QList<Quote> DataManager::doGetQuotes(const QString &sql)
+{
+    auto results = Utils::query(_db, sql);
+
+    QList<Quote> quotes;
+    for(auto r : results) {
+        quotes.append(toQuote(r));
+    }
+    return quotes;
 }
 
 

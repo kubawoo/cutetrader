@@ -21,10 +21,14 @@ public:
 
     bool createQuote(const Quote& quote);
     QList<Quote> getQuotes(const Security & security);
+    QList<Quote> getQuotes(const Security & security, const QDate & from);
+    QList<Quote> getQuotes(const Security & security, const QDate & from, const QDate & to);
 
 private:
     Security toSecurity(DbResult & data);
     Quote toQuote(DbResult & data);
+    QList<Quote> doGetQuotes(const QString & sql);
+
 
     template <typename T, typename P>
     bool setValue(T& t, void (T::*setter)(P), QVariant& d, P (QVariant::*getter)(bool *) const) {
