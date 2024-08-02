@@ -21,4 +21,4 @@ private:
 };
 }
 
-#endif // DATA_UTILS_H
+#endif

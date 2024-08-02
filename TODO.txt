@@ -1,8 +1,6 @@
- - Move AccountInfo and Portfolio to separate module
  - Display Portfolio positions in the app
  - Load data into DB
  - Calculate beta and correlation
  - Add HV and IV to quotes
  - Implement calcOptValue call
- - Make includes look like <account/portfolio.h>
 

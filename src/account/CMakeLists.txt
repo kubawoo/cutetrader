@@ -1,5 +1,5 @@
 file(GLOB SOURCES "*.cpp")
-file(GLOB HEADERS "*.h")
+file(GLOB HEADERS "account/*.h")
 
 add_library(account STATIC
     ${SOURCES}

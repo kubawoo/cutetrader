@@ -1,5 +1,5 @@
 file(GLOB SOURCES "*.cpp")
-file(GLOB HEADERS "*.h")
+file(GLOB HEADERS "quant/*.h")
 
 add_library(quant STATIC
     ${SOURCES}

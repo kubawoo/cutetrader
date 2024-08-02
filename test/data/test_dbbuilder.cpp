@@ -1,6 +1,6 @@
 #include "test_dbbuilder.h"
-#include <dbbuilder.h>
-#include <utils.h>
+#include <data/dbbuilder.h>
+#include <data/utils.h>
 #include <QList>
 
 

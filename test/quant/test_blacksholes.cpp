@@ -1,5 +1,5 @@
 #include "test_blacksholes.h"
-#include <blackscholes.h>
+#include <quant/blackscholes.h>
 #include "../testrunner/helper.h"
 
 void BlackScholesTest::test()

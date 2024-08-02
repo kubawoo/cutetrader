@@ -73,4 +73,4 @@ private:
 };
 
 }
-#endif // DATA_MODEL_H
+#endif

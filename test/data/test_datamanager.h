@@ -2,7 +2,7 @@
 #define TEST_DATAMANAGER_H
 
 
-#include <datamanager.h>
+#include <data/datamanager.h>
 #include <QTest>
 #include <QSqlDatabase>
 

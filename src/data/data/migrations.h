@@ -49,4 +49,4 @@ public:
 };
 
 }
-#endif // DATA_MIGRATIONS_H
+#endif

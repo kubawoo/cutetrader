@@ -1,7 +1,7 @@
-#include "blackscholes.h"
+#include "quant/blackscholes.h"
 #include <cmath>
 #include <vector>
-#include "calculate.h"
+#include "quant/calculate.h"
 
 
 namespace quant {

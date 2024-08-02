@@ -1,6 +1,6 @@
 #include "test_datamanager.h"
-#include <dbbuilder.h>
-#include <datamanager.h>
+#include <data/dbbuilder.h>
+#include <data/datamanager.h>
 #include "../testrunner/helper.h"
 
 using namespace data;

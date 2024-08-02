@@ -1,4 +1,4 @@
-#include "migrations.h"
+#include "data/migrations.h"
 #include <QCryptographicHash>
 
 namespace data {

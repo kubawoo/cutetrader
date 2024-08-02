@@ -1,5 +1,5 @@
-#ifndef CACHE_H
-#define CACHE_H
+#ifndef TWSCLIENT_CACHE_H
+#define TWSCLIENT_CACHE_H
 
 #include <QMap>
 #include <QList>
@@ -32,4 +32,4 @@ private:
 };
 
 }
-#endif // CACHE_H
+#endif

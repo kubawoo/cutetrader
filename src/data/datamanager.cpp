@@ -1,5 +1,5 @@
-#include "datamanager.h"
-#include "utils.h"
+#include "data/datamanager.h"
+#include "data/utils.h"
 
 namespace data {
 

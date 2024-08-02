@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-#include <dbbuilder.h>
 #include <QException>
 #include <QMessageBox>
 #include <QSqlDatabase>

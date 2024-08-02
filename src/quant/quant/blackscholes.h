@@ -26,4 +26,4 @@ private:
 };
 
 }
-#endif // QUANT_BLACKSCHOLES_H
+#endif

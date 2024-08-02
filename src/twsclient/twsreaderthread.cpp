@@ -1,4 +1,4 @@
-#include "twsreaderthread.h"
+#include "twsclient/twsreaderthread.h"
 
 namespace twsclient {
 

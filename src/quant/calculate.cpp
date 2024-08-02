@@ -1,4 +1,4 @@
-#include "calculate.h"
+#include "quant/calculate.h"
 
 namespace quant {
 

@@ -127,4 +127,4 @@ public:
 
 }
 
-#endif // QUANT_CALCULATE_H
+#endif

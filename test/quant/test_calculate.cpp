@@ -1,5 +1,5 @@
 #include "test_calculate.h"
-#include <calculate.h>
+#include <quant/calculate.h>
 #include "../testrunner/helper.h"
 
 

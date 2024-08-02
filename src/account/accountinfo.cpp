@@ -1,4 +1,4 @@
-#include "accountinfo.h"
+#include "account/accountinfo.h"
 #include <QDebug>
 
 namespace account {

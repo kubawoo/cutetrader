@@ -1,5 +1,5 @@
-#ifndef ACCOUNTINFO_H
-#define ACCOUNTINFO_H
+#ifndef ACCOUNT_ACCOUNTINFO_H
+#define ACCOUNT_ACCOUNTINFO_H
 
 #include <QString>
 #include <QMap>
@@ -60,4 +60,4 @@ private:
 };
 }
 
-#endif // ACCOUNTINFO_H
+#endif

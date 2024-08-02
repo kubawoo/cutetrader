@@ -3,9 +3,8 @@
 
 #include <QMainWindow>
 #include <twsclient.h>
-#include <twsreaderthread.h>
 #include <QSqlDatabase>
-#include <datamanager.h>
+#include <data.h>
 #include <account.h>
 
 QT_BEGIN_NAMESPACE

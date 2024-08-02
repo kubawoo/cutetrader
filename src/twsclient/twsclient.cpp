@@ -1,4 +1,4 @@
-#include "twsclient.h"
+#include "twsclient/twsclient.h"
 #include "EClientSocket.h"
 
 #include <QDebug>

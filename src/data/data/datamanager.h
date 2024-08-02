@@ -52,4 +52,4 @@ private:
 
 }
 
-#endif // DATA_DATAMANAGER_H
+#endif

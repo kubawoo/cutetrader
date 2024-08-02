@@ -1,5 +1,5 @@
-#ifndef TWSREADERTHREAD_H
-#define TWSREADERTHREAD_H
+#ifndef TWSCLIENT_TWSREADERTHREAD_H
+#define TWSCLIENT_TWSREADERTHREAD_H
 
 #include <QThread>
 #include <QObject>
@@ -24,4 +24,4 @@ private:
     QTimer * _cleanupTimer;
 };
 }
-#endif // TWSREADERTHREAD_H
+#endif

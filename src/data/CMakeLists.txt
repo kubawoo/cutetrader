@@ -1,5 +1,5 @@
 file(GLOB SOURCES "*.cpp")
-file(GLOB HEADERS "*.h")
+file(GLOB HEADERS "data/*.h")
 
 add_library(data STATIC
     ${SOURCES}

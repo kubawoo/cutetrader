@@ -28,4 +28,4 @@ private:
 
 }
 
-#endif // DATA_DBBUILDER_H
+#endif

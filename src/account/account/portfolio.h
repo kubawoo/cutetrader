@@ -1,5 +1,5 @@
-#ifndef PORTFOLIO_H
-#define PORTFOLIO_H
+#ifndef ACCOUNT_PORTFOLIO_H
+#define ACCOUNT_PORTFOLIO_H
 
 #include <QList>
 #include <QDate>
@@ -81,4 +81,4 @@ private:
 }
 
 
-#endif // PORTFOLIO_H
+#endif
