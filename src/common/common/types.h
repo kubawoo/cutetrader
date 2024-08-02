@@ -1,0 +1,38 @@
+#ifndef COMMON_TYPES_H
+#define COMMON_TYPES_H
+
+#include <QList>
+#include <QDate>
+
+namespace common {
+
+
+enum class SecurityType {
+    STOCK, OPTION, FUTURES
+};
+
+enum class OptionType {
+    CALL, PUT
+};
+
+struct PortfolioPositionDTO
+{
+    long contractId;
+    SecurityType securityType;
+    QString symbol;
+    double position;
+    double marketPrice;
+    double marketValue;
+    double averageCost;
+    double unrealizedPNL;
+    double realizedPNL;
+    QDate expiration;
+    double strike;
+    OptionType right;
+    double multiplier;
+};
+
+}
+
+
+#endif // COMMON_DTO_H

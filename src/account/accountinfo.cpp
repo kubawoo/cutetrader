@@ -1,6 +1,7 @@
 #include "accountinfo.h"
 #include <QDebug>
 
+namespace account {
 
 QMap<QString, AccountInfoType>  AccountInfo::_MAPPINGS {
     {"AccruedCash", AccountInfoType::AccruedCash},
@@ -32,8 +33,6 @@ QMap<QString, AccountInfoType>  AccountInfo::_MAPPINGS {
 };
 
 AccountInfo::AccountInfo()
-    : _accountId(""),
-      _baseCurrency("USD")
 {
 }
 
@@ -61,26 +60,5 @@ double AccountInfo::value(AccountInfoType type)
     return _values.value(type, 0.0);
 }
 
-QString AccountInfo::accountId()
-{
-    return _accountId;
 }
-
-void AccountInfo::setAccountId(const QString &accountId)
-{
-    _accountId = accountId;
-}
-
-QString AccountInfo::baseCurrency()
-{
-    return _baseCurrency;
-}
-
-void AccountInfo::setBaseCurrency(const QString &currency)
-{
-    _baseCurrency = currency;
-}
-
-
-
 

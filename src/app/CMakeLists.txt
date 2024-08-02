@@ -11,10 +11,12 @@ qt_add_executable(cutetrader
 target_link_libraries(cutetrader PRIVATE
     Qt6::Widgets
     Qt6::Sql
-    twsapi
-    quant
-    twsclient
+    account
+    common
     data
+    quant
+    twsapi
+    twsclient
 )
 
 qt_finalize_executable(cutetrader)

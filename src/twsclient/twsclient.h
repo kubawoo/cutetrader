@@ -7,8 +7,9 @@
 #include "EReaderOSSignal.h"
 #include "EReader.h"
 #include "cache.h"
-#include "accountinfo.h"
-#include "portfolio.h"
+#include <common.h>
+
+namespace twsclient {
 
 class TwsClient : public QObject, public DefaultEWrapper
 {
@@ -34,8 +35,6 @@ public:
     bool isConnected();
     long requestHistoricalData(const Contract &contract, const QString &endDateTime,
                                const QString &durationString, const QString &barSizeSetting);
-    double accountInfo(AccountInfoType type);
-    QString accountBaseCurrency();
 
 
 public:
@@ -63,10 +62,11 @@ public:
 signals:
     void connectedSignal();
     void disconnectedSignal();
-    void currentTimeSignal(const QDateTime& time);
-    void managedAccountsSignal(const QStringList & accounts);
+    void currentTimeSignal(const QDateTime & time);
+    void managedAccountSignal(const QString & account);
     void historicalDataReadySignal(long requestId, QList<Bar> *bars);
-    void accountInfoUpdated(AccountInfoType type);
+    void accountValueUpdatedSignal(const QString & key, const QString & value, const QString & currency);
+    void portfolioPositionUpdatedSignal(const common::PortfolioPositionDTO & position);
 
 
 private:
@@ -75,10 +75,10 @@ private:
     long _nextOrderId;
     EReader * _reader;
     bool _connected;
-    AccountInfo _account;
-    Portfolio _portfolio;
     int _requestId;
     Cache _cache;
+    std::string _accountId;
 };
 
+}
 #endif // TWSCLIENT_H

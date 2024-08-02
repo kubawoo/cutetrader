@@ -7,68 +7,70 @@
 
 MainWindow::MainWindow(QApplication * app, QWidget *parent)
     : QMainWindow(parent), _app(app),
-      ui(new Ui::MainWindow),
-      client(new TwsClient),
-      readerThread(new TwsReaderThread(client))
+      _ui(new Ui::MainWindow),
+      _client(new twsclient::TwsClient),
+      _readerThread(new twsclient::TwsReaderThread(_client))
 {
-    client->moveToThread(readerThread);
-    ui->setupUi(this);
+    _client->moveToThread(_readerThread);
+    _ui->setupUi(this);
 
-    connect(ui->connectPushButton, &QPushButton::clicked, this, &MainWindow::connectClient);
-    connect(ui->disconnectPushButton, &QPushButton::clicked, this, &MainWindow::disconnectClient);
-    connect(ui->checkTimePushButton, &QPushButton::clicked, client, &TwsClient::requestCurrentTime);
-    connect(client, &TwsClient::accountInfoUpdated, this, &MainWindow::accountInfoUpdated);
+    connect(_ui->connectPushButton, &QPushButton::clicked, this, &MainWindow::connectClient);
+    connect(_ui->disconnectPushButton, &QPushButton::clicked, this, &MainWindow::disconnectClient);
+    connect(_ui->checkTimePushButton, &QPushButton::clicked, _client, &twsclient::TwsClient::requestCurrentTime);
+    connect(_client, &twsclient::TwsClient::accountValueUpdatedSignal, &_account, &account::Account::updateAccountValue);
+    connect(_client, &twsclient::TwsClient::managedAccountSignal, &_account, &account::Account::setAccountId);
+    connect(&_account, &account::Account::accountValueUpdated, this, &MainWindow::accountInfoUpdated);
 
-    readerThread->start();
+    _readerThread->start();
 
     QTimer::singleShot(0, this, &MainWindow::init);
 }
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+    delete _ui;
 }
 
 void MainWindow::connectClient() {
-  const QString &host = ui->hostLineEdit->text();
-  int port = ui->portSpinBox->value();
-  bool connected = client->connect(host, port);
+  const QString &host = _ui->hostLineEdit->text();
+  int port = _ui->portSpinBox->value();
+  bool connected = _client->connect(host, port);
   if (connected) {
-    ui->connectPushButton->setText("Connected");
-    ui->connectPushButton->setEnabled(false);
-    ui->hostLineEdit->setEnabled(false);
-    ui->portSpinBox->setEnabled(false);
-    ui->checkTimePushButton->setEnabled(true);
+    _ui->connectPushButton->setText("Connected");
+    _ui->connectPushButton->setEnabled(false);
+    _ui->hostLineEdit->setEnabled(false);
+    _ui->portSpinBox->setEnabled(false);
+    _ui->checkTimePushButton->setEnabled(true);
   } else {
     qDebug() << "Failed to connect";
   }
 }
 
 void MainWindow::disconnectClient() {
-    client->disconnect();
-    ui->connectPushButton->setText("Connect");
-    ui->connectPushButton->setEnabled(true);
-    ui->hostLineEdit->setEnabled(true);
-    ui->portSpinBox->setEnabled(true);
-    ui->checkTimePushButton->setEnabled(false);
+    _client->disconnect();
+    _ui->connectPushButton->setText("Connect");
+    _ui->connectPushButton->setEnabled(true);
+    _ui->hostLineEdit->setEnabled(true);
+    _ui->portSpinBox->setEnabled(true);
+    _ui->checkTimePushButton->setEnabled(false);
 }
 
 void MainWindow::quit()
 {
     qDebug() << "Quiting...";
-    readerThread->quit();
-    readerThread->wait(1000);
-    delete readerThread;
-    client->disconnect();
-    delete client;
+    _readerThread->quit();
+    _readerThread->wait(1000);
+    delete _readerThread;
+    _client->disconnect();
+    delete _client;
     _db.close();
 }
 
-void MainWindow::accountInfoUpdated(AccountInfoType type)
+void MainWindow::accountInfoUpdated(account::AccountInfoType type, double value)
 {
     switch(type) {
-    case AccountInfoType::NetLiquidation:
-        ui->netLiquidation->setText(QString::number(client->accountInfo(AccountInfoType::NetLiquidation)));
+    case account::AccountInfoType::NetLiquidation:
+        _ui->netLiquidation->setText(QString::number(value));
         break;
     default:
         break;

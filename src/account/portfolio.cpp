@@ -1,5 +1,6 @@
 #include "portfolio.h"
 
+namespace account {
 
 Portfolio::Portfolio()
 {
@@ -116,5 +117,7 @@ OptionType Option::type() const
 double Option::multiplier() const
 {
     return _multiplier;
+}
+
 }
 

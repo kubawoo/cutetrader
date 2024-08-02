@@ -4,6 +4,7 @@
 #include <QString>
 #include <QMap>
 
+namespace account {
 
 enum class AccountInfoType
 {
@@ -52,18 +53,11 @@ public:
     AccountInfoType updateValue(const QString & type, const QString & value);
     double value(AccountInfoType type);
 
-    QString accountId();
-    void setAccountId(const QString & accountId);
-
-    QString baseCurrency();
-    void setBaseCurrency(const QString & currency);
-
 private:
     static QMap<QString, AccountInfoType> _MAPPINGS;
 
-    QString _accountId;
-    QString _baseCurrency;
     QMap<AccountInfoType, double> _values;
 };
+}
 
 #endif // ACCOUNTINFO_H

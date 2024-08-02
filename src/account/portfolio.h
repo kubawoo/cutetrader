@@ -4,6 +4,8 @@
 #include <QList>
 #include <QDate>
 
+namespace account {
+
 class BaseSecurity
 {
 public:
@@ -76,6 +78,7 @@ private:
     QList<Option> _options;
     double _cash;
 };
+}
 
 
 #endif // PORTFOLIO_H

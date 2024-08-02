@@ -2,6 +2,8 @@
 #include <QDateTime>
 #include <QDebug>
 
+namespace twsclient {
+
 CacheEntry::CacheEntry()
     : CacheEntry(0)
 {}
@@ -48,4 +50,6 @@ QList<Bar> *Cache::bars(long requestId)
 void Cache::remove(long requestId)
 {
     _cache.remove(requestId);
+}
+
 }

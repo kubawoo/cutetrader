@@ -6,5 +6,5 @@ add_library(twsclient STATIC
     ${HEADERS}
 )
 
-target_link_libraries(twsclient PRIVATE Qt6::Core twsapi)
+target_link_libraries(twsclient PRIVATE Qt6::Core twsapi common)
 target_include_directories(twsclient INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})

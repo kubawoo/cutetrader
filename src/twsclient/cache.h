@@ -5,6 +5,8 @@
 #include <QList>
 #include "bar.h"
 
+namespace twsclient {
+
 class CacheEntry
 {
 public:
@@ -29,4 +31,5 @@ private:
     QMap<long, CacheEntry> _cache;
 };
 
+}
 #endif // CACHE_H

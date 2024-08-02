@@ -4,6 +4,8 @@
 #include <QDebug>
 #include <QThread>
 
+namespace twsclient {
+
 TwsClient::TwsClient(QObject *parent)
     : QObject{parent},
       _readerSignal(200),
@@ -51,6 +53,7 @@ void TwsClient::disconnect()
     if(isConnected()) {
         qDebug() << "Trying to disconnect client" << _client->clientId();
         _client->eDisconnect();
+        _connected = false;
         emit disconnectedSignal();
         qDebug().nospace() << "Client disconnected";
     } else {
@@ -83,20 +86,20 @@ void TwsClient::nextValidId(OrderId orderId)
 void TwsClient::requestCurrentTime() {
     qDebug() << "requestCurrentTime";
     _client->reqCurrentTime();
-//    Contract c;
-//    c.secType = "STK";
-//    c.symbol = "SPY";
-//    c.currency = "USD";
-//    c.exchange = "SMART";
-//    int reqId = requestHistoricalData(c, "", "30 D", "1 day");
-//    qDebug() << "requestHistoricalData" << reqId;
-    }
+    //    Contract c;
+    //    c.secType = "STK";
+    //    c.symbol = "SPY";
+    //    c.currency = "USD";
+    //    c.exchange = "SMART";
+    //    int reqId = requestHistoricalData(c, "", "30 D", "1 day");
+    //    qDebug() << "requestHistoricalData" << reqId;
+}
 
 void TwsClient::startAccountUpdates() {
-    _client->reqAccountUpdates(true, _account.accountId().toStdString());
+    _client->reqAccountUpdates(true, _accountId);
 }
 void TwsClient::stopAccountUpdates() {
-    _client->reqAccountUpdates(false, _account.accountId().toStdString());
+    _client->reqAccountUpdates(false, _accountId);
 }
 void TwsClient::startPositionsUpdates()
 {
@@ -121,20 +124,12 @@ long TwsClient::requestHistoricalData(const Contract &contract, const QString &e
                                       const QString &durationString, const QString &barSizeSetting)
 {
     _client->reqHistoricalData(_requestId, contract, endDateTime.toStdString(),
-                              durationString.toStdString(), barSizeSetting.toStdString(),
-                              "TRADES", 1, 1, false, TagValueListSPtr());
+                               durationString.toStdString(), barSizeSetting.toStdString(),
+                               "TRADES", 1, 1, false, TagValueListSPtr());
     return _requestId++;
 }
 
-double TwsClient::accountInfo(AccountInfoType type)
-{
-    return _account.value(type);
-}
 
-QString TwsClient::accountBaseCurrency()
-{
-    return _account.baseCurrency();
-}
 
 void TwsClient::currentTime(long time)
 {
@@ -147,61 +142,14 @@ void TwsClient::managedAccounts( const std::string& accountsList)
 {
     qDebug() << "managedAccounts" << accountsList.c_str();
     QStringList accounts = QString::fromStdString(accountsList).split(",");
-    this->_account.setAccountId(accounts[0]);
-    emit managedAccountsSignal(accounts);
+    _accountId = accounts[0].toStdString();
+    emit managedAccountSignal(accounts[0]);
 }
 
 void TwsClient::error(int id, int errorCode, const std::string &errorString, const std::string &advancedOrderRejectJson)
 {
     qDebug() << "error" << id << errorCode << errorString.c_str() << advancedOrderRejectJson.c_str();
-//    emit errorSignal();
-}
-
-void TwsClient::updateAccountValue(const std::string& key, const std::string& val,
-    const std::string& currency, const std::string& accountName)
-{
-    qDebug() << "updateAccountValue" << key.c_str() << val.c_str() << currency.c_str() << accountName.c_str();
-
-    if(accountName == _account.accountId().toStdString()
-       && (currency == _account.baseCurrency().toStdString() || currency.empty())) {
-        AccountInfoType updated = _account.updateValue(key.c_str(), val.c_str());
-        if(updated != AccountInfoType::NONE) {
-            emit accountInfoUpdated(updated);
-        }
-    }
-
-}
-
-void TwsClient::updatePortfolio( const Contract& contract, Decimal position,
-    double marketPrice, double marketValue, double averageCost,
-    double unrealizedPNL, double realizedPNL, const std::string& accountName)
-{
-    qDebug() << "updatePortfolio" << contract.secType.c_str()
-             << contract.symbol.c_str() << DecimalFunctions::decimalToDouble(position)
-             << marketPrice << marketValue << averageCost
-             <<unrealizedPNL << realizedPNL << accountName.c_str();
-    if(contract.secType == "OPT") {
-        qDebug() << "Option:" << contract.lastTradeDateOrContractMonth.c_str()
-                 << contract.lastTradeDate.c_str()
-                 << contract.strike
-                 << contract.right.c_str()
-                 << contract.multiplier.c_str()
-                 << contract.comboLegsDescrip.c_str();
-
-        QDate expiration = QDate::currentDate(); //TODO
-        OptionType type = contract.right == "C" ? OptionType::CALL : OptionType::PUT;
-        double mul = 100.0; //TODO
-
-        Option opt(contract.conId, contract.symbol.c_str(), DecimalFunctions::decimalToDouble(position),
-                   marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL, expiration, contract.strike,
-                   type, mul);
-        _portfolio.updatePortfolio(opt);
-
-    } else if(contract.secType == "STK") {
-        Stock stk(contract.conId, contract.symbol.c_str(), DecimalFunctions::decimalToDouble(position),
-                   marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL);
-        _portfolio.updatePortfolio(stk);
-    }
+    //    emit errorSignal();
 }
 
 
@@ -224,6 +172,65 @@ void TwsClient::position(const std::string &account, const Contract &contract, D
 void TwsClient::positionEnd()
 {
     qDebug() << "positionEnd";
+}
+
+void TwsClient::updateAccountValue(const std::string& key, const std::string& val,
+                                   const std::string& currency, const std::string& accountName)
+{
+    qDebug() << "updateAccountValue" << key.c_str() << val.c_str() << currency.c_str() << accountName.c_str();
+
+    if(accountName == _accountId) {
+        emit accountValueUpdatedSignal(key.c_str(), val.c_str(), currency.c_str());
+    }
+
+}
+
+void TwsClient::updatePortfolio( const Contract& contract, Decimal position,
+                                 double marketPrice, double marketValue, double averageCost,
+                                 double unrealizedPNL, double realizedPNL, const std::string& accountName)
+{
+    qDebug() << "updatePortfolio" << contract.secType.c_str()
+             << contract.symbol.c_str() << DecimalFunctions::decimalToDouble(position)
+             << marketPrice << marketValue << averageCost
+             <<unrealizedPNL << realizedPNL << accountName.c_str();
+
+
+    if(accountName != _accountId) {
+        return;
+    }
+
+    common::PortfolioPositionDTO positionDto;
+    positionDto.contractId = contract.conId;
+    positionDto.symbol = contract.symbol.c_str();
+    positionDto.position = DecimalFunctions::decimalToDouble(position);
+    positionDto.marketPrice = marketPrice;
+    positionDto.marketValue = marketValue;
+    positionDto.averageCost = averageCost;
+    positionDto.unrealizedPNL = unrealizedPNL;
+    positionDto.realizedPNL = realizedPNL;
+
+    if(contract.secType == "STK") {
+        positionDto.securityType = common::SecurityType::STOCK;
+    } else if(contract.secType == "OPT") {
+        qDebug() << "Option:" << contract.lastTradeDateOrContractMonth.c_str()
+                 << contract.lastTradeDate.c_str()
+                 << contract.strike
+                 << contract.right.c_str()
+                 << contract.multiplier.c_str();
+
+
+        QDate expiration = QDate::fromString(contract.lastTradeDateOrContractMonth.c_str(), Qt::DateFormat::ISODate);
+        common::OptionType type = contract.right == "C" ? common::OptionType::CALL : common::OptionType::PUT;
+        double mul = QString(contract.multiplier.c_str()).toDouble();
+
+        positionDto.securityType = common::SecurityType::STOCK;
+        positionDto.expiration = expiration;
+        positionDto.right = type;
+        positionDto.multiplier = mul;
+        positionDto.strike = contract.strike;
+    }
+
+    emit portfolioPositionUpdatedSignal(positionDto);
 }
 
 void TwsClient::historicalData(long reqId, const Bar &bar)
@@ -251,4 +258,6 @@ void TwsClient::cleanup()
 {
     qDebug() << "Running cleanup task";
     _cache.cleanup();
+}
+
 }

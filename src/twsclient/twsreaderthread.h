@@ -6,6 +6,8 @@
 #include <QTimer>
 #include "twsclient.h"
 
+namespace twsclient {
+
 class TwsReaderThread : public QThread
 {
     Q_OBJECT
@@ -21,5 +23,5 @@ private:
     QTimer * _readTimer;
     QTimer * _cleanupTimer;
 };
-
+}
 #endif // TWSREADERTHREAD_H

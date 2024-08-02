@@ -1,5 +1,8 @@
 #include "twsreaderthread.h"
 
+namespace twsclient {
+
+
 TwsReaderThread::TwsReaderThread(TwsClient * client)
     : QThread{nullptr},
       _client(client),
@@ -28,4 +31,7 @@ QTimer *TwsReaderThread::setupTimer(int msec, void (TwsClient::*funcPtr)(void))
     QObject::connect(this, &QThread::finished, timer, &QTimer::deleteLater);
     timer->start(msec);
     return timer;
+}
+
+
 }

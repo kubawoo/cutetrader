@@ -6,6 +6,7 @@
 #include <twsreaderthread.h>
 #include <QSqlDatabase>
 #include <datamanager.h>
+#include <account.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -23,7 +24,7 @@ public slots:
     void connectClient();
     void disconnectClient();
     void quit();
-    void accountInfoUpdated(AccountInfoType type);
+    void accountInfoUpdated(account::AccountInfoType type, double value);
 
 private slots:
     void init();
@@ -31,11 +32,12 @@ private slots:
 private:
     bool setupDatabase();
 
-    Ui::MainWindow *ui;
-    TwsClient * client;
-    TwsReaderThread * readerThread;
+    Ui::MainWindow *_ui;
+    twsclient::TwsClient * _client;
+    twsclient::TwsReaderThread * _readerThread;
     QSqlDatabase _db;
     data::DataManager _dataManager;
+    account::Account _account;
     QApplication * _app;
 
 };
