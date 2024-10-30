@@ -35,7 +35,7 @@
 using namespace ibapi::client_constants;
 
 ///////////////////////////////////////////////////////////
-// define explict specialization of int encoder before first use
+// define explicit specialization of int encoder before first use
 template void EClient::EncodeField<int>(std::ostream&, int);
 
 // encoders
@@ -54,7 +54,7 @@ void EClient::EncodeField<double>(std::ostream& os, double doubleValue)
         snprintf(str, sizeof(str), "%s", INFINITY_STR.c_str());
     } 
     else {
-        snprintf(str, sizeof(str), "%.10g", doubleValue);
+        snprintf(str, sizeof(str), "%.14g", doubleValue);
     }
 
     EncodeField<const char*>(os, str);
@@ -1637,10 +1637,15 @@ void EClient::placeOrder( OrderId id, const Contract& contract, const Order& ord
         return;
     }
 
-    if (m_serverVersion < MIN_SERVER_VER_RFQ_FIELDS) {
-        if (!order.externalUserId.empty() || order.manualOrderIndicator != UNSET_INTEGER) {
+    if (m_serverVersion < MIN_SERVER_VER_INCLUDE_OVERNIGHT && order.includeOvernight) {
+        m_pEWrapper->error(id, UPDATE_TWS.code(), UPDATE_TWS.msg() + " It does not support include overnight parameter", "");
+        return;
+    }
+
+    if (m_serverVersion < MIN_SERVER_VER_CME_TAGGING_FIELDS) {
+        if (order.manualOrderIndicator != UNSET_INTEGER) {
             m_pEWrapper->error(id, UPDATE_TWS.code(), UPDATE_TWS.msg() +
-                "  It does not support external user id and manual order indicator parameters", "");
+                "  It does not support manual order indicator parameter", "");
             return;
         }
     }
@@ -2110,10 +2115,19 @@ void EClient::placeOrder( OrderId id, const Contract& contract, const Order& ord
             ENCODE_FIELD(order.professionalCustomer);
         }
 
-        if (m_serverVersion >= MIN_SERVER_VER_RFQ_FIELDS) {
-            ENCODE_FIELD(order.externalUserId);
+        if (m_serverVersion >= MIN_SERVER_VER_RFQ_FIELDS && m_serverVersion < MIN_SERVER_VER_UNDO_RFQ_FIELDS) {
+            ENCODE_FIELD("");
+            ENCODE_FIELD(UNSET_INTEGER);
+        }
+
+        if (m_serverVersion >= MIN_SERVER_VER_INCLUDE_OVERNIGHT) {
+            ENCODE_FIELD(order.includeOvernight);
+        }
+        
+        if (m_serverVersion >= MIN_SERVER_VER_CME_TAGGING_FIELDS) {
             ENCODE_FIELD(order.manualOrderIndicator);
         }
+        
     }
     catch (EClientException& ex) {
         m_pEWrapper->error(id, ex.error().code(), ex.error().msg() + ex.text(), "");
@@ -2136,10 +2150,10 @@ void EClient::cancelOrder(OrderId id, const OrderCancel& orderCancel)
         return;
     }
 
-    if (m_serverVersion < MIN_SERVER_VER_RFQ_FIELDS) {
-        if (!orderCancel.extOperator.empty() || !orderCancel.externalUserId.empty() || orderCancel.manualOrderIndicator != UNSET_INTEGER) {
+    if (m_serverVersion < MIN_SERVER_VER_CME_TAGGING_FIELDS) {
+        if (!orderCancel.extOperator.empty() || orderCancel.manualOrderIndicator != UNSET_INTEGER) {
             m_pEWrapper->error(id, UPDATE_TWS.code(), UPDATE_TWS.msg() +
-                "  It does not support ext operator, external user id and manual order indicator parameters", "");
+                "  It does not support ext operator and manual order indicator parameters", "");
             return;
         }
     }
@@ -2152,16 +2166,23 @@ void EClient::cancelOrder(OrderId id, const OrderCancel& orderCancel)
         const int VERSION = 1;
 
         ENCODE_FIELD( CANCEL_ORDER);
-        ENCODE_FIELD( VERSION);
+        if (m_serverVersion < MIN_SERVER_VER_CME_TAGGING_FIELDS) {
+            ENCODE_FIELD( VERSION);
+        }
         ENCODE_FIELD( id);
 
         if (m_serverVersion >= MIN_SERVER_VER_MANUAL_ORDER_TIME) {
             ENCODE_FIELD(orderCancel.manualOrderCancelTime);
         }
 
-        if (m_serverVersion >= MIN_SERVER_VER_RFQ_FIELDS) {
+        if (m_serverVersion >= MIN_SERVER_VER_RFQ_FIELDS && m_serverVersion < MIN_SERVER_VER_UNDO_RFQ_FIELDS) {
+            ENCODE_FIELD("");
+            ENCODE_FIELD("");
+            ENCODE_FIELD(UNSET_INTEGER);
+        }
+        
+        if (m_serverVersion >= MIN_SERVER_VER_CME_TAGGING_FIELDS) {
             ENCODE_FIELD(orderCancel.extOperator);
-            ENCODE_FIELD(orderCancel.externalUserId);
             ENCODE_FIELD(orderCancel.manualOrderIndicator);
         }
     }
@@ -2561,7 +2582,7 @@ void EClient::exerciseOptions( TickerId tickerId, const Contract& contract,
     closeAndSend( msg.str());
 }
 
-void EClient::reqGlobalCancel()
+void EClient::reqGlobalCancel(const OrderCancel& orderCancel)
 {
     // not connected?
     if( !isConnected()) {
@@ -2575,6 +2596,14 @@ void EClient::reqGlobalCancel()
         return;
     }
 
+    if (m_serverVersion < MIN_SERVER_VER_CME_TAGGING_FIELDS) {
+        if (!orderCancel.extOperator.empty() || orderCancel.manualOrderIndicator != UNSET_INTEGER) {
+            m_pEWrapper->error(NO_VALID_ID, UPDATE_TWS.code(), UPDATE_TWS.msg() +
+                "  It does not support ext operator and manual order indicator parameters", "");
+            return;
+        }
+    }
+
     std::stringstream msg;
     prepareBuffer( msg);
 
@@ -2582,7 +2611,14 @@ void EClient::reqGlobalCancel()
 
     // send current time req
     ENCODE_FIELD( REQ_GLOBAL_CANCEL);
-    ENCODE_FIELD( VERSION);
+    if (m_serverVersion < MIN_SERVER_VER_CME_TAGGING_FIELDS) {
+        ENCODE_FIELD(VERSION);
+    }
+
+    if (m_serverVersion >= MIN_SERVER_VER_CME_TAGGING_FIELDS) {
+        ENCODE_FIELD(orderCancel.extOperator);
+        ENCODE_FIELD(orderCancel.manualOrderIndicator);
+    }
 
     closeAndSend( msg.str());
 }
@@ -3149,7 +3185,7 @@ void EClient::reqSecDefOptParams(int reqId, const std::string& underlyingSymbol,
 
     if( m_serverVersion < MIN_SERVER_VER_SEC_DEF_OPT_PARAMS_REQ) {
         m_pEWrapper->error(NO_VALID_ID, UPDATE_TWS.code(), UPDATE_TWS.msg() +
-            "  It does not support security definiton option requests.", "");
+            "  It does not support security definition option requests.", "");
         return;
     }
 
