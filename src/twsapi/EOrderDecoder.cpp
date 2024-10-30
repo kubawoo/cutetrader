@@ -809,3 +809,20 @@ bool EOrderDecoder::decodeBondAccruedInterest(const char*& ptr, const char* endP
 
     return true;
 }
+
+bool EOrderDecoder::decodeIncludeOvernight(const char*& ptr, const char* endPtr) {
+    if (m_serverVersion >= MIN_SERVER_VER_INCLUDE_OVERNIGHT) {
+        DECODE_FIELD(m_order->includeOvernight);
+    }
+
+    return true;
+}
+
+bool EOrderDecoder::decodeCMETaggingFields(const char*& ptr, const char* endPtr) {
+    if (m_serverVersion >= MIN_SERVER_VER_CME_TAGGING_FIELDS_IN_OPEN_ORDER) {
+        DECODE_FIELD(m_order->extOperator);
+        DECODE_FIELD(m_order->manualOrderIndicator);
+    }
+
+    return true;
+}

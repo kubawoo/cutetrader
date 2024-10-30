@@ -260,7 +260,7 @@ const char* EDecoder::processOrderStatusMsg(const char* ptr, const char* endPtr)
 	Decimal filled;
 	Decimal remaining;
 	double avgFillPrice;
-	int permId;
+	long long permId;
 	int parentId;
 	double lastFillPrice;
 	int clientId;
@@ -413,7 +413,9 @@ const char* EDecoder::processOpenOrderMsg(const char* ptr, const char* endPtr) {
           && eOrderDecoder.decodePegBestPegMidOrderAttributes(ptr, endPtr)
           && eOrderDecoder.decodeCustomerAccount(ptr, endPtr)
           && eOrderDecoder.decodeProfessionalCustomer(ptr, endPtr)
-          && eOrderDecoder.decodeBondAccruedInterest(ptr, endPtr);
+          && eOrderDecoder.decodeBondAccruedInterest(ptr, endPtr)
+          && eOrderDecoder.decodeIncludeOvernight(ptr, endPtr)
+          && eOrderDecoder.decodeCMETaggingFields(ptr, endPtr);
 
         if (!success) {
           return nullptr;
@@ -701,6 +703,11 @@ const char* EDecoder::processBondContractDataMsg(const char* ptr, const char* en
 	DECODE_FIELD( contract.notes); // ver 2 field
 	if( version >= 4) {
 		DECODE_FIELD( contract.longName);
+	}
+	if (m_serverVersion >= MIN_SERVER_VER_BOND_TRADING_HOURS) {
+		DECODE_FIELD(contract.timeZoneId);
+		DECODE_FIELD(contract.tradingHours);
+		DECODE_FIELD(contract.liquidHours);
 	}
 	if( version >= 6) {
 		DECODE_FIELD( contract.evRule);
@@ -1270,16 +1277,16 @@ const char* EDecoder::processAccountSummaryMsg(const char* ptr, const char* endP
 	std::string account;
 	std::string tag;
 	std::string value;
-	std::string curency;
+	std::string currency;
 
 	DECODE_FIELD( version);
 	DECODE_FIELD( reqId);
 	DECODE_FIELD( account);
 	DECODE_FIELD( tag);
 	DECODE_FIELD( value);
-	DECODE_FIELD( curency);
+	DECODE_FIELD( currency);
 
-	m_pEWrapper->accountSummary( reqId, account, tag, value, curency);
+	m_pEWrapper->accountSummary( reqId, account, tag, value, currency);
 
 	return ptr;
 }
@@ -2098,15 +2105,15 @@ const char* EDecoder::processTickByTickDataMsg(const char* ptr, const char* endP
 }
 
 const char* EDecoder::processOrderBoundMsg(const char* ptr, const char* endPtr) {
-	long long orderId;
-	int apiClientId;
-	int apiOrderId;
+	long long permId;
+	int clientId;
+	int orderId;
 
+	DECODE_FIELD( permId);
+	DECODE_FIELD( clientId);
 	DECODE_FIELD( orderId);
-	DECODE_FIELD( apiClientId);
-	DECODE_FIELD( apiOrderId);
 
-	m_pEWrapper->orderBound( orderId, apiClientId, apiOrderId);
+	m_pEWrapper->orderBound( permId, clientId, orderId);
 
 	return ptr;
 }
@@ -2806,24 +2813,24 @@ const char* EDecoder::decodeLastTradeDate(const char* ptr, const char* endPtr, C
 		if (lastTradeDateOrContractMonth.find("-") != std::string::npos) {
 			split_with = '-';
 		}
-		std::vector<std::string> splitted;
+		std::vector<std::string> split;
 		std::istringstream buf(lastTradeDateOrContractMonth);
 		std::string s;
 		while (getline(buf, s, split_with)) {
-			splitted.push_back(s);
+			split.push_back(s);
 		}
-		if (splitted.size() > 0) {
+		if (split.size() > 0) {
 			if (isBond) {
-				contract.maturity = splitted[0];
+				contract.maturity = split[0];
 			} else {
-				contract.contract.lastTradeDateOrContractMonth = splitted[0];
+				contract.contract.lastTradeDateOrContractMonth = split[0];
 			}
 		}
-		if (splitted.size() > 1) {
-			contract.lastTradeTime = splitted[1];
+		if (split.size() > 1) {
+			contract.lastTradeTime = split[1];
 		}
-		if (isBond && splitted.size() > 2) {
-			contract.timeZoneId = splitted[2];
+		if (isBond && split.size() > 2) {
+			contract.timeZoneId = split[2];
 		}
 	}
 	return ptr;
