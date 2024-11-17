@@ -1,4 +1,3 @@
- - Display Portfolio positions in the app
  - Support multiple managed accounts
  - Load data into DB
  - Calculate beta and correlation

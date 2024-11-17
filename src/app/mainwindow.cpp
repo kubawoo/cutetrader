@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "ui_connectdialog.h"
 #include <QException>
 #include <QMessageBox>
 #include <QSqlDatabase>
@@ -8,22 +9,23 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
     : QMainWindow(parent), _app(app),
       _ui(new Ui::MainWindow),
       _client(new twsclient::TwsClient),
-      _readerThread(new twsclient::TwsReaderThread(_client))
+      _readerThread(new twsclient::TwsReaderThread(_client)),
+      _connectDialog(new ConnectDialog(this))
 {
+    this->setEnabled(false);
     _client->moveToThread(_readerThread);
     _ui->setupUi(this);
     _ui->stocksTableWidget->setColumnHidden(0, true);
     _ui->optionsTableWidget->setColumnHidden(0, true);
 
-    connect(_ui->connectPushButton, &QPushButton::clicked, this, &MainWindow::connectClient);
-    connect(_ui->disconnectPushButton, &QPushButton::clicked, this, &MainWindow::disconnectClient);
-    connect(_ui->checkTimePushButton, &QPushButton::clicked, _client, &twsclient::TwsClient::requestCurrentTime);
     connect(_client, &twsclient::TwsClient::accountValueUpdatedSignal, &_account, &account::Account::updateAccountValue);
     connect(_client, &twsclient::TwsClient::managedAccountSignal, &_account, &account::Account::setAccountId);
     connect(_client, &twsclient::TwsClient::portfolioPositionUpdatedSignal, &_account, &account::Account::updatePortfolioPosition);
     connect(&_account, &account::Account::accountValueUpdated, this, &MainWindow::accountInfoUpdated);
     connect(&_account, &account::Account::stockPositionUpdated, this, &MainWindow::stockPositionUpdated);
     connect(&_account, &account::Account::optionPositionUpdated, this, &MainWindow::optionPositionUpdated);
+    connect(_connectDialog, &ConnectDialog::accepted, this, &MainWindow::connectClient);
+    connect(_connectDialog, &ConnectDialog::rejected, this, &MainWindow::close);
 
     _readerThread->start();
 
@@ -36,32 +38,21 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::connectClient() {
-  const QString &host = _ui->hostLineEdit->text();
-  int port = _ui->portSpinBox->value();
+  const QString &host = _connectDialog->ui->hostLineEdit->text();
+  int port = _connectDialog->ui->portSpinBox->value();
   bool connected = _client->connect(host, port);
   if (connected) {
-    _ui->connectPushButton->setText("Connected");
-    _ui->connectPushButton->setEnabled(false);
-    _ui->hostLineEdit->setEnabled(false);
-    _ui->portSpinBox->setEnabled(false);
-    _ui->checkTimePushButton->setEnabled(true);
+    this->setEnabled(true);
   } else {
     qDebug() << "Failed to connect";
   }
 }
 
-void MainWindow::disconnectClient() {
-    _client->disconnect();
-    _ui->connectPushButton->setText("Connect");
-    _ui->connectPushButton->setEnabled(true);
-    _ui->hostLineEdit->setEnabled(true);
-    _ui->portSpinBox->setEnabled(true);
-    _ui->checkTimePushButton->setEnabled(false);
-}
 
 void MainWindow::quit()
 {
     qDebug() << "Quiting...";
+    delete _connectDialog;
     _readerThread->quit();
     _readerThread->wait(1000);
     delete _readerThread;
@@ -119,6 +110,9 @@ void MainWindow::init()
                                          QMessageBox::StandardButton::Close);
         _app->quit();
     }
+
+    _connectDialog->setEnabled(true);
+    _connectDialog->show();
 }
 
 bool MainWindow::setupDatabase()
