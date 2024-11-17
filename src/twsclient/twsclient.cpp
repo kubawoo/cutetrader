@@ -219,11 +219,11 @@ void TwsClient::updatePortfolio( const Contract& contract, Decimal position,
                  << contract.multiplier.c_str();
 
 
-        QDate expiration = QDate::fromString(contract.lastTradeDateOrContractMonth.c_str(), Qt::DateFormat::ISODate);
+        QDate expiration = QDate::fromString(contract.lastTradeDateOrContractMonth.c_str(), "yyyyMMdd");
         common::OptionType type = contract.right == "C" ? common::OptionType::CALL : common::OptionType::PUT;
         double mul = QString(contract.multiplier.c_str()).toDouble();
 
-        positionDto.securityType = common::SecurityType::STOCK;
+        positionDto.securityType = common::SecurityType::OPTION;
         positionDto.expiration = expiration;
         positionDto.right = type;
         positionDto.multiplier = mul;

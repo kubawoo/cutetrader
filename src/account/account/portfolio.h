@@ -55,6 +55,7 @@ public:
     QDate expiration() const;
     double strike() const;
     common::OptionType type() const;
+    QString typeAsString() const;
     double multiplier() const;
 
 private:

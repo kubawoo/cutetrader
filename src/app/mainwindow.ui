@@ -6,110 +6,242 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>459</width>
-    <height>250</height>
+    <width>1032</width>
+    <height>545</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="checkTimePushButton">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
+   <widget class="QTabWidget" name="mainTabWidget">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>80</y>
-      <width>80</width>
-      <height>25</height>
+      <x>0</x>
+      <y>0</y>
+      <width>1031</width>
+      <height>501</height>
      </rect>
     </property>
-    <property name="text">
-     <string>Check Time</string>
+    <property name="currentIndex">
+     <number>1</number>
     </property>
-   </widget>
-   <widget class="QPushButton" name="connectPushButton">
-    <property name="geometry">
-     <rect>
-      <x>230</x>
-      <y>30</y>
-      <width>80</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Connect</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="hostLineEdit">
-    <property name="geometry">
-     <rect>
-      <x>40</x>
-      <y>30</y>
-      <width>113</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>localhost</string>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="portSpinBox">
-    <property name="geometry">
-     <rect>
-      <x>170</x>
-      <y>30</y>
-      <width>51</width>
-      <height>26</height>
-     </rect>
-    </property>
-    <property name="maximum">
-     <number>32768</number>
-    </property>
-    <property name="value">
-     <number>4002</number>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="disconnectPushButton">
-    <property name="geometry">
-     <rect>
-      <x>320</x>
-      <y>30</y>
-      <width>80</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Disconnect</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="netLiquidationLabel">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>140</y>
-      <width>101</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Net Liquidation</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="netLiquidation">
-    <property name="geometry">
-     <rect>
-      <x>120</x>
-      <y>140</y>
-      <width>54</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>0</string>
-    </property>
+    <widget class="QWidget" name="connectionTab">
+     <attribute name="title">
+      <string>Connection</string>
+     </attribute>
+     <widget class="QLineEdit" name="hostLineEdit">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>20</y>
+        <width>113</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>localhost</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="connectPushButton">
+      <property name="geometry">
+       <rect>
+        <x>200</x>
+        <y>20</y>
+        <width>80</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Connect</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="disconnectPushButton">
+      <property name="geometry">
+       <rect>
+        <x>200</x>
+        <y>50</y>
+        <width>80</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Disconnect</string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="portSpinBox">
+      <property name="geometry">
+       <rect>
+        <x>140</x>
+        <y>20</y>
+        <width>51</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>32768</number>
+      </property>
+      <property name="value">
+       <number>4002</number>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="checkTimePushButton">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>60</x>
+        <y>130</y>
+        <width>80</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Check Time</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="portfolioTab">
+     <attribute name="title">
+      <string>Portfolio</string>
+     </attribute>
+     <widget class="QLabel" name="netLiquidationLabel">
+      <property name="geometry">
+       <rect>
+        <x>700</x>
+        <y>20</y>
+        <width>101</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Net Liquidation</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="netLiquidation">
+      <property name="geometry">
+       <rect>
+        <x>840</x>
+        <y>20</y>
+        <width>54</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+     <widget class="QTabWidget" name="tabWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>10</y>
+        <width>541</width>
+        <height>441</height>
+       </rect>
+      </property>
+      <property name="currentIndex">
+       <number>1</number>
+      </property>
+      <widget class="QWidget" name="stocksTab">
+       <attribute name="title">
+        <string>Stocks</string>
+       </attribute>
+       <widget class="QTableWidget" name="stocksTableWidget">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>521</width>
+          <height>391</height>
+         </rect>
+        </property>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::MultiSelection</enum>
+        </property>
+        <property name="selectionBehavior">
+         <enum>QAbstractItemView::SelectRows</enum>
+        </property>
+        <attribute name="verticalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+        <column>
+         <property name="text">
+          <string>Id</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Symbol</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Position</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Market Value</string>
+         </property>
+        </column>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="optionsTab">
+       <attribute name="title">
+        <string>Options</string>
+       </attribute>
+       <widget class="QTableWidget" name="optionsTableWidget">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>521</width>
+          <height>391</height>
+         </rect>
+        </property>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::MultiSelection</enum>
+        </property>
+        <attribute name="verticalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+        <column>
+         <property name="text">
+          <string>Id</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Symbol</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Expiration</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Position</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Market Value</string>
+         </property>
+        </column>
+       </widget>
+      </widget>
+     </widget>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -117,7 +249,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>459</width>
+     <width>1032</width>
      <height>22</height>
     </rect>
    </property>
