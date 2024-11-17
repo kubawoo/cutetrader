@@ -1,6 +1,7 @@
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp mainwindow.h mainwindow.ui
+        connectdialog.cpp connectdialog.h connectdialog.ui
 )
 
 qt_add_executable(cutetrader

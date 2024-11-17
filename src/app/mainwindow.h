@@ -7,6 +7,7 @@
 #include <QSqlDatabase>
 #include <data.h>
 #include <account.h>
+#include "connectdialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -22,7 +23,6 @@ public:
 
 public slots:
     void connectClient();
-    void disconnectClient();
     void quit();
     void accountInfoUpdated(account::AccountInfoType type, double value);
     void stockPositionUpdated(const account::Stock & stock);
@@ -42,6 +42,7 @@ private:
     data::DataManager _dataManager;
     account::Account _account;
     QApplication * _app;
+    ConnectDialog *_connectDialog;
 
 };
 #endif // MAINWINDOW_H
