@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "qtablewidget.h"
 #include <QMainWindow>
 #include <twsclient.h>
 #include <QSqlDatabase>
@@ -24,12 +25,15 @@ public slots:
     void disconnectClient();
     void quit();
     void accountInfoUpdated(account::AccountInfoType type, double value);
+    void stockPositionUpdated(const account::Stock & stock);
+    void optionPositionUpdated(const account::Option & option);
 
 private slots:
     void init();
 
 private:
     bool setupDatabase();
+    int findExistingRow(QTableWidget * table, long contractId);
 
     Ui::MainWindow *_ui;
     twsclient::TwsClient * _client;

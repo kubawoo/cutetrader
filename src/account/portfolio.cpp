@@ -130,6 +130,15 @@ common::OptionType Option::type() const
     return _type;
 }
 
+QString Option::typeAsString() const
+{
+    switch(_type){
+    case common::OptionType::PUT: return "PUT";
+    case common::OptionType::CALL: return "CALL";
+    default: return "UNKNOWN";
+    }
+}
+
 double Option::multiplier() const
 {
     return _multiplier;
