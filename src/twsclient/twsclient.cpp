@@ -79,7 +79,6 @@ void TwsClient::nextValidId(OrderId orderId)
     if(!_connected) {
         _connected = true;
         emit connectedSignal();
-        startAccountUpdates();
     }
 }
 
@@ -120,6 +119,12 @@ void TwsClient::cleanHistoricalData(long requestId)
     _cache.remove(requestId);
 }
 
+void TwsClient::startClient(const QString &accountId)
+{
+    _accountId = accountId.toStdString();
+    startAccountUpdates();
+}
+
 long TwsClient::requestHistoricalData(const Contract &contract, const QString &endDateTime,
                                       const QString &durationString, const QString &barSizeSetting)
 {
@@ -142,8 +147,7 @@ void TwsClient::managedAccounts( const std::string& accountsList)
 {
     qDebug() << "managedAccounts" << accountsList.c_str();
     QStringList accounts = QString::fromStdString(accountsList).split(",");
-    _accountId = accounts[0].toStdString();
-    emit managedAccountSignal(accounts[0]);
+    emit managedAccountsSignal(accounts);
 }
 
 void TwsClient::error(int id, time_t errorTime, int errorCode, const std::string &errorString, const std::string &advancedOrderRejectJson)

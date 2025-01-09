@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-#include "ui_connectdialog.h"
 #include <QException>
 #include <QMessageBox>
 #include <QSqlDatabase>
@@ -10,7 +9,7 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
       _ui(new Ui::MainWindow),
       _client(new twsclient::TwsClient),
       _readerThread(new twsclient::TwsReaderThread(_client)),
-      _connectDialog(new ConnectDialog(this))
+      _connectDialog(new ConnectDialog(_client, this))
 {
     this->setEnabled(false);
     _client->moveToThread(_readerThread);
@@ -19,12 +18,11 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
     _ui->optionsTableWidget->setColumnHidden(0, true);
 
     connect(_client, &twsclient::TwsClient::accountValueUpdatedSignal, &_account, &account::Account::updateAccountValue);
-    connect(_client, &twsclient::TwsClient::managedAccountSignal, &_account, &account::Account::setAccountId);
     connect(_client, &twsclient::TwsClient::portfolioPositionUpdatedSignal, &_account, &account::Account::updatePortfolioPosition);
     connect(&_account, &account::Account::accountValueUpdated, this, &MainWindow::accountInfoUpdated);
     connect(&_account, &account::Account::stockPositionUpdated, this, &MainWindow::stockPositionUpdated);
     connect(&_account, &account::Account::optionPositionUpdated, this, &MainWindow::optionPositionUpdated);
-    connect(_connectDialog, &ConnectDialog::accepted, this, &MainWindow::connectClient);
+    connect(_connectDialog, &ConnectDialog::accountSelectedSignal, this, &MainWindow::clientConnected);
     connect(_connectDialog, &ConnectDialog::rejected, this, &MainWindow::close);
 
     _readerThread->start();
@@ -37,15 +35,10 @@ MainWindow::~MainWindow()
     delete _ui;
 }
 
-void MainWindow::connectClient() {
-  const QString &host = _connectDialog->ui->hostLineEdit->text();
-  int port = _connectDialog->ui->portSpinBox->value();
-  bool connected = _client->connect(host, port);
-  if (connected) {
+void MainWindow::clientConnected(const QString & accountId) {
     this->setEnabled(true);
-  } else {
-    qDebug() << "Failed to connect";
-  }
+    _ui->statusbar->showMessage("Connected to " + accountId);
+    _client->startClient(accountId);
 }
 
 

@@ -9,15 +9,6 @@ Account::Account(QObject * parent)
 
 }
 
-QString Account::accountId()
-{
-    return _accountId;
-}
-
-void Account::setAccountId(const QString &accountId)
-{
-    _accountId = accountId;
-}
 
 QString Account::baseCurrency()
 {
