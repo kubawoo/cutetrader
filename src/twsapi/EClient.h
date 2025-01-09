@@ -92,7 +92,7 @@ namespace client_constants {
 //      InitPosition, InitFillQty and RandomPercent) in openOrder
 // 55 = can receive orderComboLegs (price) in openOrder
 // 56 = can receive trailingPercent in openOrder
-// 57 = can receive commissionReport message
+// 57 = can receive commissionAndFeesReport message
 // 58 = can receive CUSIP/ISIN/etc. in contractDescription/bondContractDescription
 // 59 = can receive evRule, evMultiplier in contractDescription/bondContractDescription/executionDetails
 //      can receive multiplier in executionDetails

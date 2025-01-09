@@ -146,7 +146,7 @@ void TwsClient::managedAccounts( const std::string& accountsList)
     emit managedAccountSignal(accounts[0]);
 }
 
-void TwsClient::error(int id, int errorCode, const std::string &errorString, const std::string &advancedOrderRejectJson)
+void TwsClient::error(int id, time_t errorTime, int errorCode, const std::string &errorString, const std::string &advancedOrderRejectJson)
 {
     qDebug() << "error" << id << errorCode << errorString.c_str() << advancedOrderRejectJson.c_str();
     //    emit errorSignal();

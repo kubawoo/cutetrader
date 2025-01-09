@@ -42,7 +42,7 @@ public:
     virtual void nextValidId(OrderId orderId) override;
     virtual void currentTime(long time) override;
     virtual void managedAccounts( const std::string& accountsList) override;
-    virtual void error(int id, int errorCode, const std::string& errorString,
+    virtual void error(int id, time_t errorTime, int errorCode, const std::string& errorString,
                        const std::string& advancedOrderRejectJson) override;
     virtual void updateAccountValue(const std::string& key, const std::string& val,
         const std::string& currency, const std::string& accountName) override;

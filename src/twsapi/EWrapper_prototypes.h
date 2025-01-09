@@ -35,7 +35,7 @@ virtual void bondContractDetails( int reqId, const ContractDetails& contractDeta
 virtual void contractDetailsEnd( int reqId) EWRAPPER_VIRTUAL_IMPL;
 virtual void execDetails( int reqId, const Contract& contract, const Execution& execution) EWRAPPER_VIRTUAL_IMPL;
 virtual void execDetailsEnd( int reqId) EWRAPPER_VIRTUAL_IMPL;
-virtual void error(int id, int errorCode, const std::string& errorString, const std::string& advancedOrderRejectJson) EWRAPPER_VIRTUAL_IMPL;
+virtual void error(int id, time_t errorTime, int errorCode,const std::string& errorString, const std::string& advancedOrderRejectJson) EWRAPPER_VIRTUAL_IMPL;
 virtual void updateMktDepth(TickerId id, int position, int operation, int side,
 	double price, Decimal size) EWRAPPER_VIRTUAL_IMPL;
 virtual void updateMktDepthL2(TickerId id, int position, const std::string& marketMaker, int operation,
@@ -57,7 +57,7 @@ virtual void fundamentalData(TickerId reqId, const std::string& data) EWRAPPER_V
 virtual void deltaNeutralValidation(int reqId, const DeltaNeutralContract& deltaNeutralContract) EWRAPPER_VIRTUAL_IMPL;
 virtual void tickSnapshotEnd( int reqId) EWRAPPER_VIRTUAL_IMPL;
 virtual void marketDataType( TickerId reqId, int marketDataType) EWRAPPER_VIRTUAL_IMPL;
-virtual void commissionReport( const CommissionReport& commissionReport) EWRAPPER_VIRTUAL_IMPL;
+virtual void commissionAndFeesReport( const CommissionAndFeesReport& commissionAndFeesReport) EWRAPPER_VIRTUAL_IMPL;
 virtual void position( const std::string& account, const Contract& contract, Decimal position, double avgCost) EWRAPPER_VIRTUAL_IMPL;
 virtual void positionEnd() EWRAPPER_VIRTUAL_IMPL;
 virtual void accountSummary( int reqId, const std::string& account, const std::string& tag, const std::string& value, const std::string& currency) EWRAPPER_VIRTUAL_IMPL;

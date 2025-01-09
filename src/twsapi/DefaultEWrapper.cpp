@@ -32,7 +32,7 @@ void DefaultEWrapper::bondContractDetails( int reqId, const ContractDetails& con
 void DefaultEWrapper::contractDetailsEnd( int reqId) { }
 void DefaultEWrapper::execDetails( int reqId, const Contract& contract, const Execution& execution) { }
 void DefaultEWrapper::execDetailsEnd( int reqId) { }
-void DefaultEWrapper::error(int id, int errorCode, const std::string& errorString, const std::string& advancedOrderRejectJson) { }
+void DefaultEWrapper::error(int id, time_t errorTime, int errorCode, const std::string& errorString, const std::string& advancedOrderRejectJson) { }
 void DefaultEWrapper::updateMktDepth(TickerId id, int position, int operation, int side,
 	double price, Decimal size) { }
 void DefaultEWrapper::updateMktDepthL2(TickerId id, int position, const std::string& marketMaker, int operation,
@@ -54,7 +54,7 @@ void DefaultEWrapper::fundamentalData(TickerId reqId, const std::string& data) {
 void DefaultEWrapper::deltaNeutralValidation(int reqId, const DeltaNeutralContract& deltaNeutralContract) { }
 void DefaultEWrapper::tickSnapshotEnd( int reqId) { }
 void DefaultEWrapper::marketDataType( TickerId reqId, int marketDataType) { }
-void DefaultEWrapper::commissionReport( const CommissionReport& commissionReport) { }
+void DefaultEWrapper::commissionAndFeesReport( const CommissionAndFeesReport& commissionAndFeesReport) { }
 void DefaultEWrapper::position( const std::string& account, const Contract& contract, Decimal position, double avgCost) { }
 void DefaultEWrapper::positionEnd() { }
 void DefaultEWrapper::accountSummary( int reqId, const std::string& account, const std::string& tag, const std::string& value, const std::string& currency) { }

@@ -8,7 +8,7 @@
 #include "OrderState.h"
 #include "Execution.h"
 #include "FamilyCode.h"
-#include "CommissionReport.h"
+#include "CommissionAndFeesReport.h"
 #include "TwsSocketClientErrors.h"
 #include "EDecoder.h"
 #include "EClientMsgSink.h"
@@ -298,12 +298,16 @@ const char* EDecoder::processOrderStatusMsg(const char* ptr, const char* endPtr)
 
 const char* EDecoder::processErrMsgMsg(const char* ptr, const char* endPtr) {
 	int version;
-	int id; // ver 2 field
-	int errorCode; // ver 2 field
+	int id;
+	time_t errorTime = 0;
+	int errorCode;
 	std::string errorMsg;
 	std::string advancedOrderRejectJson;
 
-	DECODE_FIELD( version);
+	if (m_serverVersion < MIN_SERVER_VER_ERROR_TIME) {
+		DECODE_FIELD( version);
+	}	
+
 	DECODE_FIELD( id);
 	DECODE_FIELD( errorCode);
 	DECODE_FIELD( errorMsg);
@@ -313,7 +317,11 @@ const char* EDecoder::processErrMsgMsg(const char* ptr, const char* endPtr) {
 		DECODE_FIELD( advancedOrderRejectJson);
 	}
 
-	m_pEWrapper->error( id, errorCode, errorMsg, advancedOrderRejectJson);
+	if (m_serverVersion >= MIN_SERVER_VER_ERROR_TIME) {
+		DECODE_FIELD_TIME(errorTime);
+	}
+
+	m_pEWrapper->error( id, errorTime, errorCode, errorMsg, advancedOrderRejectJson);
 
 	return ptr;
 }
@@ -396,7 +404,7 @@ const char* EDecoder::processOpenOrderMsg(const char* ptr, const char* endPtr) {
           && eOrderDecoder.decodeDeltaNeutral(ptr, endPtr)
           && eOrderDecoder.decodeAlgoParams(ptr, endPtr)
           && eOrderDecoder.decodeSolicited(ptr, endPtr)
-          && eOrderDecoder.decodeWhatIfInfoAndCommission(ptr, endPtr)
+          && eOrderDecoder.decodeWhatIfInfoAndCommissionAndFees(ptr, endPtr)
           && eOrderDecoder.decodeVolRandomizeFlags(ptr, endPtr)
           && eOrderDecoder.decodePegBenchParams(ptr, endPtr)
           && eOrderDecoder.decodeConditions(ptr, endPtr)
@@ -1210,19 +1218,19 @@ const char* EDecoder::processMarketDataTypeMsg(const char* ptr, const char* endP
 	return ptr;
 }
 
-const char* EDecoder::processCommissionReportMsg(const char* ptr, const char* endPtr) {
+const char* EDecoder::processCommissionAndFeesReportMsg(const char* ptr, const char* endPtr) {
 	int version;
 	DECODE_FIELD( version);
 
-	CommissionReport commissionReport;
-	DECODE_FIELD( commissionReport.execId);
-	DECODE_FIELD( commissionReport.commission);
-	DECODE_FIELD( commissionReport.currency);
-	DECODE_FIELD( commissionReport.realizedPNL);
-	DECODE_FIELD( commissionReport.yield);
-	DECODE_FIELD( commissionReport.yieldRedemptionDate);
+	CommissionAndFeesReport commissionAndFeesReport;
+	DECODE_FIELD( commissionAndFeesReport.execId);
+	DECODE_FIELD( commissionAndFeesReport.commissionAndFees);
+	DECODE_FIELD( commissionAndFeesReport.currency);
+	DECODE_FIELD( commissionAndFeesReport.realizedPNL);
+	DECODE_FIELD( commissionAndFeesReport.yield);
+	DECODE_FIELD( commissionAndFeesReport.yieldRedemptionDate);
 
-	m_pEWrapper->commissionReport( commissionReport);
+	m_pEWrapper->commissionAndFeesReport( commissionAndFeesReport);
 
 	return ptr;
 }
@@ -1799,7 +1807,7 @@ int EDecoder::processConnectAck(const char*& beginPtr, const char* endPtr)
 		return processed;
 	}
 	catch(const std::exception& e) {
-		m_pEWrapper->error( NO_VALID_ID, SOCKET_EXCEPTION.code(), SOCKET_EXCEPTION.msg() + e.what(), "");
+		m_pEWrapper->error( NO_VALID_ID, Utils::currentTimeMillis(), SOCKET_EXCEPTION.code(), SOCKET_EXCEPTION.msg() + e.what(), "");
 	}
 
 	return 0;
@@ -2438,8 +2446,8 @@ int EDecoder::parseAndProcessMsg(const char*& beginPtr, const char* endPtr) {
 			ptr = processMarketDataTypeMsg(ptr, endPtr);
 			break;
 
-		case COMMISSION_REPORT:
-			ptr = processCommissionReportMsg(ptr, endPtr);
+		case COMMISSION_AND_FEES_REPORT:
+			ptr = processCommissionAndFeesReportMsg(ptr, endPtr);
 			break;
 
 		case POSITION_DATA:
@@ -2632,7 +2640,7 @@ int EDecoder::parseAndProcessMsg(const char*& beginPtr, const char* endPtr) {
 
 		default:
 			{
-				m_pEWrapper->error( msgId, UNKNOWN_ID.code(), UNKNOWN_ID.msg(), "");
+				m_pEWrapper->error( msgId, Utils::currentTimeMillis(), UNKNOWN_ID.code(), UNKNOWN_ID.msg(), "");
 				m_pEWrapper->connectionClosed();
 				break;
 			}
@@ -2646,7 +2654,7 @@ int EDecoder::parseAndProcessMsg(const char*& beginPtr, const char* endPtr) {
 		return processed;
 	}
 	catch(const std::exception& e) {
-		m_pEWrapper->error( NO_VALID_ID, SOCKET_EXCEPTION.code(), SOCKET_EXCEPTION.msg() + e.what(), "");
+		m_pEWrapper->error( NO_VALID_ID, Utils::currentTimeMillis(), SOCKET_EXCEPTION.code(), SOCKET_EXCEPTION.msg() + e.what(), "");
 	}
 	return 0;
 }
