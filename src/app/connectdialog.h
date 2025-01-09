@@ -2,6 +2,8 @@
 #define CONNECTDIALOG_H
 
 #include <QDialog>
+#include <QStringList>
+#include <twsclient.h>
 
 namespace Ui {
 class ConnectDialog;
@@ -10,13 +12,21 @@ class ConnectDialog;
 class ConnectDialog : public QDialog
 {
     Q_OBJECT
-friend class MainWindow;
 public:
-    explicit ConnectDialog(QWidget *parent = nullptr);
+    explicit ConnectDialog(twsclient::TwsClient * client, QWidget *parent = nullptr);
     ~ConnectDialog();
 
+private slots:
+    void connectClient();
+    void managedAccounts(const QStringList accounts);
+    void accountSelected();
+
+signals:
+    void accountSelectedSignal(const QString & accountId);
+
 private:
-    Ui::ConnectDialog *ui;
+    Ui::ConnectDialog *_ui;
+    twsclient::TwsClient * _client;
 };
 
 #endif // CONNECTDIALOG_H

@@ -28,6 +28,7 @@ public slots:
     void stopPositionsUpdates();
     void requestManagedAccounts();
     void cleanHistoricalData(long requestId);
+    void startClient(const QString & accountId);
 
 public:
     bool connect(const QString& host, int port, int clientId = 0);
@@ -41,7 +42,7 @@ public:
     // EWrapper methods
     virtual void nextValidId(OrderId orderId) override;
     virtual void currentTime(long time) override;
-    virtual void managedAccounts( const std::string& accountsList) override;
+    virtual void managedAccounts(const std::string& accountsList) override;
     virtual void error(int id, time_t errorTime, int errorCode, const std::string& errorString,
                        const std::string& advancedOrderRejectJson) override;
     virtual void updateAccountValue(const std::string& key, const std::string& val,
@@ -63,7 +64,7 @@ signals:
     void connectedSignal();
     void disconnectedSignal();
     void currentTimeSignal(const QDateTime & time);
-    void managedAccountSignal(const QString & account);
+    void managedAccountsSignal(const QStringList accounts);
     void historicalDataReadySignal(long requestId, QList<Bar> *bars);
     void accountValueUpdatedSignal(const QString & key, const QString & value, const QString & currency);
     void portfolioPositionUpdatedSignal(const common::PortfolioPositionDTO & position);

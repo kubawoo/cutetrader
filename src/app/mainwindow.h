@@ -22,7 +22,7 @@ public:
     ~MainWindow();
 
 public slots:
-    void connectClient();
+    void clientConnected(const QString & accountId);
     void quit();
     void accountInfoUpdated(account::AccountInfoType type, double value);
     void stockPositionUpdated(const account::Stock & stock);

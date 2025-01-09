@@ -13,14 +13,12 @@ public:
     explicit Account(QObject * parent = nullptr);
 
     double accountInfo(AccountInfoType type);
-    QString accountId();
     QString baseCurrency();
 
 
 public slots:
     void updateAccountValue(const QString & key, const QString & value, const QString & currency);
     void updatePortfolioPosition(const common::PortfolioPositionDTO & position);
-    void setAccountId(const QString & accountId);
     void setBaseCurrency(const QString & currency);
 
 signals:
@@ -32,8 +30,6 @@ private:
     Stock updateStockPosition(const common::PortfolioPositionDTO & position);
     Option updateOptionPosition(const common::PortfolioPositionDTO & position);
 
-
-    QString _accountId;
     QString _baseCurrency;
     AccountInfo _accountInfo;
     Portfolio _portfolio;
