@@ -35,6 +35,7 @@ private:
     bool setupDatabase();
     int findExistingRow(QTableWidget * table, long contractId);
     QString toString(double x);
+    void reloadSecurities();
 
     Ui::MainWindow *_ui;
     twsclient::TwsClient * _client;

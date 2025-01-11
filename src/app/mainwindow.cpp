@@ -129,6 +129,8 @@ void MainWindow::init()
 
     _connectDialog->setEnabled(true);
     _connectDialog->show();
+
+    reloadSecurities();
 }
 
 bool MainWindow::setupDatabase()
@@ -157,4 +159,13 @@ int MainWindow::findExistingRow(QTableWidget *table, long contractId)
 QString MainWindow::toString(double x)
 {
     return QString::number(x, 'f', 2);
+}
+
+void MainWindow::reloadSecurities()
+{
+    _ui->securitiesListWidget->clear();
+    QList<data::Security> securities = _dataManager.getAllSecurities();
+    for(data::Security security : securities) {
+        _ui->securitiesListWidget->addItem(security.symbol());
+    }
 }
