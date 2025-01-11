@@ -3,7 +3,7 @@
 namespace data {
 
 Security::Security()
-    :_id(-1), _symbol("")
+    :_id(-1), _symbol(""), _contractId(-1)
 {
 
 }
@@ -40,7 +40,24 @@ Security &Security::withSymbol(const QString &symbol)
     return *this;
 }
 
+int Security::contractId() const
+{
+    return _contractId;
+}
+
+void Security::setContractId(int id)
+{
+    _contractId = id;
+}
+
+Security &Security::withContractId(int id)
+{
+    _contractId = id;
+    return *this;
+}
+
 Quote::Quote()
+    :_id(-1), _securityId(-1)
 {
 }
 

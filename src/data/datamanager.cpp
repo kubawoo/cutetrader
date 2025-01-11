@@ -13,15 +13,16 @@ DataManager::DataManager(QSqlDatabase &db)
 
 bool DataManager::createSecurity(const Security &security)
 {
-    QString sql = QString("INSERT INTO securities(symbol) VALUES (\"%1\");")
-            .arg(security.symbol());
+    QString sql = QString("INSERT INTO securities(symbol, contractId) VALUES (\"%1\", %2);")
+            .arg(security.symbol())
+            .arg(security.contractId());
 
     return Utils::execute(_db, sql);
 }
 
 Security DataManager::getSecurity(int id)
 {
-    QString sql = QString("SELECT id, symbol FROM securities WHERE id=%1;").arg(id);
+    QString sql = QString("SELECT id, symbol, contractId FROM securities WHERE id=%1;").arg(id);
     auto results = Utils::query(_db, sql);
     if(results.size() != 1) {
         return Security().withId(-1);
@@ -31,7 +32,7 @@ Security DataManager::getSecurity(int id)
 
 Security DataManager::getSecurity(const QString &symbol)
 {
-    QString sql = QString("SELECT id, symbol FROM securities WHERE symbol=\"%1\";").arg(symbol);
+    QString sql = QString("SELECT id, symbol, contractId FROM securities WHERE symbol=\"%1\";").arg(symbol);
     auto results = Utils::query(_db, sql);
     if(results.size() != 1) {
         return Security();
@@ -47,7 +48,7 @@ bool DataManager::removeSecurity(int id)
 
 QList<Security> DataManager::getAllSecurities()
 {
-    auto results = Utils::query(_db, "SELECT id, symbol FROM securities ORDER BY symbol;");
+    auto results = Utils::query(_db, "SELECT id, symbol, contractId FROM securities ORDER BY symbol;");
     QList<Security> securities;
     for(auto result: results) {
         securities.append(toSecurity(result));
@@ -100,9 +101,10 @@ QList<Quote> DataManager::getQuotes(const Security &security, const QDate &from,
 Security DataManager::toSecurity(DbResult &data)
 {
     Security security;
-    bool ok = data.size() == 2;
+    bool ok = data.size() == 3;
     ok && (ok &= setValue(security, &Security::setId, data[0], &QVariant::toInt));
     ok && (ok &= setValue(security, &Security::setSymbol, data[1], &QVariant::toString));
+    ok && (ok &= setValue(security, &Security::setContractId, data[2], &QVariant::toInt));
 
     if(!ok) {
         return Security();

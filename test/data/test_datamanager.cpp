@@ -10,8 +10,8 @@ void DataManagerTest::testSecurities()
     auto securities = _manager.getAllSecurities();
     QCOMPARE(securities.size(), 0);
 
-    Security spy = Security().withSymbol("SPY");
-    Security tlt = Security().withSymbol("TLT");
+    Security spy = Security().withSymbol("SPY").withContractId(123);
+    Security tlt = Security().withSymbol("TLT").withContractId(321);
 
     bool ok = _manager.createSecurity(spy);
     QVERIFY(ok);
@@ -23,16 +23,21 @@ void DataManagerTest::testSecurities()
     QCOMPARE(securities.size(), 2);
     QCOMPARE(securities[0].id(), 1);
     QCOMPARE(securities[0].symbol(), "SPY");
+    QCOMPARE(securities[0].contractId(), 123);
     QCOMPARE(securities[1].id(), 2);
     QCOMPARE(securities[1].symbol(), "TLT");
+    QCOMPARE(securities[1].contractId(), 321);
+
 
     spy = _manager.getSecurity(1);
     QCOMPARE(spy.id(), 1);
     QCOMPARE(spy.symbol(), "SPY");
+    QCOMPARE(spy.contractId(), 123);
 
     tlt = _manager.getSecurity("TLT");
     QCOMPARE(tlt.id(), 2);
     QCOMPARE(tlt.symbol(), "TLT");
+    QCOMPARE(tlt.contractId(), 321);
 
     ok = _manager.removeSecurity(2);
     QVERIFY(ok);
@@ -41,8 +46,9 @@ void DataManagerTest::testSecurities()
     QCOMPARE(securities.size(), 1);
     QCOMPARE(securities[0].id(), 1);
     QCOMPARE(securities[0].symbol(), "SPY");
+    QCOMPARE(securities[0].contractId(), 123);
 
-    Security iwm = Security().withSymbol("IWM");
+    Security iwm = Security().withSymbol("IWM").withContractId(456);
 
     ok = _manager.createSecurity(iwm);
     QVERIFY(ok);
@@ -51,8 +57,10 @@ void DataManagerTest::testSecurities()
     QCOMPARE(securities.size(), 2);
     QCOMPARE(securities[0].id(), 2);
     QCOMPARE(securities[0].symbol(), "IWM");
+    QCOMPARE(securities[0].contractId(), 456);
     QCOMPARE(securities[1].id(), 1);
     QCOMPARE(securities[1].symbol(), "SPY");
+    QCOMPARE(securities[1].contractId(), 123);
 
     ok = _manager.createSecurity(spy);
     QVERIFY(!ok);
@@ -60,13 +68,15 @@ void DataManagerTest::testSecurities()
     QCOMPARE(securities.size(), 2);
     QCOMPARE(securities[0].id(), 2);
     QCOMPARE(securities[0].symbol(), "IWM");
+    QCOMPARE(securities[0].contractId(), 456);
     QCOMPARE(securities[1].id(), 1);
     QCOMPARE(securities[1].symbol(), "SPY");
+    QCOMPARE(securities[1].contractId(), 123);
 }
 
 void DataManagerTest::testQuotes()
 {
-    Security spy = Security().withSymbol("SPY");
+    Security spy = Security().withSymbol("SPY").withContractId(123);
 
     bool ok = _manager.createSecurity(spy);
     QVERIFY(ok);
@@ -74,6 +84,7 @@ void DataManagerTest::testQuotes()
     spy = _manager.getSecurity(1);
     QCOMPARE(spy.id(), 1);
     QCOMPARE(spy.symbol(), "SPY");
+    QCOMPARE(spy.contractId(), 123);
 
     Quote q1 = Quote()
             .withSecurityId(1)
