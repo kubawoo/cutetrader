@@ -67,7 +67,7 @@ void Account::updatePortfolioPosition(const common::PortfolioPositionDTO &positi
     }
     case common::SecurityType::OPTION: {
         Option option = updateOptionPosition(position);
-        qDebug() << "updatePortfolioPosition optoin" << option.symbol();
+        qDebug() << "updatePortfolioPosition option" << option.symbol();
         emit optionPositionUpdated(option);
         break;
     }

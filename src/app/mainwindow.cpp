@@ -58,7 +58,28 @@ void MainWindow::accountInfoUpdated(account::AccountInfoType type, double value)
 {
     switch(type) {
     case account::AccountInfoType::NetLiquidation:
-        _ui->netLiquidation->setText(QString::number(value));
+        _ui->netLiquidation->setText(toString(value));
+        break;
+    case account::AccountInfoType::MaintMarginReq:
+        _ui->maintananceMargin->setText(toString(value));
+        break;
+    case account::AccountInfoType::ExcessLiquidity:
+        _ui->excessLiquidity->setText(toString(value));
+        break;
+    case account::AccountInfoType::CashBalance:
+        _ui->cashBalance->setText(toString(value));
+        break;
+    case account::AccountInfoType::StockMarketValue:
+        _ui->stocksValue->setText(toString(value));
+        break;
+    case account::AccountInfoType::OptionMarketValue:
+        _ui->optionsValue->setText(toString(value));
+        break;
+    case account::AccountInfoType::RealizedPnL:
+        _ui->realizedPNL->setText(toString(value));
+        break;
+    case account::AccountInfoType::UnrealizedPnL:
+        _ui->unrealizedPNL->setText(toString(value));
         break;
     default:
         break;
@@ -76,7 +97,8 @@ void MainWindow::stockPositionUpdated(const account::Stock &stock)
     _ui->stocksTableWidget->setItem(row, 0, new QTableWidgetItem(QString::number(stock.contractId())));
     _ui->stocksTableWidget->setItem(row, 1, new QTableWidgetItem(stock.symbol()));
     _ui->stocksTableWidget->setItem(row, 2, new QTableWidgetItem(QString::number(stock.position())));
-    _ui->stocksTableWidget->setItem(row, 3, new QTableWidgetItem(QString::number(stock.marketValue())));
+    _ui->stocksTableWidget->setItem(row, 3, new QTableWidgetItem(toString(stock.marketValue())));
+    _ui->stocksTableWidget->setItem(row, 4, new QTableWidgetItem(toString(stock.unrealizedPNL())));
 }
 
 void MainWindow::optionPositionUpdated(const account::Option &option)
@@ -93,7 +115,8 @@ void MainWindow::optionPositionUpdated(const account::Option &option)
     _ui->optionsTableWidget->setItem(row, 1, new QTableWidgetItem(symbol));
     _ui->optionsTableWidget->setItem(row, 2, new QTableWidgetItem(option.expiration().toString(Qt::DateFormat::ISODate)));
     _ui->optionsTableWidget->setItem(row, 3, new QTableWidgetItem(QString::number(option.position())));
-    _ui->optionsTableWidget->setItem(row, 4, new QTableWidgetItem(QString::number(option.marketValue())));
+    _ui->optionsTableWidget->setItem(row, 4, new QTableWidgetItem(toString(option.marketValue())));
+    _ui->optionsTableWidget->setItem(row, 5, new QTableWidgetItem(toString(option.unrealizedPNL())));
 }
 
 void MainWindow::init()
@@ -129,4 +152,9 @@ int MainWindow::findExistingRow(QTableWidget *table, long contractId)
         }
     }
     return -1;
+}
+
+QString MainWindow::toString(double x)
+{
+    return QString::number(x, 'f', 2);
 }

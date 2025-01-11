@@ -196,7 +196,7 @@ void TwsClient::updatePortfolio( const Contract& contract, Decimal position,
     qDebug() << "updatePortfolio" << contract.secType.c_str()
              << contract.symbol.c_str() << DecimalFunctions::decimalToDouble(position)
              << marketPrice << marketValue << averageCost
-             <<unrealizedPNL << realizedPNL << accountName.c_str();
+             << unrealizedPNL << realizedPNL << accountName.c_str();
 
 
     if(accountName != _accountId) {
