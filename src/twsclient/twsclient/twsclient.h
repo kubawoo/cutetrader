@@ -36,6 +36,7 @@ public:
     bool isConnected();
     long requestHistoricalData(const Contract &contract, const QString &endDateTime,
                                const QString &durationString, const QString &barSizeSetting);
+    long requestContractDetails(const Contract &contract);
 
 
 public:
@@ -47,7 +48,7 @@ public:
                        const std::string& advancedOrderRejectJson) override;
     virtual void updateAccountValue(const std::string& key, const std::string& val,
         const std::string& currency, const std::string& accountName) override;
-    virtual void updatePortfolio( const Contract& contract, Decimal position,
+    virtual void updatePortfolio(const Contract& contract, Decimal position,
         double marketPrice, double marketValue, double averageCost,
         double unrealizedPNL, double realizedPNL, const std::string& accountName) override;
     virtual void updateAccountTime(const std::string& timeStamp) override;
@@ -58,6 +59,8 @@ public:
     virtual void historicalData(long reqId, const Bar& bar) override;
     virtual void historicalDataEnd(int reqId, const std::string& startDateStr,
                                    const std::string& endDateStr) override;
+    virtual void contractDetails(int reqId, const ContractDetails& contractDetails) override;
+    virtual void contractDetailsEnd(int reqId) override;
 
 
 signals:
@@ -68,6 +71,7 @@ signals:
     void historicalDataReadySignal(long requestId, QList<Bar> *bars);
     void accountValueUpdatedSignal(const QString & key, const QString & value, const QString & currency);
     void portfolioPositionUpdatedSignal(const common::PortfolioPositionDTO & position);
+//    void contractDetailReadySignal(long requestId, ?);
 
 
 private:

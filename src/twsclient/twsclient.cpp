@@ -134,6 +134,11 @@ long TwsClient::requestHistoricalData(const Contract &contract, const QString &e
     return _requestId++;
 }
 
+long TwsClient::requestContractDetails(const Contract &contract)
+{
+    _client->reqContractDetails(_requestId, contract);
+    return _requestId++;
+}
 
 
 void TwsClient::currentTime(long time)
@@ -189,9 +194,9 @@ void TwsClient::updateAccountValue(const std::string& key, const std::string& va
 
 }
 
-void TwsClient::updatePortfolio( const Contract& contract, Decimal position,
-                                 double marketPrice, double marketValue, double averageCost,
-                                 double unrealizedPNL, double realizedPNL, const std::string& accountName)
+void TwsClient::updatePortfolio(const Contract& contract, Decimal position,
+                                double marketPrice, double marketValue, double averageCost,
+                                double unrealizedPNL, double realizedPNL, const std::string& accountName)
 {
     qDebug() << "updatePortfolio" << contract.secType.c_str()
              << contract.symbol.c_str() << DecimalFunctions::decimalToDouble(position)
@@ -247,6 +252,16 @@ void TwsClient::historicalDataEnd(int reqId, const std::string &startDateStr, co
 {
     qDebug() << "historicalDataEnd" << reqId << startDateStr.c_str() << endDateStr.c_str();
     emit historicalDataReadySignal(reqId, _cache.bars(reqId));
+}
+
+void TwsClient::contractDetails(int reqId, const ContractDetails &contractDetails)
+{
+    qDebug() << "contractDetails";
+}
+
+void TwsClient::contractDetailsEnd(int reqId)
+{
+    qDebug() << "contractDetailsEnd";
 }
 
 
