@@ -128,7 +128,7 @@ int TwsClient::requestContractDetails(long contractId)
     QStringList keys = {"requestContractDetails", QString::number(contractId)};
     auto cacheEntry = _cache.get(keys);
 
-    if(cacheEntry.first >= 0 && cacheEntry.second) {
+    if(cacheEntry.first >= 0 && cacheEntry.second && cacheEntry.second->ready()) {
         long requestId = cacheEntry.first;
         ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(cacheEntry.second);
         qDebug() << "Returning from cache";
@@ -146,7 +146,7 @@ int TwsClient::requestMatchingSymbols(const QString &pattern)
     QStringList keys = {"requestMatchingSymbols", pattern};
     auto cacheEntry = _cache.get(keys);
 
-    if(cacheEntry.first >= 0 && cacheEntry.second) {
+    if(cacheEntry.first >= 0 && cacheEntry.second && cacheEntry.second->ready()) {
         long requestId = cacheEntry.first;
         ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(cacheEntry.second);
         qDebug() << "Returning from cache";
@@ -289,6 +289,7 @@ void TwsClient::contractDetailsEnd(int reqId)
 {
     qDebug() << "contractDetailsEnd";
     ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(_cache.get(reqId));
+    entry->setReady();
     emit contractDetailReadySignal(reqId, entry->contractDetails);
 }
 
@@ -312,6 +313,7 @@ void TwsClient::symbolSamples(int reqId, const std::vector<ContractDescription> 
         dto.description = cd.contract.description.c_str();
         entry->contractDetails.append(dto);
     }
+    entry->setReady();
     emit matchingSymbolsReadySignal(reqId, entry->contractDetails);
 }
 

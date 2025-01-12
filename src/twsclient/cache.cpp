@@ -8,6 +8,7 @@ namespace twsclient {
 CacheEntry::CacheEntry(long ttl)
 {
     _expiry = QDateTime::currentSecsSinceEpoch() + ttl;
+    _ready = false;
 }
 
 CacheEntry::~CacheEntry()
@@ -16,6 +17,16 @@ CacheEntry::~CacheEntry()
 long CacheEntry::expiry()
 {
     return _expiry;
+}
+
+bool CacheEntry::ready()
+{
+    return _ready;
+}
+
+void CacheEntry::setReady()
+{
+    _ready = true;
 }
 
 

@@ -14,8 +14,11 @@ public:
     CacheEntry(long expiry);
     virtual ~CacheEntry() = 0;
     long expiry();
+    bool ready();
+    void setReady();
 private:
-    int _expiry;
+    long _expiry;
+    bool _ready;
 };
 
 
