@@ -85,13 +85,6 @@ void TwsClient::nextValidId(OrderId orderId)
 void TwsClient::requestCurrentTime() {
     qDebug() << "requestCurrentTime";
     _client->reqCurrentTime();
-    //    Contract c;
-    //    c.secType = "STK";
-    //    c.symbol = "SPY";
-    //    c.currency = "USD";
-    //    c.exchange = "SMART";
-    //    int reqId = requestHistoricalData(c, "", "30 D", "1 day");
-    //    qDebug() << "requestHistoricalData" << reqId;
 }
 
 void TwsClient::startAccountUpdates() {
@@ -114,10 +107,6 @@ void TwsClient::requestManagedAccounts()
     _client->reqManagedAccts();
 }
 
-void TwsClient::cleanHistoricalData(long requestId)
-{
-    _cache.remove(requestId);
-}
 
 void TwsClient::startClient(const QString &accountId)
 {
@@ -125,18 +114,34 @@ void TwsClient::startClient(const QString &accountId)
     startAccountUpdates();
 }
 
-long TwsClient::requestHistoricalData(const Contract &contract, const QString &endDateTime,
-                                      const QString &durationString, const QString &barSizeSetting)
+//long TwsClient::requestHistoricalData(const Contract &contract, const QString &endDateTime,
+//                                      const QString &durationString, const QString &barSizeSetting)
+//{
+//    _client->reqHistoricalData(_requestId, contract, endDateTime.toStdString(),
+//                               durationString.toStdString(), barSizeSetting.toStdString(),
+//                               "TRADES", 1, 1, false, TagValueListSPtr());
+//    return _requestId++;
+//}
+
+long TwsClient::requestContractDetails(long contractId)
 {
-    _client->reqHistoricalData(_requestId, contract, endDateTime.toStdString(),
-                               durationString.toStdString(), barSizeSetting.toStdString(),
-                               "TRADES", 1, 1, false, TagValueListSPtr());
+    QStringList keys = {"requestContractDetails", QString::number(contractId)};
+    ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(_cache.get(keys));
+    if(entry) {
+        qDebug() << "Returning from cache";
+        emit contractDetailReadySignal(entry->contractDetails);
+        return 0;
+    }
+
+
+    _cache.add(_requestId, new ContractDetailsCacheEntry(), keys);
+    _client->reqContractDetails(_requestId, buildContract(contractId));
     return _requestId++;
 }
 
-long TwsClient::requestContractDetails(const Contract &contract)
+long TwsClient::requestMatchingSymbols(const QString &pattern)
 {
-    _client->reqContractDetails(_requestId, contract);
+    _client->reqMatchingSymbols(_requestId, pattern.toStdString());
     return _requestId++;
 }
 
@@ -245,23 +250,54 @@ void TwsClient::updatePortfolio(const Contract& contract, Decimal position,
 void TwsClient::historicalData(long reqId, const Bar &bar)
 {
     qDebug() << "historicalData" << reqId << bar.time.c_str() << bar.close;
-    _cache.addBar(reqId, bar);
+//    _cache.addBar(reqId, bar);
 }
 
 void TwsClient::historicalDataEnd(int reqId, const std::string &startDateStr, const std::string &endDateStr)
 {
     qDebug() << "historicalDataEnd" << reqId << startDateStr.c_str() << endDateStr.c_str();
-    emit historicalDataReadySignal(reqId, _cache.bars(reqId));
+//    emit historicalDataReadySignal(reqId, _cache.bars(reqId));
 }
 
 void TwsClient::contractDetails(int reqId, const ContractDetails &contractDetails)
 {
-    qDebug() << "contractDetails";
+    qDebug() << "contractDetails" << contractDetails.contract.symbol.c_str();
+    ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(_cache.get(reqId));
+    common::ContractDetailsDTO dto;
+    dto.contractId = contractDetails.contract.conId;
+    dto.currency = contractDetails.contract.currency.c_str();
+    dto.symbol = contractDetails.contract.symbol.c_str();
+    dto.description = contractDetails.contract.description.c_str();
+    entry->contractDetails.append(dto);
 }
 
 void TwsClient::contractDetailsEnd(int reqId)
 {
     qDebug() << "contractDetailsEnd";
+    ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(_cache.get(reqId));
+    emit contractDetailReadySignal(entry->contractDetails);
+}
+
+void TwsClient::symbolSamples(int reqId, const std::vector<ContractDescription> &contractDescriptions)
+{
+    qDebug() << "symbolSamples";
+    for(ContractDescription cd : contractDescriptions) {
+        if(cd.contract.conId < 0) {
+            continue;
+        }
+
+        qDebug() << cd.contract.conId << cd.contract.symbol.c_str()
+                 << cd.contract.currency.c_str() << cd.contract.exchange.c_str() << cd.contract.description.c_str();
+
+    }
+}
+
+Contract TwsClient::buildContract(long contractId)
+{
+    Contract c;
+    c.conId = contractId;
+    c.exchange = "SMART";
+    return c;
 }
 
 

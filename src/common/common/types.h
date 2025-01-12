@@ -32,6 +32,24 @@ struct PortfolioPositionDTO
     double multiplier;
 };
 
+struct ContractDetailsDTO
+{
+    long contractId;
+    QString symbol;
+    QString currency;
+    QString description;
+};
+
+struct QuoteDTO
+{
+    QDate date;
+    double open;
+    double close;
+    double low;
+    double high;
+    int volume;
+};
+
 }
 
 

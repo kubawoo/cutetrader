@@ -27,16 +27,16 @@ public slots:
     void startPositionsUpdates();
     void stopPositionsUpdates();
     void requestManagedAccounts();
-    void cleanHistoricalData(long requestId);
     void startClient(const QString & accountId);
 
 public:
     bool connect(const QString& host, int port, int clientId = 0);
     void disconnect();
     bool isConnected();
-    long requestHistoricalData(const Contract &contract, const QString &endDateTime,
-                               const QString &durationString, const QString &barSizeSetting);
-    long requestContractDetails(const Contract &contract);
+//    long requestHistoricalData(const Contract &contract, const QString &endDateTime,
+//                               const QString &durationString, const QString &barSizeSetting);
+    long requestContractDetails(long contractId);
+    long requestMatchingSymbols(const QString & pattern);
 
 
 public:
@@ -61,6 +61,7 @@ public:
                                    const std::string& endDateStr) override;
     virtual void contractDetails(int reqId, const ContractDetails& contractDetails) override;
     virtual void contractDetailsEnd(int reqId) override;
+    virtual void symbolSamples(int reqId, const std::vector<ContractDescription> &contractDescriptions) override;
 
 
 signals:
@@ -68,13 +69,16 @@ signals:
     void disconnectedSignal();
     void currentTimeSignal(const QDateTime & time);
     void managedAccountsSignal(const QStringList accounts);
-    void historicalDataReadySignal(long requestId, QList<Bar> *bars);
+//    void historicalDataReadySignal(long requestId, QList<Bar> *bars);
     void accountValueUpdatedSignal(const QString & key, const QString & value, const QString & currency);
     void portfolioPositionUpdatedSignal(const common::PortfolioPositionDTO & position);
-//    void contractDetailReadySignal(long requestId, ?);
+    void contractDetailReadySignal(const QList<common::ContractDetailsDTO> & details);
+    void matchingSymbolsReadySignal(const QList<common::ContractDetailsDTO> & details);
 
 
 private:
+    Contract buildContract(long contractId);
+
     EReaderOSSignal _readerSignal;
     EClientSocket * const _client;
     long _nextOrderId;
