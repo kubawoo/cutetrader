@@ -33,7 +33,7 @@ class Cache
 public:
     void add(long requestId, CacheEntry * entry, const QStringList& keys);
     CacheEntry * get(long requestId);
-    CacheEntry * get(const QStringList& keys);
+    QPair<long, CacheEntry *> get(const QStringList& keys);
     void cleanup();
 private:
     QString buildKey(const QStringList & list);

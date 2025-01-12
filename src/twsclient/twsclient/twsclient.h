@@ -33,10 +33,10 @@ public:
     bool connect(const QString& host, int port, int clientId = 0);
     void disconnect();
     bool isConnected();
-//    long requestHistoricalData(const Contract &contract, const QString &endDateTime,
+//    int requestHistoricalData(const Contract &contract, const QString &endDateTime,
 //                               const QString &durationString, const QString &barSizeSetting);
-    long requestContractDetails(long contractId);
-    long requestMatchingSymbols(const QString & pattern);
+    int requestContractDetails(long contractId);
+    int requestMatchingSymbols(const QString & pattern);
 
 
 public:
@@ -72,8 +72,8 @@ signals:
 //    void historicalDataReadySignal(long requestId, QList<Bar> *bars);
     void accountValueUpdatedSignal(const QString & key, const QString & value, const QString & currency);
     void portfolioPositionUpdatedSignal(const common::PortfolioPositionDTO & position);
-    void contractDetailReadySignal(const QList<common::ContractDetailsDTO> & details);
-    void matchingSymbolsReadySignal(const QList<common::ContractDetailsDTO> & details);
+    void contractDetailReadySignal(const int & requestId, const QList<common::ContractDetailsDTO> & details);
+    void matchingSymbolsReadySignal(const int & requestId, const QList<common::ContractDetailsDTO> & details);
 
 
 private:
@@ -84,7 +84,7 @@ private:
     long _nextOrderId;
     EReader * _reader;
     bool _connected;
-    int _requestId;
+    unsigned int _requestId;
     Cache _cache;
     std::string _accountId;
 };

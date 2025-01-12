@@ -32,11 +32,14 @@ CacheEntry *Cache::get(long requestId)
     return _cache.value(requestId, nullptr);
 }
 
-CacheEntry *Cache::get(const QStringList &keys)
+QPair<long, CacheEntry *> Cache::get(const QStringList &keys)
 {
     QString key = buildKey(keys);
     long requestId = _requestCache.value(key, -1L);
-    return get(requestId);
+    if(requestId >= 0) {
+        return QPair<long, CacheEntry *> (requestId, get(requestId));
+    }
+    return QPair<long, CacheEntry *>(requestId, nullptr);
 }
 
 void Cache::cleanup()
