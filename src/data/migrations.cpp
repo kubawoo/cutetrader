@@ -27,7 +27,8 @@ const QStringList Migration_001::sql() const
     return QStringList({
                            "CREATE TABLE securities ("
                            "id INTEGER PRIMARY KEY,"
-                           "symbol TEXT NOT NULL UNIQUE"
+                           "symbol TEXT NOT NULL UNIQUE,"
+                           "contractId INTEGER NOT NULL UNIQUE"
                            ");"
                        });
 }

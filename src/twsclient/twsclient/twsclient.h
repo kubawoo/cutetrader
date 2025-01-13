@@ -27,15 +27,16 @@ public slots:
     void startPositionsUpdates();
     void stopPositionsUpdates();
     void requestManagedAccounts();
-    void cleanHistoricalData(long requestId);
     void startClient(const QString & accountId);
 
 public:
     bool connect(const QString& host, int port, int clientId = 0);
     void disconnect();
     bool isConnected();
-    long requestHistoricalData(const Contract &contract, const QString &endDateTime,
-                               const QString &durationString, const QString &barSizeSetting);
+//    int requestHistoricalData(const Contract &contract, const QString &endDateTime,
+//                               const QString &durationString, const QString &barSizeSetting);
+    int requestContractDetails(long contractId);
+    int requestMatchingSymbols(const QString & pattern);
 
 
 public:
@@ -47,7 +48,7 @@ public:
                        const std::string& advancedOrderRejectJson) override;
     virtual void updateAccountValue(const std::string& key, const std::string& val,
         const std::string& currency, const std::string& accountName) override;
-    virtual void updatePortfolio( const Contract& contract, Decimal position,
+    virtual void updatePortfolio(const Contract& contract, Decimal position,
         double marketPrice, double marketValue, double averageCost,
         double unrealizedPNL, double realizedPNL, const std::string& accountName) override;
     virtual void updateAccountTime(const std::string& timeStamp) override;
@@ -58,6 +59,9 @@ public:
     virtual void historicalData(long reqId, const Bar& bar) override;
     virtual void historicalDataEnd(int reqId, const std::string& startDateStr,
                                    const std::string& endDateStr) override;
+    virtual void contractDetails(int reqId, const ContractDetails& contractDetails) override;
+    virtual void contractDetailsEnd(int reqId) override;
+    virtual void symbolSamples(int reqId, const std::vector<ContractDescription> &contractDescriptions) override;
 
 
 signals:
@@ -65,18 +69,22 @@ signals:
     void disconnectedSignal();
     void currentTimeSignal(const QDateTime & time);
     void managedAccountsSignal(const QStringList accounts);
-    void historicalDataReadySignal(long requestId, QList<Bar> *bars);
+//    void historicalDataReadySignal(long requestId, QList<Bar> *bars);
     void accountValueUpdatedSignal(const QString & key, const QString & value, const QString & currency);
     void portfolioPositionUpdatedSignal(const common::PortfolioPositionDTO & position);
+    void contractDetailReadySignal(const int & requestId, const QList<common::ContractDetailsDTO> & details);
+    void matchingSymbolsReadySignal(const int & requestId, const QList<common::ContractDetailsDTO> & details);
 
 
 private:
+    Contract buildContract(long contractId);
+
     EReaderOSSignal _readerSignal;
     EClientSocket * const _client;
     long _nextOrderId;
     EReader * _reader;
     bool _connected;
-    int _requestId;
+    unsigned int _requestId;
     Cache _cache;
     std::string _accountId;
 };

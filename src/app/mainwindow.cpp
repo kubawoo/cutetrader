@@ -9,24 +9,30 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
       _ui(new Ui::MainWindow),
       _client(new twsclient::TwsClient),
       _readerThread(new twsclient::TwsReaderThread(_client)),
-      _connectDialog(new ConnectDialog(_client, this))
+      _connectDialog(new ConnectDialog(_client, this)),
+      _addSecurityDialog(new AddSecurityDialog(_client, this))
 {
     this->setEnabled(false);
     _client->moveToThread(_readerThread);
     _ui->setupUi(this);
     _ui->stocksTableWidget->setColumnHidden(0, true);
     _ui->optionsTableWidget->setColumnHidden(0, true);
+    _ui->futuresTableWidget->setColumnHidden(0, true);
 
     connect(_client, &twsclient::TwsClient::accountValueUpdatedSignal, &_account, &account::Account::updateAccountValue);
     connect(_client, &twsclient::TwsClient::portfolioPositionUpdatedSignal, &_account, &account::Account::updatePortfolioPosition);
     connect(&_account, &account::Account::accountValueUpdated, this, &MainWindow::accountInfoUpdated);
     connect(&_account, &account::Account::stockPositionUpdated, this, &MainWindow::stockPositionUpdated);
     connect(&_account, &account::Account::optionPositionUpdated, this, &MainWindow::optionPositionUpdated);
+    connect(&_account, &account::Account::futurePositionUpdated, this, &MainWindow::futurePositionUpdated);
     connect(_connectDialog, &ConnectDialog::accountSelectedSignal, this, &MainWindow::clientConnected);
     connect(_connectDialog, &ConnectDialog::rejected, this, &MainWindow::close);
 
-    _readerThread->start();
+    connect(_ui->addSecurityPushButton, &QPushButton::clicked, this, &MainWindow::addSecurity);
+    connect(_addSecurityDialog, &AddSecurityDialog::addSecuritySignal, this, &MainWindow::securityAdded);
 
+
+    _readerThread->start();
     QTimer::singleShot(0, this, &MainWindow::init);
 }
 
@@ -75,6 +81,9 @@ void MainWindow::accountInfoUpdated(account::AccountInfoType type, double value)
     case account::AccountInfoType::OptionMarketValue:
         _ui->optionsValue->setText(toString(value));
         break;
+    case account::AccountInfoType::FuturesPNL:
+        _ui->futuresPNL->setText(toString(value));
+        break;
     case account::AccountInfoType::RealizedPnL:
         _ui->realizedPNL->setText(toString(value));
         break;
@@ -119,6 +128,22 @@ void MainWindow::optionPositionUpdated(const account::Option &option)
     _ui->optionsTableWidget->setItem(row, 5, new QTableWidgetItem(toString(option.unrealizedPNL())));
 }
 
+void MainWindow::futurePositionUpdated(const account::Future &future)
+{
+    int row = findExistingRow(_ui->futuresTableWidget, future.contractId());
+    if(row < 0) {
+        row = _ui->futuresTableWidget->rowCount();
+        _ui->futuresTableWidget->setRowCount(row + 1);
+    }
+
+    _ui->futuresTableWidget->setItem(row, 0, new QTableWidgetItem(QString::number(future.contractId())));
+    _ui->futuresTableWidget->setItem(row, 1, new QTableWidgetItem(future.symbol()));
+    _ui->futuresTableWidget->setItem(row, 2, new QTableWidgetItem(future.expiration().toString(Qt::DateFormat::ISODate)));
+    _ui->futuresTableWidget->setItem(row, 3, new QTableWidgetItem(QString::number(future.position())));
+    _ui->futuresTableWidget->setItem(row, 4, new QTableWidgetItem(toString(future.marketValue())));
+    _ui->futuresTableWidget->setItem(row, 5, new QTableWidgetItem(toString(future.unrealizedPNL())));
+}
+
 void MainWindow::init()
 {
     if(!setupDatabase()) {
@@ -129,6 +154,23 @@ void MainWindow::init()
 
     _connectDialog->setEnabled(true);
     _connectDialog->show();
+
+    reloadSecurities();
+}
+
+void MainWindow::addSecurity()
+{
+    _addSecurityDialog->setEnabled(true);
+    _addSecurityDialog->show();
+}
+
+void MainWindow::securityAdded(const common::ContractDetailsDTO &details)
+{
+    qDebug() << "securityAdded" << details.symbol;
+    data::Security security;
+    security.withSymbol(details.symbol).withContractId(details.contractId);
+    _dataManager.createSecurity(security);
+    reloadSecurities();
 }
 
 bool MainWindow::setupDatabase()
@@ -157,4 +199,13 @@ int MainWindow::findExistingRow(QTableWidget *table, long contractId)
 QString MainWindow::toString(double x)
 {
     return QString::number(x, 'f', 2);
+}
+
+void MainWindow::reloadSecurities()
+{
+    _ui->securitiesListWidget->clear();
+    QList<data::Security> securities = _dataManager.getAllSecurities();
+    for(data::Security security : securities) {
+        _ui->securitiesListWidget->addItem(security.symbol());
+    }
 }

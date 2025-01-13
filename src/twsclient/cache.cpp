@@ -4,12 +4,14 @@
 
 namespace twsclient {
 
-CacheEntry::CacheEntry()
-    : CacheEntry(0)
-{}
 
-CacheEntry::CacheEntry(long expiry)
-    : _expiry(expiry)
+CacheEntry::CacheEntry(long ttl)
+{
+    _expiry = QDateTime::currentSecsSinceEpoch() + ttl;
+    _ready = false;
+}
+
+CacheEntry::~CacheEntry()
 {}
 
 long CacheEntry::expiry()
@@ -17,39 +19,73 @@ long CacheEntry::expiry()
     return _expiry;
 }
 
-QList<Bar> *CacheEntry::bars()
+bool CacheEntry::ready()
 {
-    return &_bars;
+    return _ready;
+}
+
+void CacheEntry::setReady()
+{
+    _ready = true;
+}
+
+
+void Cache::add(long requestId, CacheEntry *entry, const QStringList &keys)
+{
+    _cache.insert(requestId, entry);
+    if(!keys.empty()) {
+        _requestCache.insert(buildKey(keys), requestId);
+    }
+}
+
+CacheEntry *Cache::get(long requestId)
+{
+    return _cache.value(requestId, nullptr);
+}
+
+QPair<long, CacheEntry *> Cache::get(const QStringList &keys)
+{
+    QString key = buildKey(keys);
+    long requestId = _requestCache.value(key, -1L);
+    if(requestId >= 0) {
+        return QPair<long, CacheEntry *> (requestId, get(requestId));
+    }
+    return QPair<long, CacheEntry *>(requestId, nullptr);
 }
 
 void Cache::cleanup()
 {
-    qDebug() << "Before cleanup" << _cache.keys();
+    qDebug() << "Before cleanup" << _cache.keys() << _requestCache.keys();
     long now = QDateTime::currentSecsSinceEpoch();
-    _cache.removeIf([now](std::pair<const long &, CacheEntry &> entry) {
-        return entry.second.expiry() < now;
+    _cache.removeIf([now](std::pair<const long &, CacheEntry *> entry) {
+        bool del = entry.second->expiry() < now;
+        if(del) {
+            delete entry.second;
+        }
+        return del;
     });
-    qDebug() << "After cleanup" << _cache.keys();
+
+    _requestCache.removeIf([this](std::pair<const QString &, const long &> entry) {
+        return !_cache.contains(entry.second);
+    });
+    qDebug() << "After cleanup" << _cache.keys() << _requestCache.keys();
+}
+
+
+QString Cache::buildKey(const QStringList &list)
+{
+    return list.join("_");
+}
+
+ContractDetailsCacheEntry::ContractDetailsCacheEntry()
+    : CacheEntry(300)
+{
 
 }
 
-void Cache::addBar(long requestId, const Bar &bar)
+ContractDetailsCacheEntry::~ContractDetailsCacheEntry()
 {
-    if(!_cache.contains(requestId)) {
-        long now = QDateTime::currentSecsSinceEpoch();
-        _cache.insert(requestId, CacheEntry(now + 300)); // 5 minutes
-    }
-    _cache.value(requestId).bars()->append(bar);
-}
 
-QList<Bar> *Cache::bars(long requestId)
-{
-    return _cache[requestId].bars();
-}
-
-void Cache::remove(long requestId)
-{
-    _cache.remove(requestId);
 }
 
 }

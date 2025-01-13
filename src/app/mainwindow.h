@@ -8,6 +8,7 @@
 #include <data.h>
 #include <account.h>
 #include "connectdialog.h"
+#include "addsecuritydialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -27,14 +28,18 @@ public slots:
     void accountInfoUpdated(account::AccountInfoType type, double value);
     void stockPositionUpdated(const account::Stock & stock);
     void optionPositionUpdated(const account::Option & option);
+    void futurePositionUpdated(const account::Future & future);
 
 private slots:
     void init();
+    void addSecurity();
+    void securityAdded(const common::ContractDetailsDTO &details);
 
 private:
     bool setupDatabase();
     int findExistingRow(QTableWidget * table, long contractId);
     QString toString(double x);
+    void reloadSecurities();
 
     Ui::MainWindow *_ui;
     twsclient::TwsClient * _client;
@@ -44,6 +49,7 @@ private:
     account::Account _account;
     QApplication * _app;
     ConnectDialog *_connectDialog;
+    AddSecurityDialog * _addSecurityDialog;
 
 };
 #endif // MAINWINDOW_H

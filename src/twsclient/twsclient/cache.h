@@ -3,32 +3,46 @@
 
 #include <QMap>
 #include <QList>
-#include "bar.h"
+#include "common/types.h"
 
 namespace twsclient {
+
 
 class CacheEntry
 {
 public:
-    CacheEntry();
     CacheEntry(long expiry);
+    virtual ~CacheEntry() = 0;
     long expiry();
-    QList<Bar> *bars();
-
+    bool ready();
+    void setReady();
 private:
-    int _expiry;
-    QList<Bar> _bars;
+    long _expiry;
+    bool _ready;
+};
+
+
+class ContractDetailsCacheEntry : public CacheEntry
+{
+public:
+    ContractDetailsCacheEntry();
+    ~ContractDetailsCacheEntry();
+
+    QList<common::ContractDetailsDTO> contractDetails;
 };
 
 class Cache
 {
 public:
+    void add(long requestId, CacheEntry * entry, const QStringList& keys);
+    CacheEntry * get(long requestId);
+    QPair<long, CacheEntry *> get(const QStringList& keys);
     void cleanup();
-    void addBar(long requestId, const Bar &bar);
-    QList<Bar> *bars(long requestId);
-    void remove(long requestId);
 private:
-    QMap<long, CacheEntry> _cache;
+    QString buildKey(const QStringList & list);
+
+    QMap<QString, long> _requestCache;
+    QMap<long, CacheEntry *> _cache;
 };
 
 }

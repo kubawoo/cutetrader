@@ -65,6 +65,21 @@ private:
     double _multiplier;
 };
 
+class Future : public BaseSecurity
+{
+public:
+    Future();
+    Future(long contractId, const QString &symbol, double position, double marketPrice, double marketValue,
+           double averageCost, double unrealizedPNL, double realizedPNL, const QDate & expiration);
+    QDate expiration() const;
+
+private:
+    QDate _expiration;
+    double _strike;
+    common::OptionType _type;
+    double _multiplier;
+};
+
 class Portfolio
 {
 public:
@@ -72,12 +87,15 @@ public:
 
     void updatePortfolio(const Stock & stock);
     void updatePortfolio(const Option & option);
+    void updatePortfolio(const Future & future);
     QList<Stock> stocks();
     QList<Option> options();
+    QList<Future> futures();
 
 private:
     QMap<long, Stock> _stocks;
     QMap<long, Option> _options;
+    QMap<long, Future> _futures;
 };
 }
 

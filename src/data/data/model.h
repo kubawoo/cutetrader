@@ -19,9 +19,14 @@ public:
     void setSymbol(const QString & symbol);
     Security & withSymbol(const QString & symbol);
 
+    int contractId() const;
+    void setContractId(int id);
+    Security & withContractId(int id);
+
 private:
     int _id;
     QString _symbol;
+    long _contractId;
 };
 
 
