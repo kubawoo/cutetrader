@@ -9,7 +9,8 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
       _ui(new Ui::MainWindow),
       _client(new twsclient::TwsClient),
       _readerThread(new twsclient::TwsReaderThread(_client)),
-      _connectDialog(new ConnectDialog(_client, this))
+      _connectDialog(new ConnectDialog(_client, this)),
+      _addSecurityDialog(new AddSecurityDialog(_client, this))
 {
     this->setEnabled(false);
     _client->moveToThread(_readerThread);
@@ -28,10 +29,10 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
     connect(_connectDialog, &ConnectDialog::rejected, this, &MainWindow::close);
 
     connect(_ui->addSecurityPushButton, &QPushButton::clicked, this, &MainWindow::addSecurity);
-    connect(_client, &twsclient::TwsClient::matchingSymbolsReadySignal, this, &MainWindow::contractDetailReady);
+    connect(_addSecurityDialog, &AddSecurityDialog::addSecuritySignal, this, &MainWindow::securityAdded);
+
 
     _readerThread->start();
-
     QTimer::singleShot(0, this, &MainWindow::init);
 }
 
@@ -159,15 +160,17 @@ void MainWindow::init()
 
 void MainWindow::addSecurity()
 {
-    _client->requestMatchingSymbols("SPY");
+    _addSecurityDialog->setEnabled(true);
+    _addSecurityDialog->show();
 }
 
-void MainWindow::contractDetailReady(const long & requestId, const QList<common::ContractDetailsDTO> &details)
+void MainWindow::securityAdded(const common::ContractDetailsDTO &details)
 {
-    qDebug() << "contractDetailReady" << details.length();
-    for(auto i : details) {
-        qDebug() << i.contractId << i.symbol << i.currency << i.description;
-    }
+    qDebug() << "securityAdded" << details.symbol;
+    data::Security security;
+    security.withSymbol(details.symbol).withContractId(details.contractId);
+    _dataManager.createSecurity(security);
+    reloadSecurities();
 }
 
 bool MainWindow::setupDatabase()

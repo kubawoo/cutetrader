@@ -1,0 +1,34 @@
+#ifndef ADDSECURITYDIALOG_H
+#define ADDSECURITYDIALOG_H
+
+#include <QDialog>
+#include <twsclient.h>
+
+namespace Ui {
+class AddSecurityDialog;
+}
+
+class AddSecurityDialog : public QDialog
+{
+    Q_OBJECT
+
+public:
+    explicit AddSecurityDialog(twsclient::TwsClient * client, QWidget *parent = nullptr);
+    ~AddSecurityDialog();
+
+signals:
+    void addSecuritySignal(const common::ContractDetailsDTO & details);
+
+private slots:
+    void search();
+    void symbolsFound(int reqId, const QList<common::ContractDetailsDTO> & securities);
+    void addSymbol();
+    void symbolChanged(int i);
+
+private:
+    Ui::AddSecurityDialog *_ui;
+    twsclient::TwsClient * _client;
+    QList<common::ContractDetailsDTO> _securities;
+};
+
+#endif // ADDSECURITYDIALOG_H

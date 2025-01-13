@@ -8,6 +8,7 @@
 #include <data.h>
 #include <account.h>
 #include "connectdialog.h"
+#include "addsecuritydialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -32,7 +33,7 @@ public slots:
 private slots:
     void init();
     void addSecurity();
-    void contractDetailReady(const long & requestId, const QList<common::ContractDetailsDTO> & details);
+    void securityAdded(const common::ContractDetailsDTO &details);
 
 private:
     bool setupDatabase();
@@ -48,6 +49,7 @@ private:
     account::Account _account;
     QApplication * _app;
     ConnectDialog *_connectDialog;
+    AddSecurityDialog * _addSecurityDialog;
 
 };
 #endif // MAINWINDOW_H
