@@ -25,10 +25,12 @@ signals:
     void accountValueUpdated(AccountInfoType type, double value);
     void stockPositionUpdated(const Stock & stock);
     void optionPositionUpdated(const Option & option);
+    void futurePositionUpdated(const Future & future);
 
 private:
     Stock updateStockPosition(const common::PortfolioPositionDTO & position);
     Option updateOptionPosition(const common::PortfolioPositionDTO & position);
+    Future updateFuturePosition(const common::PortfolioPositionDTO & position);
 
     QString _baseCurrency;
     AccountInfo _accountInfo;

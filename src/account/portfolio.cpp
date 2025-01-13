@@ -20,6 +20,12 @@ void Portfolio::updatePortfolio(const Option &option)
     _options[option.contractId()] = option;
 }
 
+void Portfolio::updatePortfolio(const Future &future)
+{
+    qDebug() << "Updating portfolio future";
+    _futures[future.contractId()] = future;
+}
+
 QList<Stock> Portfolio::stocks()
 {
     return _stocks.values();
@@ -28,6 +34,11 @@ QList<Stock> Portfolio::stocks()
 QList<Option> Portfolio::options()
 {
     return _options.values();
+}
+
+QList<Future> Portfolio::futures()
+{
+    return _futures.values();
 }
 
 BaseSecurity::BaseSecurity()
@@ -143,6 +154,25 @@ double Option::multiplier() const
 {
     return _multiplier;
 }
+
+Future::Future()
+{
+
+}
+
+Future::Future(long contractId, const QString &symbol, double position, double marketPrice, double marketValue,
+               double averageCost, double unrealizedPNL, double realizedPNL, const QDate &expiration)
+    : BaseSecurity(contractId, symbol, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL),
+      _expiration(expiration)
+{
+
+}
+
+QDate Future::expiration() const
+{
+    return _expiration;
+}
+
 
 }
 

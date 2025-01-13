@@ -256,6 +256,14 @@ void TwsClient::updatePortfolio(const Contract& contract, Decimal position,
         positionDto.right = type;
         positionDto.multiplier = mul;
         positionDto.strike = contract.strike;
+    } else if(contract.secType == "FUT") {
+        qDebug() << "Future:" << contract.lastTradeDateOrContractMonth.c_str()
+                 << contract.lastTradeDate.c_str();
+
+        QDate expiration = QDate::fromString(contract.lastTradeDateOrContractMonth.c_str(), "yyyyMMdd");
+
+        positionDto.securityType = common::SecurityType::FUTURE;
+        positionDto.expiration = expiration;
     }
 
     emit portfolioPositionUpdatedSignal(positionDto);

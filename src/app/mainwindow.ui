@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="portfolioTab">
      <attribute name="title">
@@ -59,14 +59,14 @@
      <widget class="QTabWidget" name="tabWidget_2">
       <property name="geometry">
        <rect>
-        <x>0</x>
+        <x>10</x>
         <y>10</y>
         <width>681</width>
         <height>441</height>
        </rect>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="stocksTab">
        <attribute name="title">
@@ -125,6 +125,60 @@
         <string>Options</string>
        </attribute>
        <widget class="QTableWidget" name="optionsTableWidget">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>651</width>
+          <height>391</height>
+         </rect>
+        </property>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::MultiSelection</enum>
+        </property>
+        <attribute name="verticalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+        <column>
+         <property name="text">
+          <string>Id</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Symbol</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Expiration</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Position</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Market Value</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>PNL</string>
+         </property>
+        </column>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="futuresTab">
+       <attribute name="title">
+        <string>Futures</string>
+       </attribute>
+       <widget class="QTableWidget" name="futuresTableWidget">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -309,7 +363,7 @@
       <property name="geometry">
        <rect>
         <x>710</x>
-        <y>230</y>
+        <y>260</y>
         <width>131</width>
         <height>17</height>
        </rect>
@@ -322,7 +376,7 @@
       <property name="geometry">
        <rect>
         <x>880</x>
-        <y>230</y>
+        <y>260</y>
         <width>121</width>
         <height>17</height>
        </rect>
@@ -335,7 +389,7 @@
       <property name="geometry">
        <rect>
         <x>880</x>
-        <y>200</y>
+        <y>230</y>
         <width>121</width>
         <height>17</height>
        </rect>
@@ -348,13 +402,39 @@
       <property name="geometry">
        <rect>
         <x>710</x>
-        <y>200</y>
+        <y>230</y>
         <width>131</width>
         <height>17</height>
        </rect>
       </property>
       <property name="text">
        <string>Realized PNL</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_9">
+      <property name="geometry">
+       <rect>
+        <x>710</x>
+        <y>200</y>
+        <width>131</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Futures PNL</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="futuresPNL">
+      <property name="geometry">
+       <rect>
+        <x>880</x>
+        <y>200</y>
+        <width>131</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>0</string>
       </property>
      </widget>
     </widget>

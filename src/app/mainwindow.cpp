@@ -16,14 +16,19 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
     _ui->setupUi(this);
     _ui->stocksTableWidget->setColumnHidden(0, true);
     _ui->optionsTableWidget->setColumnHidden(0, true);
+    _ui->futuresTableWidget->setColumnHidden(0, true);
 
     connect(_client, &twsclient::TwsClient::accountValueUpdatedSignal, &_account, &account::Account::updateAccountValue);
     connect(_client, &twsclient::TwsClient::portfolioPositionUpdatedSignal, &_account, &account::Account::updatePortfolioPosition);
     connect(&_account, &account::Account::accountValueUpdated, this, &MainWindow::accountInfoUpdated);
     connect(&_account, &account::Account::stockPositionUpdated, this, &MainWindow::stockPositionUpdated);
     connect(&_account, &account::Account::optionPositionUpdated, this, &MainWindow::optionPositionUpdated);
+    connect(&_account, &account::Account::futurePositionUpdated, this, &MainWindow::futurePositionUpdated);
     connect(_connectDialog, &ConnectDialog::accountSelectedSignal, this, &MainWindow::clientConnected);
     connect(_connectDialog, &ConnectDialog::rejected, this, &MainWindow::close);
+
+    connect(_ui->addSecurityPushButton, &QPushButton::clicked, this, &MainWindow::addSecurity);
+    connect(_client, &twsclient::TwsClient::matchingSymbolsReadySignal, this, &MainWindow::contractDetailReady);
 
     _readerThread->start();
 
@@ -75,6 +80,9 @@ void MainWindow::accountInfoUpdated(account::AccountInfoType type, double value)
     case account::AccountInfoType::OptionMarketValue:
         _ui->optionsValue->setText(toString(value));
         break;
+    case account::AccountInfoType::FuturesPNL:
+        _ui->futuresPNL->setText(toString(value));
+        break;
     case account::AccountInfoType::RealizedPnL:
         _ui->realizedPNL->setText(toString(value));
         break;
@@ -119,6 +127,22 @@ void MainWindow::optionPositionUpdated(const account::Option &option)
     _ui->optionsTableWidget->setItem(row, 5, new QTableWidgetItem(toString(option.unrealizedPNL())));
 }
 
+void MainWindow::futurePositionUpdated(const account::Future &future)
+{
+    int row = findExistingRow(_ui->futuresTableWidget, future.contractId());
+    if(row < 0) {
+        row = _ui->futuresTableWidget->rowCount();
+        _ui->futuresTableWidget->setRowCount(row + 1);
+    }
+
+    _ui->futuresTableWidget->setItem(row, 0, new QTableWidgetItem(QString::number(future.contractId())));
+    _ui->futuresTableWidget->setItem(row, 1, new QTableWidgetItem(future.symbol()));
+    _ui->futuresTableWidget->setItem(row, 2, new QTableWidgetItem(future.expiration().toString(Qt::DateFormat::ISODate)));
+    _ui->futuresTableWidget->setItem(row, 3, new QTableWidgetItem(QString::number(future.position())));
+    _ui->futuresTableWidget->setItem(row, 4, new QTableWidgetItem(toString(future.marketValue())));
+    _ui->futuresTableWidget->setItem(row, 5, new QTableWidgetItem(toString(future.unrealizedPNL())));
+}
+
 void MainWindow::init()
 {
     if(!setupDatabase()) {
@@ -131,6 +155,19 @@ void MainWindow::init()
     _connectDialog->show();
 
     reloadSecurities();
+}
+
+void MainWindow::addSecurity()
+{
+    _client->requestMatchingSymbols("SPY");
+}
+
+void MainWindow::contractDetailReady(const long & requestId, const QList<common::ContractDetailsDTO> &details)
+{
+    qDebug() << "contractDetailReady" << details.length();
+    for(auto i : details) {
+        qDebug() << i.contractId << i.symbol << i.currency << i.description;
+    }
 }
 
 bool MainWindow::setupDatabase()

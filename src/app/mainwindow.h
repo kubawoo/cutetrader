@@ -27,9 +27,12 @@ public slots:
     void accountInfoUpdated(account::AccountInfoType type, double value);
     void stockPositionUpdated(const account::Stock & stock);
     void optionPositionUpdated(const account::Option & option);
+    void futurePositionUpdated(const account::Future & future);
 
 private slots:
     void init();
+    void addSecurity();
+    void contractDetailReady(const long & requestId, const QList<common::ContractDetailsDTO> & details);
 
 private:
     bool setupDatabase();

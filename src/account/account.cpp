@@ -37,6 +37,16 @@ Option Account::updateOptionPosition(const common::PortfolioPositionDTO &positio
     return option;
 }
 
+
+Future Account::updateFuturePosition(const common::PortfolioPositionDTO &position)
+{
+    Future future(position.contractId, position.symbol, position.position, position.marketPrice, position.marketValue,
+                position.averageCost, position.unrealizedPNL, position.realizedPNL, position.expiration);
+    _portfolio.updatePortfolio(future);
+    return future;
+}
+
+
 double Account::accountInfo(AccountInfoType type)
 {
     return _accountInfo.value(type);
@@ -69,6 +79,12 @@ void Account::updatePortfolioPosition(const common::PortfolioPositionDTO &positi
         Option option = updateOptionPosition(position);
         qDebug() << "updatePortfolioPosition option" << option.symbol();
         emit optionPositionUpdated(option);
+        break;
+    }
+    case common::SecurityType::FUTURE: {
+        Future future = updateFuturePosition(position);
+        qDebug() << "updatePortfolioPosition future" << future.symbol();
+        emit futurePositionUpdated(future);
         break;
     }
     default:
