@@ -371,9 +371,6 @@ void TwsClient::cleanup()
 {
     qDebug() << "Running cleanup task";
     _cache.cleanup();
-
-    requestOpenOrders();
-
 }
 
 }
