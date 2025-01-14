@@ -74,6 +74,7 @@ signals:
     void portfolioPositionUpdatedSignal(const common::PortfolioPositionDTO & position);
     void contractDetailReadySignal(const int & requestId, const QList<common::ContractDetailsDTO> & details);
     void matchingSymbolsReadySignal(const int & requestId, const QList<common::ContractDetailsDTO> & details);
+    void updateAccountTimeSignal(const QTime & time);
 
 
 private:

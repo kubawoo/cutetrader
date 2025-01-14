@@ -10,7 +10,9 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
       _client(new twsclient::TwsClient),
       _readerThread(new twsclient::TwsReaderThread(_client)),
       _connectDialog(new ConnectDialog(_client, this)),
-      _addSecurityDialog(new AddSecurityDialog(_client, this))
+      _addSecurityDialog(new AddSecurityDialog(_client, this)),
+      _statusBarAccount(new QLabel),
+      _statusBarAccountUpdateTime(new QLabel)
 {
     this->setEnabled(false);
     _client->moveToThread(_readerThread);
@@ -21,6 +23,8 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
 
     connect(_client, &twsclient::TwsClient::accountValueUpdatedSignal, &_account, &account::Account::updateAccountValue);
     connect(_client, &twsclient::TwsClient::portfolioPositionUpdatedSignal, &_account, &account::Account::updatePortfolioPosition);
+    connect(_client, &twsclient::TwsClient::updateAccountTimeSignal, this, &MainWindow::updateAccountTime);
+
     connect(&_account, &account::Account::accountValueUpdated, this, &MainWindow::accountInfoUpdated);
     connect(&_account, &account::Account::stockPositionUpdated, this, &MainWindow::stockPositionUpdated);
     connect(&_account, &account::Account::optionPositionUpdated, this, &MainWindow::optionPositionUpdated);
@@ -32,6 +36,9 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
     connect(_addSecurityDialog, &AddSecurityDialog::addSecuritySignal, this, &MainWindow::securityAdded);
 
 
+    _ui->statusbar->addPermanentWidget(_statusBarAccount);
+    _ui->statusbar->addPermanentWidget(_statusBarAccountUpdateTime);
+
     _readerThread->start();
     QTimer::singleShot(0, this, &MainWindow::init);
 }
@@ -39,11 +46,14 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete _ui;
+    delete _connectDialog;
+    delete _addSecurityDialog;
 }
 
 void MainWindow::clientConnected(const QString & accountId) {
     this->setEnabled(true);
-    _ui->statusbar->showMessage("Connected to " + accountId);
+    _statusBarAccount->setText("Account: " + accountId);
+    _ui->statusbar->showMessage("Connected", 5000);
     _client->startClient(accountId);
 }
 
@@ -51,7 +61,6 @@ void MainWindow::clientConnected(const QString & accountId) {
 void MainWindow::quit()
 {
     qDebug() << "Quiting...";
-    delete _connectDialog;
     _readerThread->quit();
     _readerThread->wait(1000);
     delete _readerThread;
@@ -142,6 +151,11 @@ void MainWindow::futurePositionUpdated(const account::Future &future)
     _ui->futuresTableWidget->setItem(row, 3, new QTableWidgetItem(QString::number(future.position())));
     _ui->futuresTableWidget->setItem(row, 4, new QTableWidgetItem(toString(future.marketValue())));
     _ui->futuresTableWidget->setItem(row, 5, new QTableWidgetItem(toString(future.unrealizedPNL())));
+}
+
+void MainWindow::updateAccountTime(const QTime & time)
+{
+    _statusBarAccountUpdateTime->setText("Last update: " + time.toString("HH:mm"));
 }
 
 void MainWindow::init()

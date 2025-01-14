@@ -184,6 +184,8 @@ void TwsClient::error(int id, time_t errorTime, int errorCode, const std::string
 void TwsClient::updateAccountTime(const std::string& timeStamp)
 {
     qDebug() << "updateAccountTime" << timeStamp.c_str();
+    QTime time = QTime::fromString(timeStamp.c_str(), "HH:mm");
+    emit updateAccountTimeSignal(time);
 }
 
 void TwsClient::accountDownloadEnd(const std::string& accountName)

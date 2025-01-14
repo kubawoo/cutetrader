@@ -3,6 +3,7 @@
 
 #include "qtablewidget.h"
 #include <QMainWindow>
+#include <QLabel>
 #include <twsclient.h>
 #include <QSqlDatabase>
 #include <data.h>
@@ -29,6 +30,7 @@ public slots:
     void stockPositionUpdated(const account::Stock & stock);
     void optionPositionUpdated(const account::Option & option);
     void futurePositionUpdated(const account::Future & future);
+    void updateAccountTime(const QTime & time);
 
 private slots:
     void init();
@@ -50,6 +52,8 @@ private:
     QApplication * _app;
     ConnectDialog *_connectDialog;
     AddSecurityDialog * _addSecurityDialog;
+    QLabel * _statusBarAccount;
+    QLabel * _statusBarAccountUpdateTime;
 
 };
 #endif // MAINWINDOW_H
