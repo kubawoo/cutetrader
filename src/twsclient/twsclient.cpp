@@ -114,6 +114,12 @@ void TwsClient::startClient(const QString &accountId)
     startAccountUpdates();
 }
 
+void TwsClient::requestOpenOrders()
+{
+    qDebug() << "requesting all open orders";
+    _client->reqAllOpenOrders();
+}
+
 //int TwsClient::requestHistoricalData(const Contract &contract, const QString &endDateTime,
 //                                      const QString &durationString, const QString &barSizeSetting)
 //{
@@ -327,6 +333,23 @@ void TwsClient::symbolSamples(int reqId, const std::vector<ContractDescription> 
     emit matchingSymbolsReadySignal(reqId, entry->contractDetails);
 }
 
+void TwsClient::openOrder(OrderId orderId, const Contract &contract, const Order &order, const OrderState &orderState)
+{
+    qDebug() << "openOrder" << orderId << contract.symbol.c_str();
+}
+
+void TwsClient::openOrderEnd()
+{
+    qDebug() << "openOrderEnd";
+}
+
+void TwsClient::orderStatus(OrderId orderId, const std::string &status, Decimal filled, Decimal remaining,
+                            double avgFillPrice, long long permId, int parentId, double lastFillPrice,
+                            int clientId, const std::string &whyHeld, double mktCapPrice)
+{
+    qDebug() << "order status";
+}
+
 Contract TwsClient::buildContract(long contractId)
 {
     Contract c;
@@ -348,6 +371,9 @@ void TwsClient::cleanup()
 {
     qDebug() << "Running cleanup task";
     _cache.cleanup();
+
+    requestOpenOrders();
+
 }
 
 }

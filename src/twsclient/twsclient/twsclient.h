@@ -28,6 +28,7 @@ public slots:
     void stopPositionsUpdates();
     void requestManagedAccounts();
     void startClient(const QString & accountId);
+    void requestOpenOrders();
 
 public:
     bool connect(const QString& host, int port, int clientId = 0);
@@ -62,6 +63,13 @@ public:
     virtual void contractDetails(int reqId, const ContractDetails& contractDetails) override;
     virtual void contractDetailsEnd(int reqId) override;
     virtual void symbolSamples(int reqId, const std::vector<ContractDescription> &contractDescriptions) override;
+    virtual void openOrder(OrderId orderId, const Contract& contract, const Order& order,
+                           const OrderState& orderState) override;
+    virtual void openOrderEnd() override;
+    virtual void orderStatus( OrderId orderId, const std::string& status, Decimal filled,
+        Decimal remaining, double avgFillPrice, long long permId, int parentId,
+        double lastFillPrice, int clientId, const std::string& whyHeld, double mktCapPrice) override;
+
 
 
 signals:
