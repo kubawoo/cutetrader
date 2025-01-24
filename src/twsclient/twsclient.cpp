@@ -247,19 +247,19 @@ void TwsClient::updatePortfolio(const Contract& contract, Decimal position,
 
     if(contract.secType == "STK") {
         positionDto.securityType = common::SecurityType::STOCK;
-    } else if(contract.secType == "OPT") {
+    } else if(contract.secType == "OPT" || contract.secType == "FOP") {
         qDebug() << "Option:" << contract.lastTradeDateOrContractMonth.c_str()
-                 << contract.lastTradeDate.c_str()
                  << contract.strike
                  << contract.right.c_str()
                  << contract.multiplier.c_str();
 
+        positionDto.securityType = contract.secType == "OPT"
+                ? common::SecurityType::OPTION : common::SecurityType::FUTURE_OPTION;
 
         QDate expiration = QDate::fromString(contract.lastTradeDateOrContractMonth.c_str(), "yyyyMMdd");
         common::OptionType type = contract.right == "C" ? common::OptionType::CALL : common::OptionType::PUT;
         double mul = QString(contract.multiplier.c_str()).toDouble();
 
-        positionDto.securityType = common::SecurityType::OPTION;
         positionDto.expiration = expiration;
         positionDto.right = type;
         positionDto.multiplier = mul;
@@ -272,6 +272,9 @@ void TwsClient::updatePortfolio(const Contract& contract, Decimal position,
 
         positionDto.securityType = common::SecurityType::FUTURE;
         positionDto.expiration = expiration;
+    } else {
+        qDebug() << "Unknown security type" << contract.secType.c_str();
+        return;
     }
 
     emit portfolioPositionUpdatedSignal(positionDto);

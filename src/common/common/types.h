@@ -8,7 +8,7 @@ namespace common {
 
 
 enum class SecurityType {
-    STOCK, OPTION, FUTURE
+    STOCK, OPTION, FUTURE, FUTURE_OPTION
 };
 
 enum class OptionType {
