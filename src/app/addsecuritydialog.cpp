@@ -4,7 +4,8 @@
 AddSecurityDialog::AddSecurityDialog(twsclient::TwsClient * client, QWidget *parent) :
     _client(client),
     QDialog(parent),
-    _ui(new Ui::AddSecurityDialog)
+    _ui(new Ui::AddSecurityDialog),
+    _reqId(0)
 {
     _ui->setupUi(this);
 
@@ -22,12 +23,17 @@ AddSecurityDialog::~AddSecurityDialog()
 void AddSecurityDialog::search() {
     QString pattern = _ui->searchEdit->text();
     if(!pattern.isEmpty()) {
-        _client->requestMatchingSymbols(pattern);
+        _reqId = _client->requestMatchingSymbols(pattern);
     }
 }
 
 void AddSecurityDialog::symbolsFound(int reqId, const QList<common::ContractDetailsDTO> &securities)
 {
+    if(_reqId != reqId) {
+        qDebug() << "Got invalid reqId. Expected" << _reqId << "but got" << reqId;
+        return;
+    }
+
     _ui->securitiesList->clear();
     _securities = securities;
     for(auto s : _securities) {
@@ -50,9 +56,24 @@ void AddSecurityDialog::addSymbol()
 
 void AddSecurityDialog::symbolChanged(int i)
 {
-    common::ContractDetailsDTO details = _securities.at(i);
-    _ui->idLabel->setText(QString::number(details.contractId));
-    _ui->symbolLabel->setText(details.symbol);
-    _ui->currencyLabel->setText(details.currency);
-    _ui->descriptionLabel->setText(details.description);
+    if(i >= 0) {
+        common::ContractDetailsDTO details = _securities.at(i);
+        _ui->idLabel->setText(QString::number(details.contractId));
+        _ui->symbolLabel->setText(details.symbol);
+        _ui->currencyLabel->setText(details.currency);
+        _ui->descriptionLabel->setText(details.description);
+        _ui->typeLabel->setText(common::Utils::securityTypeToString(details.securityType));
+        QStringList derivatives;
+        for(auto d: details.derivatives) {
+            derivatives.append(common::Utils::securityTypeToString(d));
+        }
+        _ui->derivativesLabel->setText(derivatives.join(", "));
+    } else {
+        _ui->idLabel->setText("");
+        _ui->symbolLabel->setText("");
+        _ui->currencyLabel->setText("");
+        _ui->descriptionLabel->setText("");
+        _ui->typeLabel->setText("");
+        _ui->derivativesLabel->setText("");
+    }
 }

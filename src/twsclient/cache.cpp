@@ -74,7 +74,7 @@ void Cache::cleanup()
 
 QString Cache::buildKey(const QStringList &list)
 {
-    return list.join("_");
+    return list.join("_").toLower();
 }
 
 ContractDetailsCacheEntry::ContractDetailsCacheEntry()

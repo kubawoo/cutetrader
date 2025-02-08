@@ -29,6 +29,7 @@ private:
     Ui::AddSecurityDialog *_ui;
     twsclient::TwsClient * _client;
     QList<common::ContractDetailsDTO> _securities;
+    int _reqId;
 };
 
 #endif // ADDSECURITYDIALOG_H
