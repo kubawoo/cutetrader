@@ -36,6 +36,7 @@ private slots:
     void init();
     void addSecurity();
     void securityAdded(const common::ContractDetailsDTO &details);
+    void deleteSecurity();
 
 private:
     bool setupDatabase();
