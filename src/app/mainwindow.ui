@@ -440,18 +440,8 @@
     </widget>
     <widget class="QWidget" name="tab">
      <attribute name="title">
-      <string>Data</string>
+      <string>Watchlist</string>
      </attribute>
-     <widget class="QListWidget" name="securitiesListWidget">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>181</width>
-        <height>401</height>
-       </rect>
-      </property>
-     </widget>
      <widget class="QPushButton" name="addSecurityPushButton">
       <property name="geometry">
        <rect>
@@ -465,7 +455,7 @@
        <string>Add...</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="addSecurityPushButton_2">
+     <widget class="QPushButton" name="deleteSecurityPushButton">
       <property name="geometry">
        <rect>
         <x>110</x>
@@ -477,6 +467,42 @@
       <property name="text">
        <string>Delete</string>
       </property>
+     </widget>
+     <widget class="QTableWidget" name="watchlistTableWidget">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>611</width>
+        <height>391</height>
+       </rect>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <attribute name="verticalHeaderVisible">
+       <bool>false</bool>
+      </attribute>
+      <column>
+       <property name="text">
+        <string>Id</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Symbol</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Last</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>IVR</string>
+       </property>
+      </column>
      </widget>
     </widget>
    </widget>

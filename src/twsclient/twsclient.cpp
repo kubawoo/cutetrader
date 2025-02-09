@@ -155,7 +155,7 @@ int TwsClient::requestMatchingSymbols(const QString &pattern)
     if(cacheEntry.first >= 0 && cacheEntry.second && cacheEntry.second->ready()) {
         long requestId = cacheEntry.first;
         ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(cacheEntry.second);
-        qDebug() << "Returning from cache";
+        qDebug() << "Returning from cache" << keys;
         emit matchingSymbolsReadySignal(requestId, entry->contractDetails);
         return requestId;
     }
@@ -323,13 +323,23 @@ void TwsClient::symbolSamples(int reqId, const std::vector<ContractDescription> 
         }
 
         qDebug() << cd.contract.conId << cd.contract.symbol.c_str()
-                 << cd.contract.currency.c_str() << cd.contract.exchange.c_str() << cd.contract.description.c_str();
+                 << cd.contract.currency.c_str() << cd.contract.description.c_str()
+                 << cd.contract.secType.c_str() << cd.contract.primaryExchange.c_str();
+
 
         common::ContractDetailsDTO dto;
         dto.contractId = cd.contract.conId;
         dto.currency = cd.contract.currency.c_str();
         dto.symbol = cd.contract.symbol.c_str();
         dto.description = cd.contract.description.c_str();
+        dto.securityType = common::Utils::securityTypeFromString(cd.contract.secType.c_str());
+        for(auto d : cd.derivativeSecTypes) {
+            qDebug() << d.c_str();
+            common::SecurityType der = common::Utils::securityTypeFromString(d.c_str());
+            if(der != common::SecurityType::UNSUPPORTED) {
+                dto.derivatives.append(der);
+            }
+        }
         entry->contractDetails.append(dto);
     }
     entry->setReady();

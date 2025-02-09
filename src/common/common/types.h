@@ -8,7 +8,7 @@ namespace common {
 
 
 enum class SecurityType {
-    STOCK, OPTION, FUTURE, FUTURE_OPTION
+    UNSUPPORTED, STOCK, OPTION, FUTURE, FUTURE_OPTION, INDEX
 };
 
 enum class OptionType {
@@ -38,6 +38,8 @@ struct ContractDetailsDTO
     QString symbol;
     QString currency;
     QString description;
+    SecurityType securityType;
+    QList<SecurityType> derivatives;
 };
 
 struct QuoteDTO

@@ -20,6 +20,7 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
     _ui->stocksTableWidget->setColumnHidden(0, true);
     _ui->optionsTableWidget->setColumnHidden(0, true);
     _ui->futuresTableWidget->setColumnHidden(0, true);
+    _ui->watchlistTableWidget->setColumnHidden(0, true);
 
     connect(_client, &twsclient::TwsClient::accountValueUpdatedSignal, &_account, &account::Account::updateAccountValue);
     connect(_client, &twsclient::TwsClient::portfolioPositionUpdatedSignal, &_account, &account::Account::updatePortfolioPosition);
@@ -34,7 +35,7 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
 
     connect(_ui->addSecurityPushButton, &QPushButton::clicked, this, &MainWindow::addSecurity);
     connect(_addSecurityDialog, &AddSecurityDialog::addSecuritySignal, this, &MainWindow::securityAdded);
-
+    connect(_ui->deleteSecurityPushButton, &QPushButton::clicked, this, &MainWindow::deleteSecurity);
 
     _ui->statusbar->addPermanentWidget(_statusBarAccount);
     _ui->statusbar->addPermanentWidget(_statusBarAccountUpdateTime);
@@ -187,6 +188,26 @@ void MainWindow::securityAdded(const common::ContractDetailsDTO &details)
     reloadSecurities();
 }
 
+void MainWindow::deleteSecurity()
+{
+    int row = _ui->watchlistTableWidget->currentRow();
+    qDebug() << "deleteSecurity" << "row" << row;
+
+    if(row < 0) {
+        return;
+    }
+
+    QString id = _ui->watchlistTableWidget->item(row, 0)->text();
+
+    bool ok;
+    int idInt = id.toInt(&ok);
+
+    if(ok) {
+        _dataManager.removeSecurity(idInt);
+        reloadSecurities();
+    }
+}
+
 bool MainWindow::setupDatabase()
 {
     _db = QSqlDatabase::addDatabase("QSQLITE");
@@ -217,9 +238,14 @@ QString MainWindow::toString(double x)
 
 void MainWindow::reloadSecurities()
 {
-    _ui->securitiesListWidget->clear();
+    _ui->watchlistTableWidget->clearContents();
+    _ui->watchlistTableWidget->setRowCount(0);
     QList<data::Security> securities = _dataManager.getAllSecurities();
     for(data::Security security : securities) {
-        _ui->securitiesListWidget->addItem(security.symbol());
+        int row = _ui->watchlistTableWidget->rowCount();
+        _ui->watchlistTableWidget->setRowCount(row + 1);
+
+        _ui->watchlistTableWidget->setItem(row, 0, new QTableWidgetItem(QString::number(security.id())));
+        _ui->watchlistTableWidget->setItem(row, 1, new QTableWidgetItem(security.symbol()));
     }
 }
