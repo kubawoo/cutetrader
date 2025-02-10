@@ -9,7 +9,7 @@
 #include <data.h>
 #include <account.h>
 #include "connectdialog.h"
-#include "addsecuritydialog.h"
+#include "watchlisttab.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -34,27 +34,23 @@ public slots:
 
 private slots:
     void init();
-    void addSecurity();
-    void securityAdded(const common::ContractDetailsDTO &details);
-    void deleteSecurity();
 
 private:
     bool setupDatabase();
     int findExistingRow(QTableWidget * table, long contractId);
     QString toString(double x);
-    void reloadSecurities();
 
     Ui::MainWindow *_ui;
     twsclient::TwsClient * _client;
     twsclient::TwsReaderThread * _readerThread;
-    QSqlDatabase _db;
     data::DataManager _dataManager;
     account::Account _account;
     QApplication * _app;
     ConnectDialog *_connectDialog;
-    AddSecurityDialog * _addSecurityDialog;
     QLabel * _statusBarAccount;
     QLabel * _statusBarAccountUpdateTime;
+    WatchlistTab * _watchlistTab;
+
 
 };
 #endif // MAINWINDOW_H

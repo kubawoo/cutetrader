@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1032</width>
-    <height>545</height>
+    <width>1033</width>
+    <height>574</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,8 +19,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>1031</width>
-      <height>501</height>
+      <width>1024</width>
+      <height>512</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -438,73 +438,6 @@
       </property>
      </widget>
     </widget>
-    <widget class="QWidget" name="watchlistTab">
-     <attribute name="title">
-      <string>Watchlist</string>
-     </attribute>
-     <widget class="QPushButton" name="addSecurityPushButton">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>420</y>
-        <width>80</width>
-        <height>25</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Add...</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="deleteSecurityPushButton">
-      <property name="geometry">
-       <rect>
-        <x>110</x>
-        <y>420</y>
-        <width>80</width>
-        <height>25</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Delete</string>
-      </property>
-     </widget>
-     <widget class="QTableWidget" name="watchlistTableWidget">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>611</width>
-        <height>391</height>
-       </rect>
-      </property>
-      <property name="editTriggers">
-       <set>QAbstractItemView::NoEditTriggers</set>
-      </property>
-      <attribute name="verticalHeaderVisible">
-       <bool>false</bool>
-      </attribute>
-      <column>
-       <property name="text">
-        <string>Id</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Symbol</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Last</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>IVR</string>
-       </property>
-      </column>
-     </widget>
-    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -512,7 +445,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1032</width>
+     <width>1033</width>
      <height>22</height>
     </rect>
    </property>
