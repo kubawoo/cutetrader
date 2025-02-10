@@ -26,7 +26,6 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
     connect(_connectDialog, &ConnectDialog::accountSelectedSignal, this, &MainWindow::clientConnected);
     connect(_connectDialog, &ConnectDialog::rejected, this, &MainWindow::close);
 
-
     _ui->statusbar->addPermanentWidget(_statusBarAccount);
     _ui->statusbar->addPermanentWidget(_statusBarAccountUpdateTime);
 
@@ -68,7 +67,7 @@ void MainWindow::updateAccountTime(const QTime & time)
 void MainWindow::init()
 {
     if(!setupDatabase()) {
-        auto ret = QMessageBox::critical(this, "Error", "Failed to initialize database",
+        QMessageBox::critical(this, "Error", "Failed to initialize database",
                                          QMessageBox::StandardButton::Close);
         _app->quit();
     }
@@ -87,7 +86,6 @@ void MainWindow::init()
 }
 
 
-
 bool MainWindow::setupDatabase()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
@@ -98,7 +96,4 @@ bool MainWindow::setupDatabase()
     data::DbBuilder dbBuilder(db);
     return dbBuilder.runMigrations();
 }
-
-
-
 
