@@ -2,8 +2,8 @@
 #include "ui_watchlisttab.h"
 
 
-WatchlistTab::WatchlistTab(twsclient::TwsClient *client, data::DataManager *dataManager, QWidget *parent)
-  : QWidget(parent),
+WatchlistTab::WatchlistTab(twsclient::TwsClient *client, data::DataManager *dataManager, QWidget *parent) :
+    QWidget(parent),
     _ui(new Ui::WatchlistTab),
     _client(client),
     _dataManager(dataManager),

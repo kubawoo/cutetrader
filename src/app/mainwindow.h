@@ -10,6 +10,7 @@
 #include <account.h>
 #include "connectdialog.h"
 #include "watchlisttab.h"
+#include "portfoliotab.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -26,10 +27,6 @@ public:
 public slots:
     void clientConnected(const QString & accountId);
     void quit();
-    void accountInfoUpdated(account::AccountInfoType type, double value);
-    void stockPositionUpdated(const account::Stock & stock);
-    void optionPositionUpdated(const account::Option & option);
-    void futurePositionUpdated(const account::Future & future);
     void updateAccountTime(const QTime & time);
 
 private slots:
@@ -37,8 +34,6 @@ private slots:
 
 private:
     bool setupDatabase();
-    int findExistingRow(QTableWidget * table, long contractId);
-    QString toString(double x);
 
     Ui::MainWindow *_ui;
     twsclient::TwsClient * _client;
@@ -49,8 +44,8 @@ private:
     ConnectDialog *_connectDialog;
     QLabel * _statusBarAccount;
     QLabel * _statusBarAccountUpdateTime;
+
+    PortfolioTab * _portfolioTab;
     WatchlistTab * _watchlistTab;
-
-
 };
 #endif // MAINWINDOW_H
