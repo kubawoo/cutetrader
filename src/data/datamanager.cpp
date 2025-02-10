@@ -11,6 +11,11 @@ DataManager::DataManager(QSqlDatabase &db)
     :_db(db)
 {}
 
+void DataManager::close()
+{
+    _db.close();
+}
+
 bool DataManager::createSecurity(const Security &security)
 {
     QString sql = QString("INSERT INTO securities(symbol, contractId) VALUES (\"%1\", %2);")

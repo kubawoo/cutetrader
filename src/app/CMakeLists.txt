@@ -1,13 +1,13 @@
-set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp mainwindow.h mainwindow.ui
-        connectdialog.cpp connectdialog.h connectdialog.ui
-        addsecuritydialog.cpp addsecuritydialog.h addsecuritydialog.ui
-)
+file(GLOB PROJECT_SOURCES "*.cpp")
+file(GLOB PROJECT_HEADERS "*.h")
+file(GLOB PROJECT_UIS "*.ui")
+
 
 qt_add_executable(cutetrader
     MANUAL_FINALIZATION
     ${PROJECT_SOURCES}
+    ${PROJECT_HEADERS}
+    ${PROJECT_UIS}
 )
 
 target_link_libraries(cutetrader PRIVATE

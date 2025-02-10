@@ -12,6 +12,7 @@ class DataManager
 public:
     DataManager();
     DataManager(QSqlDatabase & db);
+    void close();
 
     bool createSecurity(const Security& security);
     Security getSecurity(int id);

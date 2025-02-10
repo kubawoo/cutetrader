@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "watchlisttab.h"
 #include <QException>
 #include <QMessageBox>
 #include <QSqlDatabase>
@@ -10,32 +11,20 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
       _client(new twsclient::TwsClient),
       _readerThread(new twsclient::TwsReaderThread(_client)),
       _connectDialog(new ConnectDialog(_client, this)),
-      _addSecurityDialog(new AddSecurityDialog(_client, this)),
       _statusBarAccount(new QLabel),
       _statusBarAccountUpdateTime(new QLabel)
 {
     this->setEnabled(false);
     _client->moveToThread(_readerThread);
     _ui->setupUi(this);
-    _ui->stocksTableWidget->setColumnHidden(0, true);
-    _ui->optionsTableWidget->setColumnHidden(0, true);
-    _ui->futuresTableWidget->setColumnHidden(0, true);
-    _ui->watchlistTableWidget->setColumnHidden(0, true);
+
 
     connect(_client, &twsclient::TwsClient::accountValueUpdatedSignal, &_account, &account::Account::updateAccountValue);
     connect(_client, &twsclient::TwsClient::portfolioPositionUpdatedSignal, &_account, &account::Account::updatePortfolioPosition);
     connect(_client, &twsclient::TwsClient::updateAccountTimeSignal, this, &MainWindow::updateAccountTime);
 
-    connect(&_account, &account::Account::accountValueUpdated, this, &MainWindow::accountInfoUpdated);
-    connect(&_account, &account::Account::stockPositionUpdated, this, &MainWindow::stockPositionUpdated);
-    connect(&_account, &account::Account::optionPositionUpdated, this, &MainWindow::optionPositionUpdated);
-    connect(&_account, &account::Account::futurePositionUpdated, this, &MainWindow::futurePositionUpdated);
     connect(_connectDialog, &ConnectDialog::accountSelectedSignal, this, &MainWindow::clientConnected);
     connect(_connectDialog, &ConnectDialog::rejected, this, &MainWindow::close);
-
-    connect(_ui->addSecurityPushButton, &QPushButton::clicked, this, &MainWindow::addSecurity);
-    connect(_addSecurityDialog, &AddSecurityDialog::addSecuritySignal, this, &MainWindow::securityAdded);
-    connect(_ui->deleteSecurityPushButton, &QPushButton::clicked, this, &MainWindow::deleteSecurity);
 
     _ui->statusbar->addPermanentWidget(_statusBarAccount);
     _ui->statusbar->addPermanentWidget(_statusBarAccountUpdateTime);
@@ -48,7 +37,6 @@ MainWindow::~MainWindow()
 {
     delete _ui;
     delete _connectDialog;
-    delete _addSecurityDialog;
 }
 
 void MainWindow::clientConnected(const QString & accountId) {
@@ -67,92 +55,9 @@ void MainWindow::quit()
     delete _readerThread;
     _client->disconnect();
     delete _client;
-    _db.close();
+    _dataManager.close();
 }
 
-void MainWindow::accountInfoUpdated(account::AccountInfoType type, double value)
-{
-    switch(type) {
-    case account::AccountInfoType::NetLiquidation:
-        _ui->netLiquidation->setText(toString(value));
-        break;
-    case account::AccountInfoType::MaintMarginReq:
-        _ui->maintananceMargin->setText(toString(value));
-        break;
-    case account::AccountInfoType::ExcessLiquidity:
-        _ui->excessLiquidity->setText(toString(value));
-        break;
-    case account::AccountInfoType::CashBalance:
-        _ui->cashBalance->setText(toString(value));
-        break;
-    case account::AccountInfoType::StockMarketValue:
-        _ui->stocksValue->setText(toString(value));
-        break;
-    case account::AccountInfoType::OptionMarketValue:
-        _ui->optionsValue->setText(toString(value));
-        break;
-    case account::AccountInfoType::FuturesPNL:
-        _ui->futuresPNL->setText(toString(value));
-        break;
-    case account::AccountInfoType::RealizedPnL:
-        _ui->realizedPNL->setText(toString(value));
-        break;
-    case account::AccountInfoType::UnrealizedPnL:
-        _ui->unrealizedPNL->setText(toString(value));
-        break;
-    default:
-        break;
-    }
-}
-
-void MainWindow::stockPositionUpdated(const account::Stock &stock)
-{
-    int row = findExistingRow(_ui->stocksTableWidget, stock.contractId());
-    if(row < 0) {
-        row = _ui->stocksTableWidget->rowCount();
-        _ui->stocksTableWidget->setRowCount(row + 1);
-    }
-
-    _ui->stocksTableWidget->setItem(row, 0, new QTableWidgetItem(QString::number(stock.contractId())));
-    _ui->stocksTableWidget->setItem(row, 1, new QTableWidgetItem(stock.symbol()));
-    _ui->stocksTableWidget->setItem(row, 2, new QTableWidgetItem(QString::number(stock.position())));
-    _ui->stocksTableWidget->setItem(row, 3, new QTableWidgetItem(toString(stock.marketValue())));
-    _ui->stocksTableWidget->setItem(row, 4, new QTableWidgetItem(toString(stock.unrealizedPNL())));
-}
-
-void MainWindow::optionPositionUpdated(const account::Option &option)
-{
-    int row = findExistingRow(_ui->optionsTableWidget, option.contractId());
-    if(row < 0) {
-        row = _ui->optionsTableWidget->rowCount();
-        _ui->optionsTableWidget->setRowCount(row + 1);
-    }
-
-    QString symbol = QString("%1 %2@%3").arg(option.symbol()).arg(option.typeAsString()).arg(QString::number(option.strike()));
-
-    _ui->optionsTableWidget->setItem(row, 0, new QTableWidgetItem(QString::number(option.contractId())));
-    _ui->optionsTableWidget->setItem(row, 1, new QTableWidgetItem(symbol));
-    _ui->optionsTableWidget->setItem(row, 2, new QTableWidgetItem(option.expiration().toString(Qt::DateFormat::ISODate)));
-    _ui->optionsTableWidget->setItem(row, 3, new QTableWidgetItem(QString::number(option.position())));
-    _ui->optionsTableWidget->setItem(row, 4, new QTableWidgetItem(toString(option.marketValue())));
-    _ui->optionsTableWidget->setItem(row, 5, new QTableWidgetItem(toString(option.unrealizedPNL())));
-}
-
-void MainWindow::futurePositionUpdated(const account::Future &future)
-{
-    int row = findExistingRow(_ui->futuresTableWidget, future.contractId());
-    if(row < 0) {
-        row = _ui->futuresTableWidget->rowCount();
-        _ui->futuresTableWidget->setRowCount(row + 1);
-    }
-
-    _ui->futuresTableWidget->setItem(row, 0, new QTableWidgetItem(QString::number(future.contractId())));
-    _ui->futuresTableWidget->setItem(row, 1, new QTableWidgetItem(future.symbol()));
-    _ui->futuresTableWidget->setItem(row, 2, new QTableWidgetItem(future.expiration().toString(Qt::DateFormat::ISODate)));
-    _ui->futuresTableWidget->setItem(row, 3, new QTableWidgetItem(QString::number(future.position())));
-    _ui->futuresTableWidget->setItem(row, 4, new QTableWidgetItem(toString(future.marketValue())));
-    _ui->futuresTableWidget->setItem(row, 5, new QTableWidgetItem(toString(future.unrealizedPNL())));
-}
 
 void MainWindow::updateAccountTime(const QTime & time)
 {
@@ -162,7 +67,7 @@ void MainWindow::updateAccountTime(const QTime & time)
 void MainWindow::init()
 {
     if(!setupDatabase()) {
-        auto ret = QMessageBox::critical(this, "Error", "Failed to initialize database",
+        QMessageBox::critical(this, "Error", "Failed to initialize database",
                                          QMessageBox::StandardButton::Close);
         _app->quit();
     }
@@ -170,82 +75,25 @@ void MainWindow::init()
     _connectDialog->setEnabled(true);
     _connectDialog->show();
 
-    reloadSecurities();
+    _ui->mainTabWidget->removeTab(0);
+    _portfolioTab = new PortfolioTab(_client, &_account, this);
+    _ui->mainTabWidget->addTab(_portfolioTab, "Portfolio");
+    _portfolioTab->init();
+
+    _watchlistTab = new WatchlistTab(_client, &_dataManager, this);
+    _ui->mainTabWidget->addTab(_watchlistTab, "Watchlist");
+    _watchlistTab->init();
 }
 
-void MainWindow::addSecurity()
-{
-    _addSecurityDialog->setEnabled(true);
-    _addSecurityDialog->show();
-}
-
-void MainWindow::securityAdded(const common::ContractDetailsDTO &details)
-{
-    qDebug() << "securityAdded" << details.symbol;
-    data::Security security;
-    security.withSymbol(details.symbol).withContractId(details.contractId);
-    _dataManager.createSecurity(security);
-    reloadSecurities();
-}
-
-void MainWindow::deleteSecurity()
-{
-    int row = _ui->watchlistTableWidget->currentRow();
-    qDebug() << "deleteSecurity" << "row" << row;
-
-    if(row < 0) {
-        return;
-    }
-
-    QString id = _ui->watchlistTableWidget->item(row, 0)->text();
-
-    bool ok;
-    int idInt = id.toInt(&ok);
-
-    if(ok) {
-        _dataManager.removeSecurity(idInt);
-        reloadSecurities();
-    }
-}
 
 bool MainWindow::setupDatabase()
 {
-    _db = QSqlDatabase::addDatabase("QSQLITE");
-    _db.setDatabaseName("cutetrader.db");
-    _db.open();
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName("cutetrader.db");
+    db.open();
 
-    _dataManager = data::DataManager(_db);
-    data::DbBuilder dbBuilder(_db);
+    _dataManager = data::DataManager(db);
+    data::DbBuilder dbBuilder(db);
     return dbBuilder.runMigrations();
 }
 
-int MainWindow::findExistingRow(QTableWidget *table, long contractId)
-{
-    QString id = QString::number(contractId);
-    for(int row = 0; row < table->rowCount(); row++) {
-        auto item = table->item(row, 0);
-        if(id == item->text()) {
-            return row;
-        }
-    }
-    return -1;
-}
-
-QString MainWindow::toString(double x)
-{
-    return QString::number(x, 'f', 2);
-}
-
-void MainWindow::reloadSecurities()
-{
-    _ui->watchlistTableWidget->clearContents();
-    _ui->watchlistTableWidget->setRowCount(0);
-    QList<data::Security> securities = _dataManager.getAllSecurities();
-    for(data::Security security : securities) {
-        int row = _ui->watchlistTableWidget->rowCount();
-        _ui->watchlistTableWidget->setRowCount(row + 1);
-
-        _ui->watchlistTableWidget->setItem(row, 0, new QTableWidgetItem(QString::number(security.id())));
-        _ui->watchlistTableWidget->setItem(row, 1, new QTableWidgetItem(security.symbol()));
-    }
-}
