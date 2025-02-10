@@ -15,7 +15,8 @@ WatchlistTab::WatchlistTab(twsclient::TwsClient *client, data::DataManager *data
     connect(_ui->addPushButton, &QPushButton::clicked, this, &WatchlistTab::addSecurity);
     connect(_addSecurityDialog, &AddSecurityDialog::addSecuritySignal, this, &WatchlistTab::securityAdded);
     connect(_ui->deletePushButton, &QPushButton::clicked, this, &WatchlistTab::deleteSecurity);
-
+    connect(_ui->watchlistTableWidget, &QTableWidget::currentCellChanged, this, &WatchlistTab::securitySelected);
+    connect(_client, &twsclient::TwsClient::contractDetailReadySignal, this, &WatchlistTab::securityDetailsReady);
 }
 
 WatchlistTab::~WatchlistTab()
@@ -27,6 +28,15 @@ WatchlistTab::~WatchlistTab()
 void WatchlistTab::init()
 {
     reloadSecurities();
+}
+
+void WatchlistTab::securityDetailsReady(int reqId, const QList<common::ContractDetailsDTO> &details)
+{
+    if(reqId == _reqId) {
+        qDebug() << "securityDetailsReady";
+        //TODO: create separate dto and signal for contract details
+        _ui->nameLabel->setText(details[0].description);
+    }
 }
 
 void WatchlistTab::addSecurity()
@@ -41,6 +51,7 @@ void WatchlistTab::securityAdded(const common::ContractDetailsDTO &details)
     data::Security security;
     security.withSymbol(details.symbol).withContractId(details.contractId);
     _dataManager->createSecurity(security);
+    _client->requestContractDetails(security.contractId());
     reloadSecurities();
 }
 
@@ -61,6 +72,23 @@ void WatchlistTab::deleteSecurity()
     if(ok) {
         _dataManager->removeSecurity(idInt);
         reloadSecurities();
+    }
+}
+
+void WatchlistTab::securitySelected(int row)
+{
+    if(row < 0) {
+        qDebug() << "securitySelected" << "No row selected";
+        return;
+    }
+
+    QString id = _ui->watchlistTableWidget->item(row, 0)->text();
+    bool ok;
+    int idInt = id.toInt(&ok);
+
+    if(ok) {
+        data::Security security = _dataManager->getSecurity(idInt);
+        _reqId = _client->requestContractDetails(security.contractId());
     }
 }
 

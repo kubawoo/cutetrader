@@ -37,7 +37,8 @@ public:
     void add(long requestId, CacheEntry * entry, const QStringList& keys);
     CacheEntry * get(long requestId);
     QPair<long, CacheEntry *> get(const QStringList& keys);
-    void cleanup();
+    void removeExpired();
+    void clear();
 private:
     QString buildKey(const QStringList & list);
 

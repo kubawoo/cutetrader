@@ -71,6 +71,11 @@ bool TwsClient::isConnected()
     return res;
 }
 
+void TwsClient::clearCache()
+{
+    _cache.clear();
+}
+
 
 void TwsClient::nextValidId(OrderId orderId)
 {
@@ -294,13 +299,29 @@ void TwsClient::historicalDataEnd(int reqId, const std::string &startDateStr, co
 
 void TwsClient::contractDetails(int reqId, const ContractDetails &contractDetails)
 {
-    qDebug() << "contractDetails" << contractDetails.contract.symbol.c_str();
+    Contract c = contractDetails.contract;
+    qDebug() << "contractDetails contract" << c.conId << c.symbol.c_str() << c.secType.c_str()
+             << c.lastTradeDateOrContractMonth.c_str() << c.lastTradeDate.c_str()
+             << c.strike << c.right.c_str() << c.multiplier.c_str() << c.exchange.c_str()
+             << c.primaryExchange.c_str() << c.currency.c_str() << c.localSymbol.c_str()
+             << c.tradingClass.c_str();
+
+    qDebug() << "contractDetails details" << contractDetails.marketName.c_str()
+             << contractDetails.minTick << contractDetails.priceMagnifier << contractDetails.orderTypes.c_str()
+             << contractDetails.validExchanges.c_str() << contractDetails.underConId << contractDetails.longName.c_str()
+             << contractDetails.contractMonth.c_str() << contractDetails.industry.c_str() << contractDetails.category.c_str()
+             << contractDetails.subcategory.c_str() << contractDetails.timeZoneId.c_str() << contractDetails.tradingHours.c_str()
+             << contractDetails.liquidHours.c_str() << contractDetails.evRule.c_str() << contractDetails.evMultiplier
+             << contractDetails.aggGroup << contractDetails.underSymbol.c_str() << contractDetails.stockType.c_str();
+
+
+
     ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(_cache.get(reqId));
     common::ContractDetailsDTO dto;
     dto.contractId = contractDetails.contract.conId;
     dto.currency = contractDetails.contract.currency.c_str();
     dto.symbol = contractDetails.contract.symbol.c_str();
-    dto.description = contractDetails.contract.description.c_str();
+    dto.description = contractDetails.longName.c_str();
     entry->contractDetails.append(dto);
 }
 
@@ -324,7 +345,8 @@ void TwsClient::symbolSamples(int reqId, const std::vector<ContractDescription> 
 
         qDebug() << cd.contract.conId << cd.contract.symbol.c_str()
                  << cd.contract.currency.c_str() << cd.contract.description.c_str()
-                 << cd.contract.secType.c_str() << cd.contract.primaryExchange.c_str();
+                 << cd.contract.secType.c_str() << cd.contract.primaryExchange.c_str()
+                 << cd.contract.issuerId.c_str();
 
 
         common::ContractDetailsDTO dto;
@@ -363,6 +385,17 @@ void TwsClient::orderStatus(OrderId orderId, const std::string &status, Decimal 
     qDebug() << "order status";
 }
 
+void TwsClient::bondContractDetails(int reqId, const ContractDetails &contractDetails)
+{
+    qDebug() << "bondContractDetails" << contractDetails.contract.symbol.c_str()
+             << contractDetails.contract.secType.c_str() << contractDetails.cusip.c_str()
+             << contractDetails.coupon << contractDetails.maturity.c_str()
+                <<  contractDetails.issueDate.c_str()
+                <<  contractDetails.ratings.c_str()
+                <<  contractDetails.bondType.c_str();
+}
+
+
 Contract TwsClient::buildContract(long contractId)
 {
     Contract c;
@@ -383,7 +416,7 @@ void TwsClient::checkMessages()
 void TwsClient::cleanup()
 {
     qDebug() << "Running cleanup task";
-    _cache.cleanup();
+    _cache.removeExpired();
 }
 
 }

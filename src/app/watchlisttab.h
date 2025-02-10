@@ -19,6 +19,9 @@ public:
     ~WatchlistTab();
     void init();
 
+public slots:
+    void securityDetailsReady(int reqId, const QList<common::ContractDetailsDTO> &details);
+
 private:
     void reloadSecurities();
 
@@ -26,12 +29,14 @@ private slots:
     void addSecurity();
     void securityAdded(const common::ContractDetailsDTO &details);
     void deleteSecurity();
+    void securitySelected(int row);
 
 private:
     Ui::WatchlistTab *_ui;
     twsclient::TwsClient * _client;
     data::DataManager * _dataManager;
     AddSecurityDialog * _addSecurityDialog;
+    int _reqId;
 };
 
 #endif // WATCHLISTTAB_H
