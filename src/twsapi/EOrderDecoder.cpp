@@ -1,4 +1,4 @@
-/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2025 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
 * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 #include "StdAfx.h"
@@ -855,6 +855,14 @@ bool EOrderDecoder::decodeCMETaggingFields(const char*& ptr, const char* endPtr)
     if (m_serverVersion >= MIN_SERVER_VER_CME_TAGGING_FIELDS_IN_OPEN_ORDER) {
         DECODE_FIELD(m_order->extOperator);
         DECODE_FIELD(m_order->manualOrderIndicator);
+    }
+
+    return true;
+}
+
+bool EOrderDecoder::decodeSubmitter(const char*& ptr, const char* endPtr) {
+    if (m_serverVersion >= MIN_SERVER_VER_SUBMITTER) {
+        DECODE_FIELD(m_order->submitter);
     }
 
     return true;

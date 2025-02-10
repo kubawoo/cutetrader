@@ -1,4 +1,4 @@
-/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2025 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 #include "StdAfx.h"
@@ -423,7 +423,8 @@ const char* EDecoder::processOpenOrderMsg(const char* ptr, const char* endPtr) {
           && eOrderDecoder.decodeProfessionalCustomer(ptr, endPtr)
           && eOrderDecoder.decodeBondAccruedInterest(ptr, endPtr)
           && eOrderDecoder.decodeIncludeOvernight(ptr, endPtr)
-          && eOrderDecoder.decodeCMETaggingFields(ptr, endPtr);
+          && eOrderDecoder.decodeCMETaggingFields(ptr, endPtr)
+          && eOrderDecoder.decodeSubmitter(ptr, endPtr);
 
         if (!success) {
           return nullptr;
@@ -825,6 +826,10 @@ const char* EDecoder::processExecutionDetailsMsg(const char* ptr, const char* en
         DECODE_FIELD(exec.pendingPriceRevision);
     }
 
+    if (m_serverVersion >= MIN_SERVER_VER_SUBMITTER) {
+        DECODE_FIELD(exec.submitter);
+    }
+
 	m_pEWrapper->execDetails( reqId, contract, exec);
 
 	return ptr;
@@ -937,8 +942,10 @@ const char* EDecoder::processHistoricalDataMsg(const char* ptr, const char* endP
     }
 
 	DECODE_FIELD( reqId);
-	DECODE_FIELD( startDateStr); // ver 2 field
-	DECODE_FIELD( endDateStr); // ver 2 field
+	if (m_serverVersion < MIN_SERVER_VER_HISTORICAL_DATA_END) {
+		DECODE_FIELD(startDateStr); // ver 2 field
+		DECODE_FIELD(endDateStr); // ver 2 field
+	}
 
 	int itemCount;
 	DECODE_FIELD( itemCount);
@@ -979,8 +986,24 @@ const char* EDecoder::processHistoricalDataMsg(const char* ptr, const char* endP
 		m_pEWrapper->historicalData( reqId, bar);
 	}
 
-	// send end of dataset marker
-	m_pEWrapper->historicalDataEnd( reqId, startDateStr, endDateStr);
+	if (m_serverVersion < MIN_SERVER_VER_HISTORICAL_DATA_END) {
+		// send end of dataset marker
+		m_pEWrapper->historicalDataEnd(reqId, startDateStr, endDateStr);
+	}
+
+	return ptr;
+}
+
+const char* EDecoder::processHistoricalDataEndMsg(const char* ptr, const char* endPtr) {
+	int reqId;
+	std::string startDateStr;
+	std::string endDateStr;
+
+	DECODE_FIELD(reqId);
+	DECODE_FIELD(startDateStr);
+	DECODE_FIELD(endDateStr);
+
+	m_pEWrapper->historicalDataEnd(reqId, startDateStr, endDateStr);
 
 	return ptr;
 }
@@ -2202,7 +2225,8 @@ const char* EDecoder::processCompletedOrderMsg(const char* ptr, const char* endP
           && eOrderDecoder.decodeCompletedStatus(ptr, endPtr)
           && eOrderDecoder.decodePegBestPegMidOrderAttributes(ptr, endPtr)
           && eOrderDecoder.decodeCustomerAccount(ptr, endPtr)
-          && eOrderDecoder.decodeProfessionalCustomer(ptr, endPtr);
+          && eOrderDecoder.decodeProfessionalCustomer(ptr, endPtr)
+          && eOrderDecoder.decodeSubmitter(ptr, endPtr);
 
         if (!success) {
           return nullptr;
@@ -2291,6 +2315,16 @@ const char* EDecoder::processUserInfo(const char* ptr, const char* endPtr) {
     m_pEWrapper->userInfo(reqId, whiteBrandingId);
 
     return ptr;
+}
+
+const char* EDecoder::processCurrentTimeInMillisMsg(const char* ptr, const char* endPtr) {
+	time_t timeInMillis;
+
+	DECODE_FIELD(timeInMillis);
+
+	m_pEWrapper->currentTimeInMillis(timeInMillis);
+
+	return ptr;
 }
 
 int EDecoder::parseAndProcessMsg(const char*& beginPtr, const char* endPtr) {
@@ -2636,6 +2670,14 @@ int EDecoder::parseAndProcessMsg(const char*& beginPtr, const char* endPtr) {
 
         case USER_INFO:
             ptr = processUserInfo(ptr, endPtr);
+            break;
+
+        case HISTORICAL_DATA_END:
+            ptr = processHistoricalDataEndMsg(ptr, endPtr);
+            break;
+
+        case CURRENT_TIME_IN_MILLIS:
+            ptr = processCurrentTimeInMillisMsg(ptr, endPtr);
             break;
 
 		default:

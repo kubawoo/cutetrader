@@ -1,4 +1,4 @@
-/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2025 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 #include "StdAfx.h"
@@ -3799,6 +3799,28 @@ void EClient::reqUserInfo(int reqId) {
         ENCODE_FIELD(reqId)
 
         closeAndSend(msg.str());
+}
+
+void EClient::reqCurrentTimeInMillis()
+{
+    // not connected?
+    if (!isConnected()) {
+        m_pEWrapper->error(NO_VALID_ID, Utils::currentTimeMillis(), NOT_CONNECTED.code(), NOT_CONNECTED.msg(), "");
+        return;
+    }
+
+    if (m_serverVersion < MIN_SERVER_VER_CURRENT_TIME_IN_MILLIS) {
+        m_pEWrapper->error(NO_VALID_ID, Utils::currentTimeMillis(), UPDATE_TWS.code(), UPDATE_TWS.msg() + "  It does not support current time in millis requests.", "");
+        return;
+    }
+
+    std::stringstream msg;
+    prepareBuffer(msg);
+
+    // send current time in millis req
+    ENCODE_FIELD(REQ_CURRENT_TIME_IN_MILLIS);
+
+    closeAndSend(msg.str());
 }
 
 void EClient::validateInvalidSymbols(const std::string& host) {

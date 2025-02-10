@@ -1,4 +1,4 @@
-/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2025 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 /* not using "#pragma once" on purpose! */
@@ -109,5 +109,6 @@ virtual void wshMetaData(int reqId, const std::string& dataJson) EWRAPPER_VIRTUA
 virtual void wshEventData(int reqId, const std::string& dataJson) EWRAPPER_VIRTUAL_IMPL;
 virtual void historicalSchedule(int reqId, const std::string& startDateTime, const std::string& endDateTime, const std::string& timeZone, const std::vector<HistoricalSession>& sessions) EWRAPPER_VIRTUAL_IMPL;
 virtual void userInfo(int reqId, const std::string& whiteBrandingId) EWRAPPER_VIRTUAL_IMPL;
+virtual void currentTimeInMillis(time_t timeInMillis) EWRAPPER_VIRTUAL_IMPL;
 
 #undef EWRAPPER_VIRTUAL_IMPL

@@ -1,4 +1,4 @@
-/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2025 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 #pragma once
@@ -191,6 +191,7 @@ const int CANCEL_WSH_META_DATA			= 101;
 const int REQ_WSH_EVENT_DATA			= 102;
 const int CANCEL_WSH_EVENT_DATA			= 103;
 const int REQ_USER_INFO                 = 104;
+const int REQ_CURRENT_TIME_IN_MILLIS    = 105;
 
 // TWS New Bulletins constants
 const int NEWS_MSG              = 1;    // standard IB news bulleting message
@@ -367,6 +368,7 @@ public:
 	void cancelWshMetaData(int reqId);
 	void cancelWshEventData(int reqid);
     void reqUserInfo(int reqId);
+	void reqCurrentTimeInMillis();
 
 private:
 

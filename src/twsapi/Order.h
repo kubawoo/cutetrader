@@ -1,4 +1,4 @@
-/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2025 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 #pragma once
@@ -248,6 +248,7 @@ struct Order
 	std::string bondAccruedInterest = "";
 	bool includeOvernight = false;
 	int manualOrderIndicator = UNSET_INTEGER;
+	std::string submitter = "";
 
 public:
 
