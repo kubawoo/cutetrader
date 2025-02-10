@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "watchlist.h"
 #include <QException>
 #include <QMessageBox>
 #include <QSqlDatabase>
@@ -21,6 +22,8 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
     _ui->optionsTableWidget->setColumnHidden(0, true);
     _ui->futuresTableWidget->setColumnHidden(0, true);
     _ui->watchlistTableWidget->setColumnHidden(0, true);
+
+    _ui->mainTabWidget->addTab(new Watchlist, "watchlist2");
 
     connect(_client, &twsclient::TwsClient::accountValueUpdatedSignal, &_account, &account::Account::updateAccountValue);
     connect(_client, &twsclient::TwsClient::portfolioPositionUpdatedSignal, &_account, &account::Account::updatePortfolioPosition);

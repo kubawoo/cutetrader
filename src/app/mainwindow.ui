@@ -438,7 +438,7 @@
       </property>
      </widget>
     </widget>
-    <widget class="QWidget" name="tab">
+    <widget class="QWidget" name="watchlistTab">
      <attribute name="title">
       <string>Watchlist</string>
      </attribute>

@@ -3,6 +3,7 @@ set(PROJECT_SOURCES
         mainwindow.cpp mainwindow.h mainwindow.ui
         connectdialog.cpp connectdialog.h connectdialog.ui
         addsecuritydialog.cpp addsecuritydialog.h addsecuritydialog.ui
+        watchlist.cpp watchlist.h watchlist.ui
 )
 
 qt_add_executable(cutetrader
