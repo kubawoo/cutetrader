@@ -1,4 +1,4 @@
-/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2025 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 #pragma once
@@ -153,12 +153,15 @@ const int MIN_SERVER_VER_CME_TAGGING_FIELDS          = 192;
 const int MIN_SERVER_VER_CME_TAGGING_FIELDS_IN_OPEN_ORDER = 193;
 const int MIN_SERVER_VER_ERROR_TIME                  = 194;
 const int MIN_SERVER_VER_FULL_ORDER_PREVIEW_FIELDS   = 195;
+const int MIN_SERVER_VER_HISTORICAL_DATA_END         = 196;
+const int MIN_SERVER_VER_CURRENT_TIME_IN_MILLIS      = 197;
+const int MIN_SERVER_VER_SUBMITTER                   = 198;
 
 /* 100+ messaging */
 // 100 = enhanced handshake, msg length prefixes
 
 const int MIN_CLIENT_VER = 100;
-const int MAX_CLIENT_VER = MIN_SERVER_VER_FULL_ORDER_PREVIEW_FIELDS;
+const int MAX_CLIENT_VER = MIN_SERVER_VER_SUBMITTER;
 
 
 // incoming msg id's
@@ -244,6 +247,8 @@ const int WSH_META_DATA                             = 104;
 const int WSH_EVENT_DATA                            = 105;
 const int HISTORICAL_SCHEDULE                       = 106;
 const int USER_INFO                                 = 107;
+const int HISTORICAL_DATA_END                       = 108;
+const int CURRENT_TIME_IN_MILLIS                    = 109;
 
 
 const int HEADER_LEN = 4; // 4 bytes for msg length
@@ -368,6 +373,8 @@ class TWSAPIDLLEXP EDecoder
     const char* processWshEventData(const char* ptr, const char* endPtr);
     const char* processHistoricalSchedule(const char* ptr, const char* endPtr);
     const char* processUserInfo(const char* ptr, const char* endPtr);
+    const char* processHistoricalDataEndMsg(const char* ptr, const char* endPtr);
+    const char* processCurrentTimeInMillisMsg(const char* ptr, const char* endPtr);
 
 
     int processConnectAck(const char*& beginPtr, const char* endPtr);

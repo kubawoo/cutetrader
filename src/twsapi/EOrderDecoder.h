@@ -1,4 +1,4 @@
-/* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
+/* Copyright (C) 2025 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 #pragma once
@@ -103,6 +103,7 @@ public:
 	bool decodeBondAccruedInterest(const char*& ptr, const char* endPtr);
 	bool decodeIncludeOvernight(const char*& ptr, const char* endPtr);
 	bool decodeCMETaggingFields(const char*& ptr, const char* endPtr);
+	bool decodeSubmitter(const char*& ptr, const char* endPtr);
 
 private:
 	Contract* m_contract;
