@@ -1,3 +1,4 @@
+ - Move TWS read thread into TwsClient
  - Load data into DB
  - Calculate beta and correlation
  - Add HV and IV to quotes

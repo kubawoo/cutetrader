@@ -2,7 +2,7 @@
 #include "ui_watchlisttab.h"
 
 
-WatchlistTab::WatchlistTab(twsclient::TwsClient *client, data::DataManager *dataManager, QWidget *parent) :
+WatchlistTab::WatchlistTab(twsclient::ITwsClient *client, data::DataManager *dataManager, QWidget *parent) :
     QWidget(parent),
     _ui(new Ui::WatchlistTab),
     _client(client),
@@ -16,7 +16,7 @@ WatchlistTab::WatchlistTab(twsclient::TwsClient *client, data::DataManager *data
     connect(_addSecurityDialog, &AddSecurityDialog::addSecuritySignal, this, &WatchlistTab::securityAdded);
     connect(_ui->deletePushButton, &QPushButton::clicked, this, &WatchlistTab::deleteSecurity);
     connect(_ui->watchlistTableWidget, &QTableWidget::currentCellChanged, this, &WatchlistTab::securitySelected);
-    connect(_client, &twsclient::TwsClient::contractDetailReadySignal, this, &WatchlistTab::securityDetailsReady);
+    connect(_client, &twsclient::ITwsClient::contractDetailReadySignal, this, &WatchlistTab::securityDetailsReady);
 }
 
 WatchlistTab::~WatchlistTab()
@@ -32,11 +32,14 @@ void WatchlistTab::init()
 
 void WatchlistTab::securityDetailsReady(int reqId, const QList<common::ContractDetailsDTO> &details)
 {
-    if(reqId == _reqId) {
+    //TODO: fix, does not work when getting from cache
+    //    if(reqId == _reqId) {
         qDebug() << "securityDetailsReady";
         //TODO: create separate dto and signal for contract details
         _ui->nameLabel->setText(details[0].description);
-    }
+//    } else {
+//        qDebug() << "incorrect reqId" << reqId << _reqId;
+//    }
 }
 
 void WatchlistTab::addSecurity()

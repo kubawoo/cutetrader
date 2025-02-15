@@ -7,7 +7,7 @@
 namespace twsclient {
 
 TwsClient::TwsClient(QObject *parent)
-    : QObject{parent},
+    : ITwsClient{parent},
       _readerSignal(200),
       _client(new EClientSocket(this, &_readerSignal)),
       _nextOrderId(-1),
@@ -23,7 +23,6 @@ TwsClient::~TwsClient()
         delete _reader;
     }
 
-    disconnect();
     delete _client;
 }
 

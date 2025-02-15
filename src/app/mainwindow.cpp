@@ -19,9 +19,9 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
     _ui->setupUi(this);
 
 
-    connect(_client, &twsclient::TwsClient::accountValueUpdatedSignal, &_account, &account::Account::updateAccountValue);
-    connect(_client, &twsclient::TwsClient::portfolioPositionUpdatedSignal, &_account, &account::Account::updatePortfolioPosition);
-    connect(_client, &twsclient::TwsClient::updateAccountTimeSignal, this, &MainWindow::updateAccountTime);
+    connect(_client, &twsclient::ITwsClient::accountValueUpdatedSignal, &_account, &account::Account::updateAccountValue);
+    connect(_client, &twsclient::ITwsClient::portfolioPositionUpdatedSignal, &_account, &account::Account::updatePortfolioPosition);
+    connect(_client, &twsclient::ITwsClient::updateAccountTimeSignal, this, &MainWindow::updateAccountTime);
 
     connect(_connectDialog, &ConnectDialog::accountSelectedSignal, this, &MainWindow::clientConnected);
     connect(_connectDialog, &ConnectDialog::rejected, this, &MainWindow::close);

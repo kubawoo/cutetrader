@@ -2,7 +2,7 @@
 #include "ui_connectdialog.h"
 #include <QPushButton>
 
-ConnectDialog::ConnectDialog(twsclient::TwsClient *client, QWidget *parent) :
+ConnectDialog::ConnectDialog(twsclient::ITwsClient *client, QWidget *parent) :
     QDialog(parent),
     _ui(new Ui::ConnectDialog),
     _client(client)
@@ -11,7 +11,7 @@ ConnectDialog::ConnectDialog(twsclient::TwsClient *client, QWidget *parent) :
     _ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
     QPushButton * connectPushButton = _ui->buttonBox->addButton("Connect", QDialogButtonBox::HelpRole);
     connect(connectPushButton, &QPushButton::clicked, this, &ConnectDialog::connectClient);
-    connect(_client, &twsclient::TwsClient::managedAccountsSignal, this, &ConnectDialog::managedAccounts);
+    connect(_client, &twsclient::ITwsClient::managedAccountsSignal, this, &ConnectDialog::managedAccounts);
     connect(this, &ConnectDialog::accepted, this, &ConnectDialog::accountSelected);
 }
 

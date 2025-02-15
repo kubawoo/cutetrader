@@ -1,7 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "qtablewidget.h"
 #include <QMainWindow>
 #include <QLabel>
 #include <twsclient.h>
@@ -36,7 +35,7 @@ private:
     bool setupDatabase();
 
     Ui::MainWindow *_ui;
-    twsclient::TwsClient * _client;
+    twsclient::ITwsClient * _client;
     twsclient::TwsReaderThread * _readerThread;
     data::DataManager _dataManager;
     account::Account _account;
