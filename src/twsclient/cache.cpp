@@ -53,7 +53,7 @@ QPair<long, CacheEntry *> Cache::get(const QStringList &keys)
     return QPair<long, CacheEntry *>(requestId, nullptr);
 }
 
-void Cache::cleanup()
+void Cache::removeExpired()
 {
     qDebug() << "Before cleanup" << _cache.keys() << _requestCache.keys();
     long now = QDateTime::currentSecsSinceEpoch();
@@ -69,6 +69,12 @@ void Cache::cleanup()
         return !_cache.contains(entry.second);
     });
     qDebug() << "After cleanup" << _cache.keys() << _requestCache.keys();
+}
+
+void Cache::clear()
+{
+    _cache.clear();
+    _requestCache.clear();
 }
 
 

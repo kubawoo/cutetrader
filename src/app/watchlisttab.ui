@@ -72,6 +72,32 @@
     <string>Delete</string>
    </property>
   </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>500</x>
+     <y>60</y>
+     <width>54</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Name</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="nameLabel">
+   <property name="geometry">
+    <rect>
+     <x>590</x>
+     <y>60</y>
+     <width>361</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>&lt;none&gt;</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

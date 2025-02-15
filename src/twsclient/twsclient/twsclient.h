@@ -34,6 +34,7 @@ public:
     bool connect(const QString& host, int port, int clientId = 0);
     void disconnect();
     bool isConnected();
+    void clearCache();
 //    int requestHistoricalData(const Contract &contract, const QString &endDateTime,
 //                               const QString &durationString, const QString &barSizeSetting);
     int requestContractDetails(long contractId);
@@ -69,6 +70,7 @@ public:
     virtual void orderStatus( OrderId orderId, const std::string& status, Decimal filled,
         Decimal remaining, double avgFillPrice, long long permId, int parentId,
         double lastFillPrice, int clientId, const std::string& whyHeld, double mktCapPrice) override;
+    virtual void bondContractDetails(int reqId, const ContractDetails& contractDetails) override;
 
 
 
