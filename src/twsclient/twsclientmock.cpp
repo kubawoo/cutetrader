@@ -65,6 +65,20 @@ void TwsClientMock::_timerTask()
 {
     if(_connected) {
         emit updateAccountTimeSignal(QTime::currentTime());
+        emit accountValueUpdatedSignal("NetLiquidation", "100000", "USD");
+        emit accountValueUpdatedSignal("ExcessLiquidity", "85000", "USD");
+        emit accountValueUpdatedSignal("MaintMarginReq", "15000", "USD");
+        emit accountValueUpdatedSignal("StockMarketValue", "60000", "USD");
+        emit accountValueUpdatedSignal("CashBalance", "40000", "USD");
+
+        common::PortfolioPositionDTO positionDto;
+        positionDto.symbol = "SPY";
+        positionDto.securityType = common::SecurityType::STOCK;
+        positionDto.position = 100;
+        positionDto.unrealizedPNL = 1000;
+        positionDto.marketValue = 60000;
+        emit portfolioPositionUpdatedSignal(positionDto);
+
     }
 }
 
@@ -72,11 +86,28 @@ void TwsClientMock::_timerTask()
 void TwsClientMock::requestContractDetails(long contractId, int * reqId)
 {
     _setRequestId(reqId, _requestId++);
+
+    common::ContractDetailsDTO dto;
+    dto.contractId = 1;
+    dto.currency = "USD";
+    dto.symbol = "SPY";
+    dto.description = "SPDR S&P500 ETF";
+    dto.securityType = common::SecurityType::STOCK;
+    emit contractDetailReadySignal(*reqId, {dto});
 }
 
 void TwsClientMock::requestMatchingSymbols(const QString &pattern, int * reqId)
 {
     _setRequestId(reqId, _requestId++);
+
+    common::ContractDetailsDTO dto;
+    dto.contractId = 1;
+    dto.currency = "USD";
+    dto.symbol = "SPY";
+    dto.description = "SPDR S&P500 ETF";
+    dto.securityType = common::SecurityType::STOCK;
+
+    emit matchingSymbolsReadySignal(*reqId, {dto});
 }
 
 

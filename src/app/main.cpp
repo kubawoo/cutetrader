@@ -13,8 +13,6 @@ int main(int argc, char *argv[])
         qDebug() << i << argv[i];
     }
 
-
-
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
 
     twsclient::ITwsClient * client;
