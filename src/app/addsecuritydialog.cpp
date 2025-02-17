@@ -31,7 +31,7 @@ void AddSecurityDialog::search() {
 void AddSecurityDialog::symbolsFound(int reqId, const QList<common::ContractDetailsDTO> &securities)
 {
     if(_reqId != reqId) {
-        qDebug() << "Got invalid reqId. Expected" << _reqId << "but got" << reqId;
+        qDebug() << "AddSecurityDialog::symbolsFound" << "Got invalid reqId. Expected" << _reqId << "but got" << reqId;
         return;
     }
 

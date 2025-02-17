@@ -38,7 +38,7 @@ void WatchlistTab::securityDetailsReady(int reqId, const QList<common::ContractD
         //TODO: create separate dto and signal for contract details
         _ui->nameLabel->setText(details[0].description);
     } else {
-        qDebug() << "incorrect reqId" << reqId << _reqId;
+        qDebug() << "WatchlistTab::securityDetailsReady" << "Got invalid reqId. Expected" << _reqId << "but got" << reqId;
     }
 }
 

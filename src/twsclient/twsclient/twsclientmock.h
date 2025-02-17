@@ -13,24 +13,19 @@ public:
     ~TwsClientMock();
 
 public slots:
-    void requestCurrentTime() override;
-    void startAccountUpdates() override;
-    void stopAccountUpdates() override;
-    void startPositionsUpdates() override;
-    void stopPositionsUpdates() override;
-    void requestManagedAccounts() override;
     void startClient(const QString & accountId) override;
+    void disconnect() override;
+    void requestCurrentTime() override;
+    void requestManagedAccounts() override;
     void requestOpenOrders() override;
+    void requestContractDetails(long contractId, int * reqId = nullptr) override;
+    void requestMatchingSymbols(const QString & pattern, int * reqId = nullptr) override;
 
 public:
     bool connect(const QString& host, int port, int clientId = 0) override;
-    void disconnect() override;
     bool isConnected() override;
-    void clearCache() override;
 //    int requestHistoricalData(const Contract &contract, const QString &endDateTime,
 //                               const QString &durationString, const QString &barSizeSetting);
-    void requestContractDetails(long contractId, int * reqId = nullptr) override;
-    void requestMatchingSymbols(const QString & pattern, int * reqId = nullptr) override;
 
 private:
     bool _connected;

@@ -13,10 +13,9 @@ ITwsClient::~ITwsClient()
 
 }
 
-void ITwsClient::setRequestId(int *holder, int value)
+void ITwsClient::_setRequestId(int *holder, int value)
 {
     if(holder) {
-        qDebug() << "setRequestId" << value;
         *holder = value;
     }
 }

@@ -22,24 +22,20 @@ public:
 public slots:
     void checkMessages();
     void cleanup();
+    void clearCache();
+    void disconnect() override;
     void requestCurrentTime() override;
-    void startAccountUpdates() override;
-    void stopAccountUpdates() override;
-    void startPositionsUpdates() override;
-    void stopPositionsUpdates() override;
     void requestManagedAccounts() override;
     void startClient(const QString & accountId) override;
     void requestOpenOrders() override;
+    void requestContractDetails(long contractId, int * reqId = nullptr) override;
+    void requestMatchingSymbols(const QString & pattern, int * reqId = nullptr) override;
 
 public:
     bool connect(const QString& host, int port, int clientId = 0) override;
-    void disconnect() override;
     bool isConnected() override;
-    void clearCache() override;
 //    int requestHistoricalData(const Contract &contract, const QString &endDateTime,
 //                               const QString &durationString, const QString &barSizeSetting);
-    void requestContractDetails(long contractId, int * reqId = nullptr) override;
-    void requestMatchingSymbols(const QString & pattern, int * reqId = nullptr) override;
 
 
 public:
@@ -75,7 +71,11 @@ public:
 
 
 private:
-    Contract buildContract(long contractId);
+    void _startAccountUpdates();
+    void _stopAccountUpdates();
+    void _startPositionsUpdates();
+    void _stopPositionsUpdates();
+    Contract _buildContract(long contractId);
 
     TwsReaderThread * _readerThread;
     EReaderOSSignal _readerSignal;

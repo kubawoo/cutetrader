@@ -19,25 +19,6 @@ void TwsClientMock::requestCurrentTime()
     emit currentTimeSignal(QDateTime::currentDateTime());
 }
 
-void TwsClientMock::startAccountUpdates()
-{
-    //TODO:
-}
-
-void TwsClientMock::stopAccountUpdates()
-{
-
-}
-
-void TwsClientMock::startPositionsUpdates()
-{
-
-}
-
-void TwsClientMock::stopPositionsUpdates()
-{
-
-}
 
 void TwsClientMock::requestManagedAccounts()
 {
@@ -76,19 +57,15 @@ bool TwsClientMock::isConnected()
     return _connected;
 }
 
-void TwsClientMock::clearCache()
-{
-
-}
 
 void TwsClientMock::requestContractDetails(long contractId, int * reqId)
 {
-    setRequestId(reqId, _requestId++);
+    _setRequestId(reqId, _requestId++);
 }
 
 void TwsClientMock::requestMatchingSymbols(const QString &pattern, int * reqId)
 {
-    setRequestId(reqId, _requestId++);
+    _setRequestId(reqId, _requestId++);
 }
 
 

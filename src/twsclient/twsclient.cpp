@@ -98,17 +98,17 @@ void TwsClient::requestCurrentTime() {
     _client->reqCurrentTime();
 }
 
-void TwsClient::startAccountUpdates() {
+void TwsClient::_startAccountUpdates() {
     _client->reqAccountUpdates(true, _accountId);
 }
-void TwsClient::stopAccountUpdates() {
+void TwsClient::_stopAccountUpdates() {
     _client->reqAccountUpdates(false, _accountId);
 }
-void TwsClient::startPositionsUpdates()
+void TwsClient::_startPositionsUpdates()
 {
     _client->reqPositions();
 }
-void TwsClient::stopPositionsUpdates()
+void TwsClient::_stopPositionsUpdates()
 {
     _client->cancelPositions();
 }
@@ -122,7 +122,7 @@ void TwsClient::requestManagedAccounts()
 void TwsClient::startClient(const QString &accountId)
 {
     _accountId = accountId.toStdString();
-    startAccountUpdates();
+    _startAccountUpdates();
 }
 
 void TwsClient::requestOpenOrders()
@@ -144,19 +144,18 @@ void TwsClient::requestContractDetails(long contractId, int * reqId)
 {
     QStringList keys = {"requestContractDetails", QString::number(contractId)};
     auto cacheEntry = _cache.get(keys);
-
     if(cacheEntry.first >= 0 && cacheEntry.second && cacheEntry.second->ready()) {
         long requestId = cacheEntry.first;
         ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(cacheEntry.second);
         qDebug() << "Returning from cache";
-        setRequestId(reqId, requestId);
+        _setRequestId(reqId, requestId);
         emit contractDetailReadySignal(requestId, entry->contractDetails);
+    } else {
+        qDebug() << "requestContractDetails" << _requestId;
+        _setRequestId(reqId, _requestId);
+        _cache.add(_requestId, new ContractDetailsCacheEntry(), keys);
+        _client->reqContractDetails(_requestId++, _buildContract(contractId));
     }
-
-    qDebug() << "requestContractDetails" << _requestId;
-    setRequestId(reqId, _requestId);
-    _cache.add(_requestId, new ContractDetailsCacheEntry(), keys);
-    _client->reqContractDetails(_requestId++, buildContract(contractId));
 }
 
 void TwsClient::requestMatchingSymbols(const QString &pattern, int * reqId)
@@ -168,13 +167,13 @@ void TwsClient::requestMatchingSymbols(const QString &pattern, int * reqId)
         long requestId = cacheEntry.first;
         ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(cacheEntry.second);
         qDebug() << "Returning from cache" << keys;
-        setRequestId(reqId, requestId);
+        _setRequestId(reqId, requestId);
         emit matchingSymbolsReadySignal(requestId, entry->contractDetails);
+    } else {
+        _setRequestId(reqId, _requestId);
+        _cache.add(_requestId, new ContractDetailsCacheEntry(), keys);
+        _client->reqMatchingSymbols(_requestId++, pattern.toStdString());
     }
-
-    setRequestId(reqId, _requestId);
-    _cache.add(_requestId, new ContractDetailsCacheEntry(), keys);
-    _client->reqMatchingSymbols(_requestId++, pattern.toStdString());
 }
 
 
@@ -403,7 +402,7 @@ void TwsClient::bondContractDetails(int reqId, const ContractDetails &contractDe
 }
 
 
-Contract TwsClient::buildContract(long contractId)
+Contract TwsClient::_buildContract(long contractId)
 {
     Contract c;
     c.conId = contractId;
