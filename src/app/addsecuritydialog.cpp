@@ -24,7 +24,7 @@ AddSecurityDialog::~AddSecurityDialog()
 void AddSecurityDialog::search() {
     QString pattern = _ui->searchEdit->text();
     if(!pattern.isEmpty()) {
-        _reqId = _client->requestMatchingSymbols(pattern);
+        _client->requestMatchingSymbols(pattern, &_reqId);
     }
 }
 

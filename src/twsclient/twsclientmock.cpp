@@ -81,14 +81,14 @@ void TwsClientMock::clearCache()
 
 }
 
-int TwsClientMock::requestContractDetails(long contractId)
+void TwsClientMock::requestContractDetails(long contractId, int * reqId)
 {
-    return 1;
+    setRequestId(reqId, _requestId++);
 }
 
-int TwsClientMock::requestMatchingSymbols(const QString &pattern)
+void TwsClientMock::requestMatchingSymbols(const QString &pattern, int * reqId)
 {
-    return 1;
+    setRequestId(reqId, _requestId++);
 }
 
 

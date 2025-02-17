@@ -38,8 +38,8 @@ public:
     void clearCache() override;
 //    int requestHistoricalData(const Contract &contract, const QString &endDateTime,
 //                               const QString &durationString, const QString &barSizeSetting);
-    int requestContractDetails(long contractId) override;
-    int requestMatchingSymbols(const QString & pattern) override;
+    void requestContractDetails(long contractId, int * reqId = nullptr) override;
+    void requestMatchingSymbols(const QString & pattern, int * reqId = nullptr) override;
 
 
 public:

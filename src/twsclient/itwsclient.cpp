@@ -8,9 +8,17 @@ ITwsClient::ITwsClient(QObject *parent)
 
 }
 
-twsclient::ITwsClient::~ITwsClient()
+ITwsClient::~ITwsClient()
 {
 
+}
+
+void ITwsClient::setRequestId(int *holder, int value)
+{
+    if(holder) {
+        qDebug() << "setRequestId" << value;
+        *holder = value;
+    }
 }
 
 }

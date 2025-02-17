@@ -140,7 +140,7 @@ void TwsClient::requestOpenOrders()
 //    return _requestId++;
 //}
 
-int TwsClient::requestContractDetails(long contractId)
+void TwsClient::requestContractDetails(long contractId, int * reqId)
 {
     QStringList keys = {"requestContractDetails", QString::number(contractId)};
     auto cacheEntry = _cache.get(keys);
@@ -149,16 +149,17 @@ int TwsClient::requestContractDetails(long contractId)
         long requestId = cacheEntry.first;
         ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(cacheEntry.second);
         qDebug() << "Returning from cache";
+        setRequestId(reqId, requestId);
         emit contractDetailReadySignal(requestId, entry->contractDetails);
-        return requestId;
     }
 
+    qDebug() << "requestContractDetails" << _requestId;
+    setRequestId(reqId, _requestId);
     _cache.add(_requestId, new ContractDetailsCacheEntry(), keys);
-    _client->reqContractDetails(_requestId, buildContract(contractId));
-    return _requestId++;
+    _client->reqContractDetails(_requestId++, buildContract(contractId));
 }
 
-int TwsClient::requestMatchingSymbols(const QString &pattern)
+void TwsClient::requestMatchingSymbols(const QString &pattern, int * reqId)
 {
     QStringList keys = {"requestMatchingSymbols", pattern};
     auto cacheEntry = _cache.get(keys);
@@ -167,13 +168,13 @@ int TwsClient::requestMatchingSymbols(const QString &pattern)
         long requestId = cacheEntry.first;
         ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(cacheEntry.second);
         qDebug() << "Returning from cache" << keys;
+        setRequestId(reqId, requestId);
         emit matchingSymbolsReadySignal(requestId, entry->contractDetails);
-        return requestId;
     }
 
+    setRequestId(reqId, _requestId);
     _cache.add(_requestId, new ContractDetailsCacheEntry(), keys);
-    _client->reqMatchingSymbols(_requestId, pattern.toStdString());
-    return _requestId++;
+    _client->reqMatchingSymbols(_requestId++, pattern.toStdString());
 }
 
 

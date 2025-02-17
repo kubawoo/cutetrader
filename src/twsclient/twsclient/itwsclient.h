@@ -31,8 +31,8 @@ public:
     virtual void clearCache() = 0;
 //    int requestHistoricalData(const Contract &contract, const QString &endDateTime,
 //                               const QString &durationString, const QString &barSizeSetting);
-    virtual int requestContractDetails(long contractId) = 0;
-    virtual int requestMatchingSymbols(const QString & pattern) = 0;
+    virtual void requestContractDetails(long contractId, int * reqId = nullptr) = 0;
+    virtual void requestMatchingSymbols(const QString & pattern, int * reqId = nullptr) = 0;
 
 
 
@@ -48,6 +48,10 @@ signals:
     void contractDetailReadySignal(const int & requestId, const QList<common::ContractDetailsDTO> & details);
     void matchingSymbolsReadySignal(const int & requestId, const QList<common::ContractDetailsDTO> & details);
     void updateAccountTimeSignal(const QTime & time);
+
+protected:
+    void setRequestId(int * holder, int value);
+
 
 };
 }
