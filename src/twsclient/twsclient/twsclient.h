@@ -3,7 +3,8 @@
 
 #include <QObject>
 #include <QDateTime>
-#include "DefaultEWrapper.h"
+#include "itwsclient.h"
+#include "twsreaderthread.h"
 #include "EReaderOSSignal.h"
 #include "EReader.h"
 #include "cache.h"
@@ -11,7 +12,7 @@
 
 namespace twsclient {
 
-class TwsClient : public QObject, public DefaultEWrapper
+class TwsClient : public ITwsClient
 {
     Q_OBJECT
 public:
@@ -21,24 +22,20 @@ public:
 public slots:
     void checkMessages();
     void cleanup();
-    void requestCurrentTime();
-    void startAccountUpdates();
-    void stopAccountUpdates();
-    void startPositionsUpdates();
-    void stopPositionsUpdates();
-    void requestManagedAccounts();
-    void startClient(const QString & accountId);
-    void requestOpenOrders();
+    void clearCache();
+    void disconnect() override;
+    void requestCurrentTime() override;
+    void requestManagedAccounts() override;
+    void startClient(const QString & accountId) override;
+    void requestOpenOrders() override;
+    void requestContractDetails(long contractId, int * reqId = nullptr) override;
+    void requestMatchingSymbols(const QString & pattern, int * reqId = nullptr) override;
 
 public:
-    bool connect(const QString& host, int port, int clientId = 0);
-    void disconnect();
-    bool isConnected();
-    void clearCache();
+    bool connect(const QString& host, int port, int clientId = 0) override;
+    bool isConnected() override;
 //    int requestHistoricalData(const Contract &contract, const QString &endDateTime,
 //                               const QString &durationString, const QString &barSizeSetting);
-    int requestContractDetails(long contractId);
-    int requestMatchingSymbols(const QString & pattern);
 
 
 public:
@@ -73,23 +70,14 @@ public:
     virtual void bondContractDetails(int reqId, const ContractDetails& contractDetails) override;
 
 
-
-signals:
-    void connectedSignal();
-    void disconnectedSignal();
-    void currentTimeSignal(const QDateTime & time);
-    void managedAccountsSignal(const QStringList accounts);
-//    void historicalDataReadySignal(long requestId, QList<Bar> *bars);
-    void accountValueUpdatedSignal(const QString & key, const QString & value, const QString & currency);
-    void portfolioPositionUpdatedSignal(const common::PortfolioPositionDTO & position);
-    void contractDetailReadySignal(const int & requestId, const QList<common::ContractDetailsDTO> & details);
-    void matchingSymbolsReadySignal(const int & requestId, const QList<common::ContractDetailsDTO> & details);
-    void updateAccountTimeSignal(const QTime & time);
-
-
 private:
-    Contract buildContract(long contractId);
+    void _startAccountUpdates();
+    void _stopAccountUpdates();
+    void _startPositionsUpdates();
+    void _stopPositionsUpdates();
+    Contract _buildContract(long contractId);
 
+    TwsReaderThread * _readerThread;
     EReaderOSSignal _readerSignal;
     EClientSocket * const _client;
     long _nextOrderId;

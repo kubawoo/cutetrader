@@ -1,7 +1,8 @@
 #include "addsecuritydialog.h"
 #include "ui_addsecuritydialog.h"
+#include <common/utils.h>
 
-AddSecurityDialog::AddSecurityDialog(twsclient::TwsClient * client, QWidget *parent) :
+AddSecurityDialog::AddSecurityDialog(twsclient::ITwsClient * client, QWidget *parent) :
     _client(client),
     QDialog(parent),
     _ui(new Ui::AddSecurityDialog),
@@ -10,7 +11,7 @@ AddSecurityDialog::AddSecurityDialog(twsclient::TwsClient * client, QWidget *par
     _ui->setupUi(this);
 
     connect(_ui->searchButton, &QPushButton::clicked, this, &AddSecurityDialog::search);
-    connect(_client, &twsclient::TwsClient::matchingSymbolsReadySignal, this, &AddSecurityDialog::symbolsFound);
+    connect(_client, &twsclient::ITwsClient::matchingSymbolsReadySignal, this, &AddSecurityDialog::symbolsFound);
     connect(_ui->securitiesList, &QListWidget::currentRowChanged, this, &AddSecurityDialog::symbolChanged);
     connect(this, &AddSecurityDialog::accepted, this, &AddSecurityDialog::addSymbol);
 }
@@ -23,14 +24,14 @@ AddSecurityDialog::~AddSecurityDialog()
 void AddSecurityDialog::search() {
     QString pattern = _ui->searchEdit->text();
     if(!pattern.isEmpty()) {
-        _reqId = _client->requestMatchingSymbols(pattern);
+        _client->requestMatchingSymbols(pattern, &_reqId);
     }
 }
 
 void AddSecurityDialog::symbolsFound(int reqId, const QList<common::ContractDetailsDTO> &securities)
 {
     if(_reqId != reqId) {
-        qDebug() << "Got invalid reqId. Expected" << _reqId << "but got" << reqId;
+        qDebug() << "AddSecurityDialog::symbolsFound" << "Got invalid reqId. Expected" << _reqId << "but got" << reqId;
         return;
     }
 

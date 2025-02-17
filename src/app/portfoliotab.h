@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QTableWidget>
-#include <twsclient.h>
+#include <twsclient/itwsclient.h>
 #include <account.h>
 
 namespace Ui {
@@ -15,7 +15,7 @@ class PortfolioTab : public QWidget
     Q_OBJECT
 
 public:
-    explicit PortfolioTab(twsclient::TwsClient * client, account::Account * account, QWidget *parent = nullptr);
+    explicit PortfolioTab(twsclient::ITwsClient * client, account::Account * account, QWidget *parent = nullptr);
     ~PortfolioTab();
     void init();
 
@@ -31,7 +31,7 @@ private:
 
 private:
     Ui::PortfolioTab *_ui;
-    twsclient::TwsClient * _client;
+    twsclient::ITwsClient * _client;
 };
 
 #endif // PORTFOLIOTAB_H

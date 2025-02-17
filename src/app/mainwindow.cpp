@@ -5,23 +5,21 @@
 #include <QMessageBox>
 #include <QSqlDatabase>
 
-MainWindow::MainWindow(QApplication * app, QWidget *parent)
+MainWindow::MainWindow(QApplication * app, twsclient::ITwsClient *client, QWidget *parent)
     : QMainWindow(parent), _app(app),
       _ui(new Ui::MainWindow),
-      _client(new twsclient::TwsClient),
-      _readerThread(new twsclient::TwsReaderThread(_client)),
+      _client(client),
       _connectDialog(new ConnectDialog(_client, this)),
       _statusBarAccount(new QLabel),
       _statusBarAccountUpdateTime(new QLabel)
 {
     this->setEnabled(false);
-    _client->moveToThread(_readerThread);
     _ui->setupUi(this);
 
 
-    connect(_client, &twsclient::TwsClient::accountValueUpdatedSignal, &_account, &account::Account::updateAccountValue);
-    connect(_client, &twsclient::TwsClient::portfolioPositionUpdatedSignal, &_account, &account::Account::updatePortfolioPosition);
-    connect(_client, &twsclient::TwsClient::updateAccountTimeSignal, this, &MainWindow::updateAccountTime);
+    connect(_client, &twsclient::ITwsClient::accountValueUpdatedSignal, &_account, &account::Account::updateAccountValue);
+    connect(_client, &twsclient::ITwsClient::portfolioPositionUpdatedSignal, &_account, &account::Account::updatePortfolioPosition);
+    connect(_client, &twsclient::ITwsClient::updateAccountTimeSignal, this, &MainWindow::updateAccountTime);
 
     connect(_connectDialog, &ConnectDialog::accountSelectedSignal, this, &MainWindow::clientConnected);
     connect(_connectDialog, &ConnectDialog::rejected, this, &MainWindow::close);
@@ -29,7 +27,6 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
     _ui->statusbar->addPermanentWidget(_statusBarAccount);
     _ui->statusbar->addPermanentWidget(_statusBarAccountUpdateTime);
 
-    _readerThread->start();
     QTimer::singleShot(0, this, &MainWindow::init);
 }
 
@@ -50,9 +47,6 @@ void MainWindow::clientConnected(const QString & accountId) {
 void MainWindow::quit()
 {
     qDebug() << "Quiting...";
-    _readerThread->quit();
-    _readerThread->wait(1000);
-    delete _readerThread;
     _client->disconnect();
     delete _client;
     _dataManager.close();
@@ -88,10 +82,7 @@ void MainWindow::init()
 
 bool MainWindow::setupDatabase()
 {
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("cutetrader.db");
-    db.open();
-
+    QSqlDatabase db = QSqlDatabase::database();
     _dataManager = data::DataManager(db);
     data::DbBuilder dbBuilder(db);
     return dbBuilder.runMigrations();

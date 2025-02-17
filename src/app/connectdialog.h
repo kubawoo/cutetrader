@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include <QStringList>
-#include <twsclient.h>
+#include <twsclient/itwsclient.h>
 
 namespace Ui {
 class ConnectDialog;
@@ -13,7 +13,7 @@ class ConnectDialog : public QDialog
 {
     Q_OBJECT
 public:
-    explicit ConnectDialog(twsclient::TwsClient * client, QWidget *parent = nullptr);
+    explicit ConnectDialog(twsclient::ITwsClient * client, QWidget *parent = nullptr);
     ~ConnectDialog();
 
 private slots:
@@ -26,7 +26,7 @@ signals:
 
 private:
     Ui::ConnectDialog *_ui;
-    twsclient::TwsClient * _client;
+    twsclient::ITwsClient * _client;
 };
 
 #endif // CONNECTDIALOG_H

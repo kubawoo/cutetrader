@@ -1,7 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "qtablewidget.h"
 #include <QMainWindow>
 #include <QLabel>
 #include <twsclient.h>
@@ -21,7 +20,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QApplication *a, QWidget *parent = nullptr);
+    MainWindow(QApplication *a, twsclient::ITwsClient * client, QWidget *parent = nullptr);
     ~MainWindow();
 
 public slots:
@@ -36,8 +35,7 @@ private:
     bool setupDatabase();
 
     Ui::MainWindow *_ui;
-    twsclient::TwsClient * _client;
-    twsclient::TwsReaderThread * _readerThread;
+    twsclient::ITwsClient * _client;
     data::DataManager _dataManager;
     account::Account _account;
     QApplication * _app;

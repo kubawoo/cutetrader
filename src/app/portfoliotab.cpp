@@ -1,7 +1,7 @@
 #include "portfoliotab.h"
 #include "ui_portfoliotab.h"
 
-PortfolioTab::PortfolioTab(twsclient::TwsClient * client, account::Account* account, QWidget *parent) :
+PortfolioTab::PortfolioTab(twsclient::ITwsClient * client, account::Account* account, QWidget *parent) :
     QWidget(parent),
     _ui(new Ui::PortfolioTab),
     _client(client)

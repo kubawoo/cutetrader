@@ -1,5 +1,5 @@
 #include "twsclient/twsreaderthread.h"
-
+#include "twsclient/twsclient.h"
 namespace twsclient {
 
 
@@ -22,7 +22,8 @@ void TwsReaderThread::run() {
     exec();
 }
 
-QTimer *TwsReaderThread::setupTimer(int msec, void (TwsClient::*funcPtr)(void))
+
+QTimer *TwsReaderThread::setupTimer(int msec, void (TwsClient::*funcPtr)())
 {
     QTimer * timer = new QTimer();
     timer->moveToThread(this);

@@ -1,8 +1,9 @@
 #include "watchlisttab.h"
 #include "ui_watchlisttab.h"
+#include <QThread>
 
 
-WatchlistTab::WatchlistTab(twsclient::TwsClient *client, data::DataManager *dataManager, QWidget *parent) :
+WatchlistTab::WatchlistTab(twsclient::ITwsClient *client, data::DataManager *dataManager, QWidget *parent) :
     QWidget(parent),
     _ui(new Ui::WatchlistTab),
     _client(client),
@@ -15,8 +16,8 @@ WatchlistTab::WatchlistTab(twsclient::TwsClient *client, data::DataManager *data
     connect(_ui->addPushButton, &QPushButton::clicked, this, &WatchlistTab::addSecurity);
     connect(_addSecurityDialog, &AddSecurityDialog::addSecuritySignal, this, &WatchlistTab::securityAdded);
     connect(_ui->deletePushButton, &QPushButton::clicked, this, &WatchlistTab::deleteSecurity);
-    connect(_ui->watchlistTableWidget, &QTableWidget::currentCellChanged, this, &WatchlistTab::securitySelected);
-    connect(_client, &twsclient::TwsClient::contractDetailReadySignal, this, &WatchlistTab::securityDetailsReady);
+    connect(_ui->watchlistTableWidget, &QTableWidget::currentCellChanged, this, &WatchlistTab::securitySelected, Qt::QueuedConnection);
+    connect(_client, &twsclient::ITwsClient::contractDetailReadySignal, this, &WatchlistTab::securityDetailsReady);
 }
 
 WatchlistTab::~WatchlistTab()
@@ -36,6 +37,8 @@ void WatchlistTab::securityDetailsReady(int reqId, const QList<common::ContractD
         qDebug() << "securityDetailsReady";
         //TODO: create separate dto and signal for contract details
         _ui->nameLabel->setText(details[0].description);
+    } else {
+        qDebug() << "WatchlistTab::securityDetailsReady" << "Got invalid reqId. Expected" << _reqId << "but got" << reqId;
     }
 }
 
@@ -81,14 +84,14 @@ void WatchlistTab::securitySelected(int row)
         qDebug() << "securitySelected" << "No row selected";
         return;
     }
-
+    _ui->nameLabel->setText("Loading...");
     QString id = _ui->watchlistTableWidget->item(row, 0)->text();
     bool ok;
     int idInt = id.toInt(&ok);
 
     if(ok) {
         data::Security security = _dataManager->getSecurity(idInt);
-        _reqId = _client->requestContractDetails(security.contractId());
+        _client->requestContractDetails(security.contractId(), &_reqId);
     }
 }
 

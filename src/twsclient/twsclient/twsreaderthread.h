@@ -4,9 +4,11 @@
 #include <QThread>
 #include <QObject>
 #include <QTimer>
-#include "twsclient.h"
+
 
 namespace twsclient {
+
+class TwsClient;
 
 class TwsReaderThread : public QThread
 {
@@ -17,7 +19,7 @@ public:
     void run();
 
 private:
-    QTimer * setupTimer(int msec, void (TwsClient::*funcPtr)(void));
+    QTimer * setupTimer(int msec, void (TwsClient::*funcPtr)());
 
     TwsClient * _client;
     QTimer * _readTimer;
