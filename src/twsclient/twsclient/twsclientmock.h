@@ -33,6 +33,9 @@ public:
 //                               const QString &durationString, const QString &barSizeSetting);
     int requestContractDetails(long contractId) override;
     int requestMatchingSymbols(const QString & pattern) override;
+
+private:
+    bool _connected;
 };
 }
 

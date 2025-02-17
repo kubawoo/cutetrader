@@ -65,17 +65,24 @@ void TwsClientMock::requestOpenOrders()
 
 bool TwsClientMock::connect(const QString &host, int port, int clientId)
 {
-    return true;
+    if(!_connected) {
+        _connected = true;
+        emit connectedSignal();
+        QStringList accounts = {"Mocked#1", "Mocked#2"};
+        emit managedAccountsSignal(accounts);
+        return true;
+    }
+    return false;
 }
 
 void TwsClientMock::disconnect()
 {
-
+    _connected = false;
 }
 
 bool TwsClientMock::isConnected()
 {
-    return true;
+    return _connected;
 }
 
 void TwsClientMock::clearCache()
