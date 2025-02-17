@@ -15,8 +15,6 @@ public:
     virtual ~ITwsClient();
 
 public slots:
-    virtual void checkMessages() = 0;
-    virtual void cleanup() = 0;
     virtual void requestCurrentTime() = 0;
     virtual void startAccountUpdates() = 0;
     virtual void stopAccountUpdates() = 0;

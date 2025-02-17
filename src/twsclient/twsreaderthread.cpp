@@ -1,9 +1,9 @@
 #include "twsclient/twsreaderthread.h"
-
+#include "twsclient/twsclient.h"
 namespace twsclient {
 
 
-TwsReaderThread::TwsReaderThread(ITwsClient * client)
+TwsReaderThread::TwsReaderThread(TwsClient * client)
     : QThread{nullptr},
       _client(client),
       _readTimer(nullptr),
@@ -17,12 +17,13 @@ TwsReaderThread::~TwsReaderThread() {
 }
 
 void TwsReaderThread::run() {
-    _readTimer = setupTimer(250, &ITwsClient::checkMessages);
-    _cleanupTimer = setupTimer(60000, &ITwsClient::cleanup);
+    _readTimer = setupTimer(250, &TwsClient::checkMessages);
+    _cleanupTimer = setupTimer(60000, &TwsClient::cleanup);
     exec();
 }
 
-QTimer *TwsReaderThread::setupTimer(int msec, void (ITwsClient::*funcPtr)(void))
+
+QTimer *TwsReaderThread::setupTimer(int msec, void (TwsClient::*funcPtr)())
 {
     QTimer * timer = new QTimer();
     timer->moveToThread(this);

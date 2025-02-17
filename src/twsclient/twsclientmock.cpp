@@ -13,15 +13,6 @@ TwsClientMock::~TwsClientMock()
 
 }
 
-void TwsClientMock::checkMessages()
-{
-
-}
-
-void TwsClientMock::cleanup()
-{
-
-}
 
 void TwsClientMock::requestCurrentTime()
 {

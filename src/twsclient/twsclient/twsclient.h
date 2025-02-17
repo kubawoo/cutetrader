@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QDateTime>
 #include "itwsclient.h"
+#include "twsreaderthread.h"
 #include "EReaderOSSignal.h"
 #include "EReader.h"
 #include "cache.h"
@@ -19,8 +20,8 @@ public:
     ~TwsClient();
 
 public slots:
-    void checkMessages() override;
-    void cleanup() override;
+    void checkMessages();
+    void cleanup();
     void requestCurrentTime() override;
     void startAccountUpdates() override;
     void stopAccountUpdates() override;
@@ -76,6 +77,7 @@ public:
 private:
     Contract buildContract(long contractId);
 
+    TwsReaderThread * _readerThread;
     EReaderOSSignal _readerSignal;
     EClientSocket * const _client;
     long _nextOrderId;

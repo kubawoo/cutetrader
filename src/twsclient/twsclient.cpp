@@ -7,17 +7,24 @@
 namespace twsclient {
 
 TwsClient::TwsClient(QObject *parent)
-    : ITwsClient{parent},
+    : ITwsClient(parent),
+      _readerThread(new TwsReaderThread(this)),
       _readerSignal(200),
       _client(new EClientSocket(this, &_readerSignal)),
       _nextOrderId(-1),
       _reader(nullptr),
       _requestId(0)
-{}
+{
+    _readerThread->start();
+    this->moveToThread(_readerThread);
+}
 
 
 TwsClient::~TwsClient()
 {
+    _readerThread->quit();
+    _readerThread->wait(1000);
+    delete _readerThread;
     // destroy the reader before the client
     if(_reader) {
         delete _reader;

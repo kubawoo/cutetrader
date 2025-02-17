@@ -9,13 +9,11 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
     : QMainWindow(parent), _app(app),
       _ui(new Ui::MainWindow),
       _client(new twsclient::TwsClient),
-      _readerThread(new twsclient::TwsReaderThread(_client)),
       _connectDialog(new ConnectDialog(_client, this)),
       _statusBarAccount(new QLabel),
       _statusBarAccountUpdateTime(new QLabel)
 {
     this->setEnabled(false);
-    _client->moveToThread(_readerThread);
     _ui->setupUi(this);
 
 
@@ -29,7 +27,6 @@ MainWindow::MainWindow(QApplication * app, QWidget *parent)
     _ui->statusbar->addPermanentWidget(_statusBarAccount);
     _ui->statusbar->addPermanentWidget(_statusBarAccountUpdateTime);
 
-    _readerThread->start();
     QTimer::singleShot(0, this, &MainWindow::init);
 }
 
@@ -50,9 +47,6 @@ void MainWindow::clientConnected(const QString & accountId) {
 void MainWindow::quit()
 {
     qDebug() << "Quiting...";
-    _readerThread->quit();
-    _readerThread->wait(1000);
-    delete _readerThread;
     _client->disconnect();
     delete _client;
     _dataManager.close();

@@ -13,8 +13,6 @@ public:
     ~TwsClientMock();
 
 public slots:
-    void checkMessages() override;
-    void cleanup() override;
     void requestCurrentTime() override;
     void startAccountUpdates() override;
     void stopAccountUpdates() override;

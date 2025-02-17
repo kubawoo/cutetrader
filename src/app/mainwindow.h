@@ -36,7 +36,6 @@ private:
 
     Ui::MainWindow *_ui;
     twsclient::ITwsClient * _client;
-    twsclient::TwsReaderThread * _readerThread;
     data::DataManager _dataManager;
     account::Account _account;
     QApplication * _app;
