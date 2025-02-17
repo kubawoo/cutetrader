@@ -82,10 +82,7 @@ void MainWindow::init()
 
 bool MainWindow::setupDatabase()
 {
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("cutetrader.db");
-    db.open();
-
+    QSqlDatabase db = QSqlDatabase::database();
     _dataManager = data::DataManager(db);
     data::DbBuilder dbBuilder(db);
     return dbBuilder.runMigrations();
