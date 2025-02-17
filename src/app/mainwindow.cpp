@@ -5,10 +5,10 @@
 #include <QMessageBox>
 #include <QSqlDatabase>
 
-MainWindow::MainWindow(QApplication * app, QWidget *parent)
+MainWindow::MainWindow(QApplication * app, twsclient::ITwsClient *client, QWidget *parent)
     : QMainWindow(parent), _app(app),
       _ui(new Ui::MainWindow),
-      _client(new twsclient::TwsClient),
+      _client(client),
       _connectDialog(new ConnectDialog(_client, this)),
       _statusBarAccount(new QLabel),
       _statusBarAccountUpdateTime(new QLabel)

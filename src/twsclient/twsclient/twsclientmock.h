@@ -2,6 +2,7 @@
 #define TWSCLIENT_TWSCLIENTMOCK_H
 
 #include "itwsclient.h"
+#include <QTimer>
 
 namespace twsclient {
 
@@ -28,8 +29,13 @@ public:
 //                               const QString &durationString, const QString &barSizeSetting);
 
 private:
+    void _timerTask();
+
+
+private:
     bool _connected;
     int _requestId;
+    QTimer * _timer;
 };
 }
 

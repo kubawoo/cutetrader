@@ -20,7 +20,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QApplication *a, QWidget *parent = nullptr);
+    MainWindow(QApplication *a, twsclient::ITwsClient * client, QWidget *parent = nullptr);
     ~MainWindow();
 
 public slots:

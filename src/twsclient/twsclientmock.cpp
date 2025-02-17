@@ -3,14 +3,16 @@
 namespace twsclient {
 
 TwsClientMock::TwsClientMock(QObject *parent)
-    : ITwsClient(parent)
+    : ITwsClient(parent),
+      _timer{new QTimer}
 {
-
+    QObject::connect(_timer, &QTimer::timeout, this, &TwsClientMock::_timerTask);
 }
 
 TwsClientMock::~TwsClientMock()
 {
-
+    _timer->stop();
+    delete _timer;
 }
 
 
@@ -22,12 +24,15 @@ void TwsClientMock::requestCurrentTime()
 
 void TwsClientMock::requestManagedAccounts()
 {
-
+    emit managedAccountsSignal({"Mocked#1", "Mocked#2"});
 }
 
 void TwsClientMock::startClient(const QString &accountId)
 {
-
+    if(_connected) {
+        _timer->start(60 * 1000); // every minute
+        _timerTask();
+    }
 }
 
 void TwsClientMock::requestOpenOrders()
@@ -40,8 +45,7 @@ bool TwsClientMock::connect(const QString &host, int port, int clientId)
     if(!_connected) {
         _connected = true;
         emit connectedSignal();
-        QStringList accounts = {"Mocked#1", "Mocked#2"};
-        emit managedAccountsSignal(accounts);
+        requestManagedAccounts();
         return true;
     }
     return false;
@@ -55,6 +59,13 @@ void TwsClientMock::disconnect()
 bool TwsClientMock::isConnected()
 {
     return _connected;
+}
+
+void TwsClientMock::_timerTask()
+{
+    if(_connected) {
+        emit updateAccountTimeSignal(QTime::currentTime());
+    }
 }
 
 
