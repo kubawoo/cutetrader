@@ -22,13 +22,14 @@ TwsClient::TwsClient(QObject *parent)
 
 TwsClient::~TwsClient()
 {
+    // destroy the reader before the client
+    if(_reader) {
+        _reader->stop();
+        delete _reader;
+    }
     _readerThread->quit();
     _readerThread->wait(1000);
     delete _readerThread;
-    // destroy the reader before the client
-    if(_reader) {
-        delete _reader;
-    }
 
     delete _client;
 }

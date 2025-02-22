@@ -3,13 +3,15 @@
 #include <QThread>
 
 
-WatchlistTab::WatchlistTab(twsclient::ITwsClient *client, data::DataManager *dataManager, QWidget *parent) :
+WatchlistTab::WatchlistTab(QSharedPointer<common::ITwsClient> client, data::DataManager *dataManager, QWidget *parent) :
     QWidget(parent),
     _ui(new Ui::WatchlistTab),
     _client(client),
     _dataManager(dataManager),
-    _addSecurityDialog(new AddSecurityDialog(client, this))
+    _addSecurityDialog(new AddSecurityDialog(client, this)),
+    _reqId(0)
 {
+    qDebug() << "Constructing" << this;
     _ui->setupUi(this);
     _ui->watchlistTableWidget->setColumnHidden(0, true);
 
@@ -17,12 +19,12 @@ WatchlistTab::WatchlistTab(twsclient::ITwsClient *client, data::DataManager *dat
     connect(_addSecurityDialog, &AddSecurityDialog::addSecuritySignal, this, &WatchlistTab::securityAdded);
     connect(_ui->deletePushButton, &QPushButton::clicked, this, &WatchlistTab::deleteSecurity);
     connect(_ui->watchlistTableWidget, &QTableWidget::currentCellChanged, this, &WatchlistTab::securitySelected, Qt::QueuedConnection);
-    connect(_client, &twsclient::ITwsClient::contractDetailReadySignal, this, &WatchlistTab::securityDetailsReady);
+    connect(_client.get(), &common::ITwsClient::contractDetailReadySignal, this, &WatchlistTab::securityDetailsReady);
 }
 
 WatchlistTab::~WatchlistTab()
 {
-    delete _addSecurityDialog;
+    qDebug() << "Destroying" << this;
     delete _ui;
 }
 
@@ -54,7 +56,6 @@ void WatchlistTab::securityAdded(const common::ContractDetailsDTO &details)
     data::Security security;
     security.withSymbol(details.symbol).withContractId(details.contractId);
     _dataManager->createSecurity(security);
-    _client->requestContractDetails(security.contractId());
     reloadSecurities();
 }
 

@@ -3,19 +3,6 @@
 
 namespace data {
 
-DbMigration::~DbMigration()
-{}
-
-QString DbMigration::hash() const
-{
-    QString data = sql().join("\n");
-    QByteArray hex = QCryptographicHash::hash(data.toUtf8(), QCryptographicHash::Sha256).toHex();
-    QString sha256hash(hex);
-    return sha256hash;
-}
-
-DbMigration::DbMigration()
-{}
 
 const int Migration_001::id() const
 {

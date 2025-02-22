@@ -1,12 +1,12 @@
 #ifndef TWSCLIENT_TWSCLIENTMOCK_H
 #define TWSCLIENT_TWSCLIENTMOCK_H
 
-#include "itwsclient.h"
+#include <common.h>
 #include <QTimer>
 
-namespace twsclient {
+namespace mocked {
 
-class TwsClientMock : public ITwsClient
+class TwsClientMock : public common::ITwsClient
 {
     Q_OBJECT
 public:
@@ -36,6 +36,8 @@ private:
     bool _connected;
     int _requestId;
     QTimer * _timer;
+
+    QMap<long, common::ContractDetailsDTO> _contractsMap;
 };
 }
 

@@ -5,7 +5,8 @@
 #include <QList>
 #include <QPair>
 #include <QSqlDatabase>
-#include "migrations.h"
+#include "common/idbmigration.h"
+
 namespace data {
 
 class DbBuilder
@@ -14,14 +15,14 @@ public:
     DbBuilder(QSqlDatabase & db);
     ~DbBuilder();
     bool runMigrations();
+    void addMigration(common::IDbMigration * migration);
 
 private:
     QMap<int, QString> findExecutedMigrations(bool *ok = nullptr);
-    void saveMigration(DbMigration * migration);
+    void saveMigration(common::IDbMigration * migration);
     void addMigrations();
-    void addMigration(DbMigration * migration);
 
-    QList<DbMigration*> _migrations;
+    QList<common::IDbMigration*> _migrations;
     QSqlDatabase _db;
     bool _initialized;
 };

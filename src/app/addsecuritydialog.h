@@ -2,8 +2,7 @@
 #define ADDSECURITYDIALOG_H
 
 #include <QDialog>
-#include <twsclient/itwsclient.h>
-#include <common/types.h>
+#include <common.h>
 
 namespace Ui {
 class AddSecurityDialog;
@@ -14,7 +13,7 @@ class AddSecurityDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit AddSecurityDialog(twsclient::ITwsClient * client, QWidget *parent = nullptr);
+    explicit AddSecurityDialog(QSharedPointer<common::ITwsClient> client, QWidget *parent = nullptr);
     ~AddSecurityDialog();
 
 signals:
@@ -28,7 +27,7 @@ private slots:
 
 private:
     Ui::AddSecurityDialog *_ui;
-    twsclient::ITwsClient * _client;
+    QSharedPointer<common::ITwsClient> _client;
     QList<common::ContractDetailsDTO> _securities;
     int _reqId;
 };

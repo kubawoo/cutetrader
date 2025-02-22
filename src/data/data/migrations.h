@@ -3,22 +3,12 @@
 
 #include <QString>
 #include <QStringList>
+#include <common/idbmigration.h>
 
 namespace data {
 
-class DbMigration
-{
-public:
-    virtual ~DbMigration();
-    virtual const int id() const = 0;
-    virtual const QStringList sql() const = 0;
-    QString hash() const;
-protected:
-    DbMigration();
-};
 
-
-class Migration_001 : public DbMigration
+class Migration_001 : public common::IDbMigration
 {
 public:
     const int id() const;
@@ -26,7 +16,7 @@ public:
 };
 
 
-class Migration_002 : public DbMigration
+class Migration_002 : public common::IDbMigration
 {
 public:
     const int id() const;
@@ -34,14 +24,14 @@ public:
 };
 
 
-class Migration_003 : public DbMigration
+class Migration_003 : public common::IDbMigration
 {
 public:
     const int id() const;
     const QStringList sql() const;
 };
 
-class Migration_004 : public DbMigration
+class Migration_004 : public common::IDbMigration
 {
 public:
     const int id() const;

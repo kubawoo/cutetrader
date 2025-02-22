@@ -2,22 +2,25 @@
 #include "ui_addsecuritydialog.h"
 #include <common/utils.h>
 
-AddSecurityDialog::AddSecurityDialog(twsclient::ITwsClient * client, QWidget *parent) :
-    _client(client),
+AddSecurityDialog::AddSecurityDialog(QSharedPointer<common::ITwsClient> client, QWidget *parent) :
     QDialog(parent),
     _ui(new Ui::AddSecurityDialog),
+    _client(client),
+    _securities(QList<common::ContractDetailsDTO>()),
     _reqId(0)
 {
+    qDebug() << "Constructing" << this;
     _ui->setupUi(this);
 
     connect(_ui->searchButton, &QPushButton::clicked, this, &AddSecurityDialog::search);
-    connect(_client, &twsclient::ITwsClient::matchingSymbolsReadySignal, this, &AddSecurityDialog::symbolsFound);
+    connect(_client.get(), &common::ITwsClient::matchingSymbolsReadySignal, this, &AddSecurityDialog::symbolsFound);
     connect(_ui->securitiesList, &QListWidget::currentRowChanged, this, &AddSecurityDialog::symbolChanged);
     connect(this, &AddSecurityDialog::accepted, this, &AddSecurityDialog::addSymbol);
 }
 
 AddSecurityDialog::~AddSecurityDialog()
 {
+    qDebug() << "Destroying" << this;
     delete _ui;
 }
 

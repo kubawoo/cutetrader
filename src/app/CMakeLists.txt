@@ -16,6 +16,7 @@ target_link_libraries(cutetrader PRIVATE
     account
     common
     data
+    mocked
     quant
     twsapi
     twsclient

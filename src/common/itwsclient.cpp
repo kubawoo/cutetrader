@@ -1,6 +1,6 @@
-#include "twsclient/itwsclient.h"
+#include "common/itwsclient.h"
 
-namespace twsclient {
+namespace common {
 
 ITwsClient::ITwsClient(QObject *parent)
     : QObject{parent}

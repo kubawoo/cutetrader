@@ -3,16 +3,16 @@
 
 #include <QObject>
 #include <QDateTime>
-#include "itwsclient.h"
+#include <EReaderOSSignal.h>
+#include <EReader.h>
+#include <DefaultEWrapper.h>
 #include "twsreaderthread.h"
-#include "EReaderOSSignal.h"
-#include "EReader.h"
 #include "cache.h"
 #include <common.h>
 
 namespace twsclient {
 
-class TwsClient : public ITwsClient
+class TwsClient : public common::ITwsClient, public DefaultEWrapper
 {
     Q_OBJECT
 public:

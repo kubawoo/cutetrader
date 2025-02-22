@@ -9,6 +9,7 @@ TwsReaderThread::TwsReaderThread(TwsClient * client)
       _readTimer(nullptr),
       _cleanupTimer(nullptr)
 {
+    qDebug() << "Constructing " << this;
     this->setObjectName("TwsReaderThread");
 }
 

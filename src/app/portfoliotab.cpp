@@ -1,11 +1,11 @@
 #include "portfoliotab.h"
 #include "ui_portfoliotab.h"
 
-PortfolioTab::PortfolioTab(twsclient::ITwsClient * client, account::Account* account, QWidget *parent) :
+PortfolioTab::PortfolioTab(account::Account* account, QWidget *parent) :
     QWidget(parent),
-    _ui(new Ui::PortfolioTab),
-    _client(client)
+    _ui(new Ui::PortfolioTab)
 {
+    qDebug() << "Constructing" << this;
     _ui->setupUi(this);
     _ui->stocksTableWidget->setColumnHidden(0, true);
     _ui->optionsTableWidget->setColumnHidden(0, true);
@@ -19,6 +19,7 @@ PortfolioTab::PortfolioTab(twsclient::ITwsClient * client, account::Account* acc
 
 PortfolioTab::~PortfolioTab()
 {
+    qDebug() << "Destroying" << this;
     delete _ui;
 }
 

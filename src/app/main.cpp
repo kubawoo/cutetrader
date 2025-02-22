@@ -1,34 +1,60 @@
 #include <QApplication>
-#include "mainwindow.h"
 #include <QDebug>
-#include "twsclient.h"
+#include <QCommandLineParser>
+#include <twsclient.h>
+#include <mocked.h>
+#include <common.h>
+#include "mainwindow.h"
+#include "appfactory.h"
+
+
+void parseCommandLine(QCommandLineParser & parser, QApplication & app) {
+    parser.addVersionOption();
+    parser.addHelpOption();
+    parser.addOptions({
+                          {"mocked", "Use mocked API Client (won't connect to TWS)"}
+                      });
+    parser.process(app);
+}
+
+bool setupDatabase(common::IAppFactory * factory) {
+    factory->setupDatabase();
+    QSqlDatabase db = QSqlDatabase::database();
+    data::DbBuilder dbBuilder(db);
+    for(auto m : factory->extraMigrations()) {
+        dbBuilder.addMigration(m);
+    }
+    return dbBuilder.runMigrations();
+}
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+    QApplication app(argc, argv);
+    app.setApplicationName("cutetrader");
+    app.setApplicationVersion(QString(__DATE__) + " " + QString(__TIME__));
+
     QThread::currentThread()->setObjectName("MainThread");
 
-    qDebug() << "CLI command";
-    for(int i = 0; i < argc; i++) {
-        qDebug() << i << argv[i];
-    }
+    QCommandLineParser parser;
+    parseCommandLine(parser, app);
 
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-
-    twsclient::ITwsClient * client;
-    //TODO: add proper args parsing
-    if(argc > 1 && QString(argv[1]) == "--mocked") {
-        client = new twsclient::TwsClientMock;
-        db.setDatabaseName("cutetrader_mocked.db");
+    common::IAppFactory * factory;
+    if(parser.isSet("mocked")) {
+        factory = new mocked::MockAppFactory;
     } else {
-        client = new twsclient::TwsClient;
-        db.setDatabaseName("cutetrader.db");
+        factory = new AppFactory;
     }
-    db.open();
 
+    common::ITwsClient * client = factory->createTwsClient();
+    bool ok = setupDatabase(factory);
+    delete factory;
+    if(!ok) {
+        qDebug() << "Failed to initialize DB";
+        return -1;
+    }
 
-    MainWindow w(&a, client);
-    QObject::connect(&a, &QCoreApplication::aboutToQuit, &w, &MainWindow::quit);
+    MainWindow w(&app, QSharedPointer<common::ITwsClient>(client));
+    QObject::connect(&app, &QCoreApplication::aboutToQuit, &w, &MainWindow::quit);
     w.show();
-    return a.exec();
+    return app.exec();
 }

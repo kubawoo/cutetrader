@@ -3,7 +3,6 @@
 
 #include <QWidget>
 #include <data.h>
-#include <twsclient/itwsclient.h>
 #include "addsecuritydialog.h"
 
 namespace Ui {
@@ -15,7 +14,7 @@ class WatchlistTab : public QWidget
     Q_OBJECT
 
 public:
-    explicit WatchlistTab(twsclient::ITwsClient * client, data::DataManager * dataManager, QWidget *parent = nullptr);
+    explicit WatchlistTab(QSharedPointer<common::ITwsClient> client, data::DataManager * dataManager, QWidget *parent = nullptr);
     ~WatchlistTab();
     void init();
 
@@ -33,7 +32,7 @@ private slots:
 
 private:
     Ui::WatchlistTab *_ui;
-    twsclient::ITwsClient * _client;
+    QSharedPointer<common::ITwsClient> _client;
     data::DataManager * _dataManager;
     AddSecurityDialog * _addSecurityDialog;
     int _reqId;

@@ -2,12 +2,11 @@
 #define TWSCLIENT_ITWSCLIENT_H
 
 #include <QObject>
-#include "DefaultEWrapper.h"
-#include <common/types.h>
+#include "types.h"
 
-namespace twsclient {
+namespace common {
 
-class ITwsClient : public QObject, public DefaultEWrapper
+class ITwsClient : public QObject
 {
     Q_OBJECT
 public:

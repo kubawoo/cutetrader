@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 #include <QLabel>
-#include <twsclient.h>
 #include <QSqlDatabase>
 #include <data.h>
 #include <account.h>
@@ -20,7 +19,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QApplication *a, twsclient::ITwsClient * client, QWidget *parent = nullptr);
+    MainWindow(QApplication *a, QSharedPointer<common::ITwsClient> client, QWidget *parent = nullptr);
     ~MainWindow();
 
 public slots:
@@ -32,10 +31,8 @@ private slots:
     void init();
 
 private:
-    bool setupDatabase();
-
     Ui::MainWindow *_ui;
-    twsclient::ITwsClient * _client;
+    QSharedPointer<common::ITwsClient> _client;
     data::DataManager _dataManager;
     account::Account _account;
     QApplication * _app;

@@ -1,5 +1,6 @@
 #include "data/dbbuilder.h"
 #include "data/utils.h"
+#include "data/migrations.h"
 
 #include <QException>
 #include <QDateTime>
@@ -90,7 +91,7 @@ bool DbBuilder::runMigrations()
     return true;
 }
 
-void DbBuilder::addMigration(DbMigration *migration)
+void DbBuilder::addMigration(common::IDbMigration *migration)
 {
     _migrations.append(migration);
 }
@@ -110,7 +111,7 @@ QMap<int, QString> DbBuilder::findExecutedMigrations(bool *ok)
     return migrations;
 }
 
-void DbBuilder::saveMigration(DbMigration *migration)
+void DbBuilder::saveMigration(common::IDbMigration *migration)
 {
     QString sql = QString("INSERT INTO _migrations(id, sha256hash, timestamp) VALUES (%1, \"%2\", \"%3\");")
             .arg(QString::number(migration->id()))
