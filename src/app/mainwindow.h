@@ -9,6 +9,7 @@
 #include "connectdialog.h"
 #include "watchlisttab.h"
 #include "portfoliotab.h"
+#include "statusbar.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -37,8 +38,7 @@ private:
     account::Account _account;
     QApplication * _app;
     ConnectDialog *_connectDialog;
-    QLabel * _statusBarAccount;
-    QLabel * _statusBarAccountUpdateTime;
+    StatusBar * _statusBar;
 
     PortfolioTab * _portfolioTab;
     WatchlistTab * _watchlistTab;
