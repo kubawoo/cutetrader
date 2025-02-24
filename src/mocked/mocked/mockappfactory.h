@@ -12,7 +12,7 @@ public:
     ~MockAppFactory();
 
     common::ITwsClient * createTwsClient() override;
-    void setupDatabase() override;
+    void setupDatabase(const QString & dbName) override;
     QList<common::IDbMigration *> extraMigrations() override;
 };
 }

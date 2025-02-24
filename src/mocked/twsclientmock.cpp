@@ -1,7 +1,8 @@
 #include "mocked/twsclientmock.h"
 #include <QRandomGenerator>
 
-using namespace common;
+using common::SecurityType;
+using common::ContractDetailsDTO;
 
 namespace mocked {
 

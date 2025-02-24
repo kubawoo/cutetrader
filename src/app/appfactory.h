@@ -9,8 +9,8 @@ public:
     AppFactory();
     ~AppFactory();
 
-    common::ITwsClient * createTwsClient();
-    void setupDatabase();
+    common::ITwsClient * createTwsClient() override;
+    void setupDatabase(const QString & dbName) override;
 };
 
 #endif // APPFACTORY_H

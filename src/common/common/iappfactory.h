@@ -15,7 +15,7 @@ public:
     virtual ~IAppFactory();
 
     virtual ITwsClient * createTwsClient() = 0;
-    virtual void setupDatabase() = 0;
+    virtual void setupDatabase(const QString & dbName) = 0;
     virtual QList<IDbMigration *> extraMigrations();
 };
 }

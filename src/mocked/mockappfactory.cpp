@@ -21,10 +21,10 @@ common::ITwsClient *MockAppFactory::createTwsClient()
     return new TwsClientMock;
 }
 
-void MockAppFactory::setupDatabase()
+void MockAppFactory::setupDatabase(const QString & dbName)
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(":memory:");
+    db.setDatabaseName(dbName.isEmpty() ? ":memory:" : dbName);
     db.open();
 }
 

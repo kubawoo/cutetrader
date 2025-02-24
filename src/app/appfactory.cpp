@@ -18,9 +18,9 @@ common::ITwsClient *AppFactory::createTwsClient()
     return new twsclient::TwsClient;
 }
 
-void AppFactory::setupDatabase()
+void AppFactory::setupDatabase(const QString & dbName)
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("cutetrader.db");
+    db.setDatabaseName(dbName.isEmpty() ? "cutetrader.db" : dbName);
     db.open();
 }
