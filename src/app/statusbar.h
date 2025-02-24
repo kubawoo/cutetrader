@@ -16,8 +16,11 @@ public:
 public slots:
     void setAccount(const QString & account);
     void setUpdateTime(const QTime & time);
+    void showMessage(const QString &text, int timeout = 0);
+    void clearMessage();
 
 private:
+    QStatusBar * _statusBar;
     QLabel * _accountLabel;
     QLabel * _updateTimeLabel;
 

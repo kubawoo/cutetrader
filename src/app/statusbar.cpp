@@ -3,6 +3,7 @@
 
 StatusBar::StatusBar(QStatusBar* statusBar)
     : QObject{statusBar},
+      _statusBar(statusBar),
       _accountLabel(new QLabel(statusBar)),
       _updateTimeLabel(new QLabel(statusBar))
 {
@@ -24,6 +25,16 @@ void StatusBar::setAccount(const QString &account)
 void StatusBar::setUpdateTime(const QTime &time)
 {
     _updateTimeLabel->setText("Last update: " + time.toString("HH:mm"));
+}
+
+void StatusBar::showMessage(const QString &text, int timeout)
+{
+    _statusBar->showMessage(text, timeout);
+}
+
+void StatusBar::clearMessage()
+{
+    _statusBar->clearMessage();
 }
 
 

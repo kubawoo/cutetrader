@@ -41,7 +41,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::clientConnected(const QString & accountId) {
     this->setEnabled(true);
-    _ui->statusbar->showMessage("Connected", 5000);
+    _statusBar->showMessage("Connected", 5000);
     _client->startClient(accountId);
 }
 
