@@ -1,7 +1,7 @@
-- Implement own GW client using Qt data types
  - Load data into DB
  - Calculate beta and correlation
  - Add HV and IV to quotes
  - Create server time clock
  - Show open/closed orders
  - Use QSharedPointer for cient cache
+ - logging

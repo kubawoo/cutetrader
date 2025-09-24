@@ -11,6 +11,7 @@ public:
 
     common::ITwsClient * createTwsClient() override;
     void setupDatabase(const QString & dbName) override;
+
 };
 
 #endif // APPFACTORY_H

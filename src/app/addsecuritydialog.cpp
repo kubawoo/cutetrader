@@ -67,11 +67,16 @@ void AddSecurityDialog::symbolChanged(int i)
         _ui->currencyLabel->setText(details.currency);
         _ui->descriptionLabel->setText(details.description);
         _ui->typeLabel->setText(common::Utils::securityTypeToString(details.securityType));
+        _ui->exchangeLabel->setText(details.primaryExchange);
         QStringList derivatives;
         for(auto d: details.derivatives) {
             derivatives.append(common::Utils::securityTypeToString(d));
         }
-        _ui->derivativesLabel->setText(derivatives.join(", "));
+        if(derivatives.empty()) {
+            _ui->derivativesLabel->setText("N/A");
+        } else {
+            _ui->derivativesLabel->setText(derivatives.join(", "));
+        }
     } else {
         _ui->idLabel->setText("");
         _ui->symbolLabel->setText("");

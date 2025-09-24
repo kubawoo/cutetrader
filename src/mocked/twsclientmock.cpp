@@ -16,12 +16,12 @@ TwsClientMock::TwsClientMock(QObject *parent)
     QObject::connect(_timer, &QTimer::timeout, this, &TwsClientMock::_timerTask);
 
     _contractsMap = {
-        {1, {1, "SPY", "USD", "SPDR S&P 500 ETF Trust", SecurityType::STOCK, {SecurityType::OPTION}}},
-        {2, {2, "TLT", "USD", "iShares 20+ Year Treasury Bond ETF", SecurityType::STOCK, {SecurityType::OPTION}}},
-        {3, {3, "IWM", "USD", "iShares Russell 2000 ETF", SecurityType::STOCK, {SecurityType::OPTION}}},
-        {4, {4, "EWZ", "USD", "Ishares Msci Brazil ETF", SecurityType::STOCK, {SecurityType::OPTION}}},
-        {5, {5, "TSLA", "USD", "Tesla Inc.", SecurityType::STOCK, {SecurityType::OPTION}}},
-        {6, {6, "AAPL", "USD", "Apple Inc.", SecurityType::STOCK, {SecurityType::OPTION}}}
+        {1, {1, "SPY", "USD", "SPDR S&P 500 ETF Trust", "ARCA", "", SecurityType::STOCK, {SecurityType::OPTION}}},
+        {2, {2, "TLT", "USD", "iShares 20+ Year Treasury Bond ETF", "ARCA", "", SecurityType::STOCK, {SecurityType::OPTION}}},
+        {3, {3, "IWM", "USD", "iShares Russell 2000 ETF", "ARCA", "", SecurityType::STOCK, {SecurityType::OPTION}}},
+        {4, {4, "EWZ", "USD", "Ishares Msci Brazil ETF", "ARCA", "", SecurityType::STOCK, {SecurityType::OPTION}}},
+        {5, {5, "TSLA", "USD", "Tesla Inc.", "NYSE", "", SecurityType::STOCK, {SecurityType::OPTION}}},
+        {6, {6, "AAPL", "USD", "Apple Inc.", "NYSE", "", SecurityType::STOCK, {SecurityType::OPTION}}}
     };
 }
 

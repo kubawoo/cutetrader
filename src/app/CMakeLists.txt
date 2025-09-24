@@ -13,13 +13,13 @@ qt_add_executable(cutetrader
 target_link_libraries(cutetrader PRIVATE
     Qt6::Widgets
     Qt6::Sql
+    Qt6::Network
     account
     common
     data
     mocked
     quant
-    twsapi
-    twsclient
+    twsqapi
 )
 
 qt_finalize_executable(cutetrader)

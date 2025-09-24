@@ -2,3 +2,6 @@ CMakeLists.txt.user
 *.log
 build/
 *.o
+src/twsapi
+src/twsclient
+tcpflow

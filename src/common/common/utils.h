@@ -14,6 +14,7 @@ private:
 public:
     static SecurityType securityTypeFromString(const QString& str);
     static QString securityTypeToString(SecurityType type);
+    static OptionType optionTypeFromString(const QString& str);
 
 };
 }

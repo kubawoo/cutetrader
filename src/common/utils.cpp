@@ -46,8 +46,15 @@ QString Utils::securityTypeToString(SecurityType type)
         return "future option";
     case SecurityType::INDEX:
         return "index";
+    default:
+        return "";
     }
     return "";
+}
+
+OptionType Utils::optionTypeFromString(const QString &str)
+{
+    return str.toLower() == "c" ? OptionType::CALL : OptionType::PUT;
 }
 
 

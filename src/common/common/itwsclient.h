@@ -35,7 +35,7 @@ signals:
     void connectedSignal();
     void disconnectedSignal();
     void currentTimeSignal(const QDateTime & time);
-    void managedAccountsSignal(const QStringList accounts);
+    void managedAccountsSignal(const QStringList & accounts);
 //    void historicalDataReadySignal(long requestId, QList<Bar> *bars);
     void accountValueUpdatedSignal(const QString & key, const QString & value, const QString & currency);
     void portfolioPositionUpdatedSignal(const common::PortfolioPositionDTO & position);

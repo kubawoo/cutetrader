@@ -9,4 +9,4 @@
 TEST_DECLARE(DbBuilderTest);
 TEST_DECLARE(DataManagerTest);
 
-#endif // QUANT_TESTS_H
+#endif

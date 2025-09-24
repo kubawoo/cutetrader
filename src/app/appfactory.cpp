@@ -1,7 +1,7 @@
 #include "appfactory.h"
 
 #include <QSqlDatabase>
-#include <twsclient.h>
+#include <twsqapi.h>
 
 AppFactory::AppFactory()
 {
@@ -15,7 +15,7 @@ AppFactory::~AppFactory()
 
 common::ITwsClient *AppFactory::createTwsClient()
 {
-    return new twsclient::TwsClient;
+    return new twsqapi::TwsClient;
 }
 
 void AppFactory::setupDatabase(const QString & dbName)

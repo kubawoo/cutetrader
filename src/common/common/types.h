@@ -38,6 +38,8 @@ struct ContractDetailsDTO
     QString symbol;
     QString currency;
     QString description;
+    QString primaryExchange;
+    QString issuerId;
     SecurityType securityType;
     QList<SecurityType> derivatives;
 };
@@ -55,4 +57,4 @@ struct QuoteDTO
 }
 
 
-#endif // COMMON_DTO_H
+#endif // COMMON_TYPES_H

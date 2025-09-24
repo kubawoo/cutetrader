@@ -1,7 +1,7 @@
 #include <QApplication>
 #include <QDebug>
 #include <QCommandLineParser>
-#include <twsclient.h>
+#include <QThread>
 #include <mocked.h>
 #include <common.h>
 #include "mainwindow.h"
@@ -31,9 +31,10 @@ bool setupDatabase(common::IAppFactory * factory, const QString & dbName) {
 }
 
 bool setupApp(const QCommandLineParser & parser, QSharedPointer<common::ITwsClient> & client) {
+
     QScopedPointer<common::IAppFactory> factory = parser.isSet("mocked")
             ? QScopedPointer<common::IAppFactory>(new mocked::MockAppFactory)
-            : QScopedPointer<common::IAppFactory>(new AppFactory);
+            : QScopedPointer<common::IAppFactory>(new AppFactory());
 
     client.reset(factory->createTwsClient());
     return setupDatabase(factory.get(), parser.value("database"));
