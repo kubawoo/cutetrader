@@ -12,7 +12,7 @@ constexpr char SERVER_VERSIONS_DELIMITER[] = "..";
 constexpr char SERVER_VERSION_PREFIX = 'v';
 constexpr char API_HEADER[] = "API";
 constexpr int MSG_LENGTH_FIELD_SIZE = 4;
-constexpr int HANDSHAKE_FIELDS = 3;
+constexpr int HANDSHAKE_FIELDS = 2;
 
 }
 
@@ -116,16 +116,46 @@ const int REQ_CURRENT_TIME_IN_MILLIS    = 105;
 }
 
 namespace responses {
+constexpr int NO_VERSION = -1;
+constexpr int UNKNOWN_FIELDS_COUNT = -1;
+
 constexpr int ERR_MSG = 4;
+constexpr int ERR_MSG_FIELDS = 6;
+
 constexpr int ACCT_VALUE = 6;
+constexpr int ACCT_VALUE_VERSION = 2;
+constexpr int ACCT_VALUE_FIELDS = 6;
+
 constexpr int PORTFOLIO_VALUE = 7;
+constexpr int PORTFOLIO_VALUE_VERSION = 8;
+constexpr int PORTFOLIO_VALUE_FIELDS = 20;
+
 constexpr int ACCT_UPDATE_TIME = 8;
+constexpr int ACCT_UPDATE_TIME_VERSION = 1;
+constexpr int ACCT_UPDATE_TIME_FIELDS = 3;
+
 constexpr int NEXT_VALID_ID = 9;
+constexpr int NEXT_VALID_ID_VERSION = 1;
+constexpr int NEXT_VALID_ID_FIELDS = 3;
+
 constexpr int CONTRACT_DATA = 10;
+
 constexpr int MANAGED_ACCOUNTS = 15;
+constexpr int MANAGED_ACCOUNTS_VERSION = 1;
+constexpr int MANAGED_ACCOUNTS_FIELDS = 3;
+
 constexpr int CURRENT_TIME = 49;
+constexpr int CURRENT_TIME_VERSION = 1;
+constexpr int CURRENT_TIME_FIELDS = 3;
+
 constexpr int CONTRACT_DATA_END = 52;
+constexpr int CONTRACT_DATA_END_VERSION = 1;
+constexpr int CONTRACT_DATA_END_FIELDS = 3;
+
 constexpr int ACCT_DOWNLOAD_END = 54;
+constexpr int ACCT_DOWNLOAD_END_VERSION = 1;
+constexpr int ACCT_DOWNLOAD_END_FIELDS = 3;
+
 constexpr int SYMBOL_SAMPLES = 79;
 
 

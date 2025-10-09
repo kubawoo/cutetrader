@@ -97,10 +97,10 @@ void BaseClient::_processBuffer()
             break;
         }
 
-        QByteArray data = _buffer.mid(client::MSG_LENGTH_FIELD_SIZE, dataLength);
+        QByteArray data = _buffer.mid(client::MSG_LENGTH_FIELD_SIZE, dataLength-1); // skip last \0 char
         _buffer.remove(0, dataLength + client::MSG_LENGTH_FIELD_SIZE);
 
-        // qDebug() << "msg" << data;
+        qDebug() << "msg" << data;
         // qDebug() << "buffer" << _buffer;
 
         _processData(data);
@@ -109,6 +109,7 @@ void BaseClient::_processBuffer()
 
 void BaseClient::_processData(const QByteArray &data)
 {
+
     QStringList fields = QString(data).split(QChar('\0'));
     if(_handshakeDone) {
         QSharedPointer<ServerMessage> msg = QSharedPointer<ServerMessage>(serverMessageFactory.create(fields));
@@ -141,12 +142,6 @@ void BaseClient::_handleHandshake(const QStringList &fields)
     if(fields[1].isEmpty()) {
         qDebug() << "Expected server time:" << fields[1];
         emit error("Expected server time " + fields[1], true);
-        return;
-    }
-
-    if(!fields[2].isEmpty()) {
-        qDebug() << "Unexpected characters" << fields[2];
-        emit error("Unexpected characters " + fields[2], true);
         return;
     }
 

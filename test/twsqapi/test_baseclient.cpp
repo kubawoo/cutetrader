@@ -11,7 +11,7 @@ void BaseClientTest::testHandshake()
     QCOMPARE(inBytes,
              QByteArray(""));
     QCOMPARE(outBytes,
-             QByteArray("API\0\0\0\0\x12v100..198 +PACEAPI", 26));
+             QByteArray("API\0\0\0\0\x12v198..198 +PACEAPI", 26));
 
     inBytes.append("\x0\x0\x0\x35", 4);
     inBytes.append("198\00020250224 08:25:56 Central European Standard Time\0", 53);
@@ -31,7 +31,7 @@ void BaseClientTest::testHandshakeOldVersion()
     QCOMPARE(inBytes,
              QByteArray(""));
     QCOMPARE(outBytes,
-             QByteArray("API\0\0\0\0\x12v100..198 +PACEAPI", 26));
+             QByteArray("API\0\0\0\0\x12v198..198 +PACEAPI", 26));
 
     inBytes.append("\x0\x0\x0\x35", 4);
     inBytes.append("197\00020250224 08:25:56 Central European Standard Time\0", 53);
@@ -51,7 +51,7 @@ void BaseClientTest::testHandshakeInvalidMsg()
     QCOMPARE(inBytes,
              QByteArray(""));
     QCOMPARE(outBytes,
-             QByteArray("API\0\0\0\0\x12v100..198 +PACEAPI", 26));
+             QByteArray("API\0\0\0\0\x12v198..198 +PACEAPI", 26));
 
     inBytes.append("\x0\x0\x0\x35", 4);
     inBytes.append("198\000\00020250224 08:25:56 Central European Standard Time", 53);

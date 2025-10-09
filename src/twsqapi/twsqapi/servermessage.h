@@ -4,19 +4,26 @@
 #include <QStringList>
 #include <QTime>
 #include "common/types.h"
+#include "constants.h"
 
 namespace twsqapi {
 class ServerMessage
 {
 public:
-    ServerMessage(int id);
+    ServerMessage(const QStringList &fields,
+                  int id,
+                  int version = responses::NO_VERSION,
+                  int fieldsCount = responses::UNKNOWN_FIELDS_COUNT);
     virtual ~ServerMessage();
 
     int id() { return _id; }
-    //TODO: add toString method
-
+    bool valid() { return _valid; }
 private:
     int _id;
+    int _version;
+    int _fieldsCount;
+protected:
+    bool _valid;
 };
 
 
@@ -52,13 +59,14 @@ public:
     const int errorCode(){return _errorCode;}
     const QString & errorMsg(){return _errorMsg;}
     const QString & errorDetails(){ return _errorDetails; }
-    const QTime & errorTime(){ return _errorTime; }
+    const QDateTime &errorTime() { return _errorTime; }
+
 private:
     int _errorId;
     int _errorCode;
     QString _errorMsg;
     QString _errorDetails;
-    QTime _errorTime;
+    QDateTime _errorTime;
 };
 
 
@@ -114,7 +122,6 @@ public:
 private:
     int _reqId;
     QList<common::ContractDetailsDTO> _contracts;
-
 };
 
 class ContractDataServerMessage : public ServerMessage

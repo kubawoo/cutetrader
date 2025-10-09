@@ -42,7 +42,7 @@ void TwsClient::startClient(const QString &accountId)
 
 void TwsClient::requestCurrentTime()
 {
-
+    _client->send(RequestCurrentTimeClientMessage());
 }
 
 void TwsClient::requestManagedAccounts()
@@ -180,22 +180,28 @@ void TwsClient::_handleSymbolSamples(SymbolSamplesSrverMessage *msg) {
     qDebug() << "symbolSamples";
     int reqId = msg->requestId();
     ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(_cache.get(reqId));
-    entry->contractDetails.append(msg->contracts());
-    entry->setReady();
-    emit matchingSymbolsReadySignal(reqId, entry->contractDetails);
+    if(entry) {
+        entry->contractDetails.append(msg->contracts());
+        entry->setReady();
+        emit matchingSymbolsReadySignal(reqId, entry->contractDetails);
+    }
 }
 
 void TwsClient::_handleContractData(ContractDataServerMessage *msg)
 {
     ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(_cache.get(msg->requestId()));
-    entry->contractDetails.append(msg->contract());
+    if(entry) {
+        entry->contractDetails.append(msg->contract());
+    }
 }
 
 void TwsClient::_handleContractDataEnd(ContractDataEndServerMessage *msg)
 {
     ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(_cache.get(msg->requestId()));
-    entry->setReady();
-    emit contractDetailReadySignal(msg->requestId(), entry->contractDetails);
+    if(entry) {
+        entry->setReady();
+        emit contractDetailReadySignal(msg->requestId(), entry->contractDetails);
+    }
 }
 
 void TwsClient::_handlePortfolioValue(PortfolioValueServerMessage *msg)

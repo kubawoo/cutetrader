@@ -9,7 +9,11 @@ class ClientMessageTest : public QObject
     Q_OBJECT
 private slots:
     void testHandshakeMessage();
-
+    void testStartApiClientMessage();
+    void testStartAccountUpdatesClientMessage();
+    void testRequestCurrentTimeClientMessage();
+    void testRequestMatchingSymbolsClientMessage();
+    void testRequestContractDetailsClientMessage();
 };
 
 
