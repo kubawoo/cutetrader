@@ -1,9 +1,12 @@
 #include <QCommandLineParser>
 #include <QCoreApplication>
 #include <QDebug>
+#include <QFile>
 #include <QSqlDatabase>
 #include <QThread>
 #include "cliappfactory.h"
+#include "clicommand.h"
+#include "console.h"
 #include <common.h>
 #include <data.h>
 #include <mocked.h>
@@ -57,6 +60,15 @@ int main(int argc, char *argv[])
         qDebug() << "Failed to initialize app";
         return -1;
     }
+
+    client->connect("localhost", 4002, 1);
+
+    Console c;
+    CliCommandManager commander(client.data(), &app);
+
+    QObject::connect(&c, &Console::quit, &app, &QCoreApplication::quit);
+    QObject::connect(&c, &Console::newInput, &commander, &CliCommandManager::command);
+    QObject::connect(&commander, &CliCommandManager::commandDone, &c, &Console::print);
 
     return app.exec();
 }
