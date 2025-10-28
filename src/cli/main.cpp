@@ -15,10 +15,11 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app)
 {
     parser.addVersionOption();
     parser.addHelpOption();
-    parser.addOptions({
-                          {"mocked", "Use mocked API Client (won't connect to TWS)"},
-                          {"database", "Database filename", "database"}
-                      });
+    parser.addOptions({{"mocked", "Use mocked API Client (won't connect to TWS)"},
+                       {"database", "Database filename", "database"},
+                       {"host", "IBKR gateway/TWS host name", "host", "localhost"},
+                       {"port", "IBKR gateway/TWS port number", "port", "4002"},
+                       {"clientId", "IBKR's client ID", "clientId", "1"}});
     parser.process(app);
 }
 
@@ -46,8 +47,10 @@ bool setupApp(const QCommandLineParser & parser, QSharedPointer<common::ITwsClie
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
-    app.setApplicationName("cutetrader");
+    app.setApplicationName("cutetrader-cli");
     app.setApplicationVersion(QString(__DATE__) + " " + QString(__TIME__));
+
+    qDebug() << app.applicationVersion();
 
     QThread::currentThread()->setObjectName("MainThread");
 
@@ -61,13 +64,20 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    client->connect("localhost", 4002, 1);
+    QString host = parser.value("host");
+    int port = parser.value("port").toInt();
+    int clientId = parser.value("clientId").toInt();
+
+    qDebug() << "About to connect to " << host + ":" + QString::number(port)
+             << "with clientId=" + QString::number(clientId);
+
+    client->connect(host, port, clientId);
 
     Console c;
     CliCommandManager commander(client.data(), &app);
 
-    QObject::connect(&c, &Console::quit, &app, &QCoreApplication::quit);
     QObject::connect(&c, &Console::newInput, &commander, &CliCommandManager::command);
+    QObject::connect(&commander, &CliCommandManager::quit, &app, &QCoreApplication::quit);
     QObject::connect(&commander, &CliCommandManager::commandDone, &c, &Console::print);
 
     return app.exec();

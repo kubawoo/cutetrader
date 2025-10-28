@@ -13,7 +13,6 @@ public:
 public slots:
     void print(const QString &txt);
 signals:
-    void quit();
     void newInput(const QString &input);
 private slots:
     void readLine();
