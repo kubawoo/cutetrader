@@ -26,5 +26,10 @@ void Console::readLine()
 {
     std::string line;
     std::getline(std::cin, line);
-    emit newInput(line.c_str());
+    QString input = QString(line.c_str()).trimmed();
+    if (!input.isEmpty()) {
+        emit newInput(input);
+    } else {
+        std::cout << PROMPT << std::flush;
+    }
 }

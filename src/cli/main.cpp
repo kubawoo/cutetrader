@@ -7,9 +7,19 @@
 #include "cliappfactory.h"
 #include "clicommand.h"
 #include "console.h"
+#include <account.h>
 #include <common.h>
 #include <data.h>
 #include <mocked.h>
+
+struct AppConfig
+{
+    QString host;
+    int port;
+    int clientId;
+    QString accountId;
+    QSharedPointer<common::ITwsClient> client;
+};
 
 void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app)
 {
@@ -19,7 +29,8 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app)
                        {"database", "Database filename", "database"},
                        {"host", "IBKR gateway/TWS host name", "host", "localhost"},
                        {"port", "IBKR gateway/TWS port number", "port", "4002"},
-                       {"clientId", "IBKR's client ID", "clientId", "1"}});
+                       {"clientId", "IBKR's client ID", "clientId", "1"},
+                       {"accountId", "IBKR's account id", "accountId"}});
     parser.process(app);
 }
 
@@ -34,13 +45,25 @@ bool setupDatabase(common::IAppFactory * factory, const QString & dbName) {
     return dbBuilder.runMigrations();
 }
 
-bool setupApp(const QCommandLineParser & parser, QSharedPointer<common::ITwsClient> & client) {
+bool setupApp(const QCommandLineParser &parser, AppConfig &appConfig)
+{
+    bool ok;
+    appConfig.host = parser.value("host");
+    appConfig.port = parser.value("port").toInt(&ok);
+    if (!ok) {
+        return false;
+    }
+    appConfig.clientId = parser.value("clientId").toInt(&ok);
+    if (!ok) {
+        return false;
+    }
+    appConfig.accountId = parser.value("accountId");
 
     QScopedPointer<common::IAppFactory> factory = parser.isSet("mocked")
-            ? QScopedPointer<common::IAppFactory>(new mocked::MockAppFactory)
-            : QScopedPointer<common::IAppFactory>(new AppFactory());
+                                                      ? QScopedPointer<common::IAppFactory>(new mocked::MockAppFactory)
+                                                      : QScopedPointer<common::IAppFactory>(new AppFactory());
 
-    client.reset(factory->createTwsClient());
+    appConfig.client.reset(factory->createTwsClient());
     return setupDatabase(factory.get(), parser.value("database"));
 }
 
@@ -49,32 +72,24 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
     app.setApplicationName("cutetrader-cli");
     app.setApplicationVersion(QString(__DATE__) + " " + QString(__TIME__));
-
-    qDebug() << app.applicationVersion();
-
     QThread::currentThread()->setObjectName("MainThread");
 
     QCommandLineParser parser;
     parseCommandLine(parser, app);
 
-    QSharedPointer<common::ITwsClient> client;
-    bool ok = setupApp(parser, client);
-    if (!ok || client.isNull()) {
+    AppConfig appConfig;
+    if (!setupApp(parser, appConfig)) {
         qDebug() << "Failed to initialize app";
         return -1;
     }
 
-    QString host = parser.value("host");
-    int port = parser.value("port").toInt();
-    int clientId = parser.value("clientId").toInt();
-
-    qDebug() << "About to connect to " << host + ":" + QString::number(port)
-             << "with clientId=" + QString::number(clientId);
-
-    client->connect(host, port, clientId);
-
     Console c;
-    CliCommandManager commander(client.data(), &app);
+    CliCommandManager commander(appConfig.host,
+                                appConfig.port,
+                                appConfig.clientId,
+                                appConfig.accountId,
+                                appConfig.client,
+                                &app);
 
     QObject::connect(&c, &Console::newInput, &commander, &CliCommandManager::command);
     QObject::connect(&commander, &CliCommandManager::quit, &app, &QCoreApplication::quit);

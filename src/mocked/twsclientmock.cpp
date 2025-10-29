@@ -41,7 +41,7 @@ void TwsClientMock::requestCurrentTime()
 
 void TwsClientMock::requestManagedAccounts()
 {
-    emit managedAccountsSignal({"Mocked#1", "Mocked#2"});
+    emit managedAccountsSignal({"mocked1", "mocked2"});
 }
 
 void TwsClientMock::startClient(const QString &accountId)
@@ -102,6 +102,7 @@ void TwsClientMock::_timerTask()
         positionDto.position = 100;
         positionDto.unrealizedPNL = spy - 60000;
         positionDto.marketValue = spy;
+        positionDto.marketPrice = positionDto.marketValue / positionDto.position;
         emit portfolioPositionUpdatedSignal(positionDto);
 
     }

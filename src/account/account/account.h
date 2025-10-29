@@ -14,7 +14,7 @@ public:
 
     double accountInfo(AccountInfoType type);
     QString baseCurrency();
-
+    Portfolio &portfolio() { return _portfolio; }
 
 public slots:
     void updateAccountValue(const QString & key, const QString & value, const QString & currency);
