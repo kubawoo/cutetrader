@@ -2,6 +2,7 @@
 #include <QCoreApplication>
 #include <QDebug>
 #include <QFile>
+#include <QLoggingCategory>
 #include <QSqlDatabase>
 #include <QThread>
 #include "cliappfactory.h"
@@ -30,7 +31,8 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app)
                        {"host", "IBKR gateway/TWS host name", "host", "localhost"},
                        {"port", "IBKR gateway/TWS port number", "port", "4002"},
                        {"clientId", "IBKR's client ID", "clientId", "1"},
-                       {"accountId", "IBKR's account id", "accountId"}});
+                       {"accountId", "IBKR's account id", "accountId"},
+                       {"debug", "Enables debug logging"}});
     parser.process(app);
 }
 
@@ -47,6 +49,8 @@ bool setupDatabase(common::IAppFactory * factory, const QString & dbName) {
 
 bool setupApp(const QCommandLineParser &parser, AppConfig &appConfig)
 {
+    QLoggingCategory::defaultCategory()->setEnabled(QtMsgType::QtDebugMsg, parser.isSet("debug"));
+
     bool ok;
     appConfig.host = parser.value("host");
     appConfig.port = parser.value("port").toInt(&ok);

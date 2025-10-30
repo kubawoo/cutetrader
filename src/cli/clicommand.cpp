@@ -140,9 +140,15 @@ AccountSummaryCliCommand::AccountSummaryCliCommand(account::Account &account, co
 void AccountSummaryCliCommand::execute(const QStringList &params)
 {
     QString s = "Account:\t " + _accountId + "\n";
-    s += "Base Currency:\t " + _account.baseCurrency() + "\n";
-    s += "Net Liq.:\t " + QString::number(_account.accountInfo(account::AccountInfoType::NetLiquidation)) + "\n";
-    //TODO add missing values
+    s += "Base Currency:\t\t " + _account.baseCurrency() + "\n";
+    s += "Net Liquidation:\t " + QString::number(_account.accountInfo(account::AccountInfoType::NetLiquidation)) + "\n";
+    s += "Excess Liquidity:\t " + QString::number(_account.accountInfo(account::AccountInfoType::ExcessLiquidity))
+         + "\n";
+    s += "Maint Margin Req:\t " + QString::number(_account.accountInfo(account::AccountInfoType::MaintMarginReq))
+         + "\n";
+    s += "Stock Market Value:\t " + QString::number(_account.accountInfo(account::AccountInfoType::StockMarketValue))
+         + "\n";
+    s += "Unrealized PnL:\t\t " + QString::number(_account.accountInfo(account::AccountInfoType::UnrealizedPnL)) + "\n";
 
     s += "\n\nPortfolio postions:\n";
     if (!_account.portfolio().stocks().empty()) {
