@@ -28,12 +28,10 @@ public:
 //    int requestHistoricalData(const Contract &contract, const QString &endDateTime,
 //                               const QString &durationString, const QString &barSizeSetting);
 
-
-
-
 signals:
     void connectedSignal();
     void disconnectedSignal();
+    void errorSignal(const QString &reason, bool fatal = false);
     void currentTimeSignal(const QDateTime & time);
     void managedAccountsSignal(const QStringList & accounts);
 //    void historicalDataReadySignal(long requestId, QList<Bar> *bars);
@@ -45,7 +43,6 @@ signals:
 
 protected:
     void _setRequestId(int * holder, int value);
-
 
 };
 }

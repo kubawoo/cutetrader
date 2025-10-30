@@ -14,15 +14,7 @@ CliCommandManager::CliCommandManager(const QString &host,
     , _accountId(accountId)
     , _client(client)
 {
-    _commands["account"] = new AccountSummaryCliCommand(_account, _accountId, this);
-    _commands["help"] = new HelpCommand(this);
-    _commands["quit"] = new QuitCommand(this);
-    _commands["time"] = new ServerTimeCliCommand(_client, this);
-
-    for (auto c : _commands.values()) {
-        connect(c, &CliCommand::finished, this, &CliCommandManager::commandResult);
-    }
-    connect(_commands["quit"], &QuitCommand::finished, this, &CliCommandManager::quitCommand);
+    setupCommands();
 
     connect(client.data(),
             &common::ITwsClient::accountValueUpdatedSignal,
@@ -32,7 +24,8 @@ CliCommandManager::CliCommandManager(const QString &host,
             &common::ITwsClient::portfolioPositionUpdatedSignal,
             &_account,
             &account::Account::updatePortfolioPosition);
-    connect(client.data(), &common::ITwsClient::managedAccountsSignal, this, &CliCommandManager::managedAccounts);
+    connect(client.data(), &common::ITwsClient::managedAccountsSignal, this, &CliCommandManager::onManagedAccounts);
+    connect(client.data(), &common::ITwsClient::errorSignal, this, &CliCommandManager::onError);
 
     QTimer::singleShot(0, this, &CliCommandManager::start);
 }
@@ -45,6 +38,16 @@ void CliCommandManager::start()
     if (!_client->isConnected()) {
         qDebug() << "Failed to connect";
         quitCommand();
+    }
+}
+
+void CliCommandManager::onError(const QString &reason, bool fatal)
+{
+    if (fatal) {
+        qCritical() << reason;
+        quitCommand();
+    } else {
+        qWarning() << reason;
     }
 }
 
@@ -68,7 +71,7 @@ void CliCommandManager::quitCommand()
     emit quit();
 }
 
-void CliCommandManager::managedAccounts(const QStringList &accounts)
+void CliCommandManager::onManagedAccounts(const QStringList &accounts)
 {
     qDebug() << "accountId: " << _accountId;
     qDebug() << "accounts: " << accounts;
@@ -82,6 +85,20 @@ void CliCommandManager::managedAccounts(const QStringList &accounts)
         return;
     }
     _client->startClient(_accountId);
+}
+
+void CliCommandManager::setupCommands()
+{
+    _commands["account"] = new AccountSummaryCliCommand(_account, _accountId, this);
+    _commands["help"] = new HelpCommand(this);
+    _commands["time"] = new ServerTimeCliCommand(_client, this);
+
+    for (auto c : _commands.values()) {
+        connect(c, &CliCommand::finished, this, &CliCommandManager::commandResult);
+    }
+
+    _commands["quit"] = new QuitCommand(this);
+    connect(_commands["quit"], &QuitCommand::finished, this, &CliCommandManager::quitCommand);
 }
 
 ServerTimeCliCommand::ServerTimeCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent)
@@ -98,7 +115,7 @@ void ServerTimeCliCommand::execute(const QStringList &params)
 
 void ServerTimeCliCommand::serverTime(const QDateTime &time)
 {
-    emit finished(time.toString());
+    emit finished(time.toString(Qt::DateFormat::ISODate));
 }
 
 CliCommand::CliCommand(QObject *parent)
@@ -128,7 +145,7 @@ QuitCommand::QuitCommand(CliCommandManager *mgr)
 
 void QuitCommand::execute(const QStringList &params)
 {
-    emit finished("Quiting...");
+    emit finished();
 }
 
 AccountSummaryCliCommand::AccountSummaryCliCommand(account::Account &account, const QString &accountId, QObject *parent)
@@ -139,7 +156,7 @@ AccountSummaryCliCommand::AccountSummaryCliCommand(account::Account &account, co
 
 void AccountSummaryCliCommand::execute(const QStringList &params)
 {
-    QString s = "Account:\t " + _accountId + "\n";
+    QString s = "Account:\t\t " + _accountId + "\n";
     s += "Base Currency:\t\t " + _account.baseCurrency() + "\n";
     s += "Net Liquidation:\t " + QString::number(_account.accountInfo(account::AccountInfoType::NetLiquidation)) + "\n";
     s += "Excess Liquidity:\t " + QString::number(_account.accountInfo(account::AccountInfoType::ExcessLiquidity))

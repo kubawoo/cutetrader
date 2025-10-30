@@ -15,7 +15,7 @@ public:
 public slots:
     virtual void execute(const QStringList &params) = 0;
 signals:
-    void finished(const QString &txt);
+    void finished(const QString &txt = "");
 };
 
 class CliCommandManager : public QObject
@@ -37,7 +37,11 @@ public slots:
 
 private slots:
     void start();
-    void managedAccounts(const QStringList &accounts);
+    void onManagedAccounts(const QStringList &accounts);
+    void onError(const QString &reason, bool fatal);
+
+private:
+    void setupCommands();
 
 signals:
     void quit();

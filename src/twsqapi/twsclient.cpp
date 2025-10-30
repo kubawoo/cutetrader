@@ -16,7 +16,7 @@ TwsClient::TwsClient(QObject *parent)
 
 TwsClient::~TwsClient()
 {
-
+    qDebug() << "TwsClient::~TwsClient()";
 }
 
 bool TwsClient::connect(const QString &host, int port, int clientId)
@@ -211,7 +211,7 @@ void TwsClient::_handlePortfolioValue(PortfolioValueServerMessage *msg)
 
 void TwsClient::onError(const QString &reason, bool fatal)
 {
-
+    emit errorSignal(reason, fatal);
 }
 
 }

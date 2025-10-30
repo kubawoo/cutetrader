@@ -36,6 +36,5 @@ void Console::readLine()
 
 void Console::printPrompt()
 {
-    _outputStream << PROMPT;
-    _outputStream.flush();
+    _outputStream << PROMPT << Qt::flush;
 }

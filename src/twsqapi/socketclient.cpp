@@ -15,17 +15,20 @@ SocketClient::SocketClient(QObject *parent)
 
 SocketClient::~SocketClient()
 {
-
+    qDebug() << "SocketClient::~SocketClient()";
 }
 
 bool SocketClient::connect(const QString &host, int port, int clientId)
 {
     _init(&_socket, &_socket, clientId);
     _socket.connectToHost(host, port);
-    if(!_socket.isValid()) {
+
+    if (!_socket.waitForConnected() || !_socket.isValid() || _socket.state() != QAbstractSocket::ConnectedState) {
+        qCritical() << "Failed to connect to host" << _socket.errorString();
         emit error("Failed to connect", true);
         return false;
     } else {
+        qDebug() << "Connected to host";
         _connectHandshake(client::PACEAPI_OPT);
     }
     return true;
