@@ -1,35 +1,41 @@
 #include "console.h"
-#include <iostream>
+#include <QFile>
+#include <QTextStream>
 
-constexpr std::string_view PROMPT = "> ";
-constexpr std::string_view HELLO_MSG = R"(Welcome to the cutetrader CLI, enter "help" for help or "quit" to exit
-Good luck and happy trading!)";
-
-//TODO: use Qt classes instead of std::string & co.
+const QString PROMPT = "> ";
+const QString HELLO_MSG = R"(Welcome to the cutetrader CLI, enter "help" for help or "quit" to exit
+Good luck and happy trading!
+)";
 
 Console::Console(QObject *parent)
+    : _inputStream(stdin, QFile::ReadOnly)
+    , _outputStream(stdout, QFile::WriteOnly)
+    , _notifier(new QSocketNotifier(fileno(stdin), QSocketNotifier::Read, this))
 {
-    _notifier = new QSocketNotifier(fileno(stdin), QSocketNotifier::Read, this);
     connect(_notifier, &QSocketNotifier::activated, this, &Console::readLine);
 
-    std::cout << HELLO_MSG << std::endl;
-    std::cout << PROMPT << std::flush;
+    _outputStream << HELLO_MSG;
+    printPrompt();
 }
 
 void Console::print(const QString &txt)
 {
-    std::cout << txt.toStdString() << std::endl;
-    std::cout << PROMPT << std::flush;
+    _outputStream << txt << '\n';
+    printPrompt();
 }
 
 void Console::readLine()
 {
-    std::string line;
-    std::getline(std::cin, line);
-    QString input = QString(line.c_str()).trimmed();
+    QString input = QString(_inputStream.readLine()).trimmed();
     if (!input.isEmpty()) {
         emit newInput(input);
     } else {
-        std::cout << PROMPT << std::flush;
+        printPrompt();
     }
+}
+
+void Console::printPrompt()
+{
+    _outputStream << PROMPT;
+    _outputStream.flush();
 }

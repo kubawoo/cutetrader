@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QSocketNotifier>
+#include <QTextStream>
 
 class Console : public QObject
 {
@@ -18,6 +19,11 @@ private slots:
     void readLine();
 
 private:
+    void printPrompt();
+
+private:
+    QTextStream _inputStream;
+    QTextStream _outputStream;
     QSocketNotifier *_notifier;
 
 signals:
