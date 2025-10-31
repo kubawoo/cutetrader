@@ -14,6 +14,9 @@ CliCommandManager::CliCommandManager(const QString &host,
     , _accountId(accountId)
     , _client(client)
 {
+    QSqlDatabase db = QSqlDatabase::database();
+    _dataManager = data::DataManager(db);
+
     setupCommands();
 
     connect(client.data(),
@@ -92,6 +95,7 @@ void CliCommandManager::setupCommands()
     _commands["account"] = new AccountSummaryCliCommand(_account, _accountId, this);
     _commands["help"] = new HelpCommand(this);
     _commands["time"] = new ServerTimeCliCommand(_client, this);
+    _commands["watchlist"] = new WatchlistCliCommand(_dataManager, this);
 
     for (auto c : _commands.values()) {
         connect(c, &CliCommand::finished, this, &CliCommandManager::commandResult);
@@ -194,5 +198,19 @@ void AccountSummaryCliCommand::execute(const QStringList &params)
     }
 
     s += "Cash:\t " + QString::number(_account.accountInfo(account::AccountInfoType::CashBalance));
+    emit finished(s);
+}
+
+WatchlistCliCommand::WatchlistCliCommand(data::DataManager &dataManager, QObject *parent)
+    : CliCommand(parent)
+    , _dataManager(dataManager)
+{}
+
+void WatchlistCliCommand::execute(const QStringList &params)
+{
+    QString s;
+    for (auto i : _dataManager.getAllSecurities()) {
+        s += i.symbol() + "\n";
+    }
     emit finished(s);
 }

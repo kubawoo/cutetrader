@@ -4,6 +4,7 @@
 #include <QObject>
 #include <account.h>
 #include <common.h>
+#include <data.h>
 
 class CliCommand : public QObject
 {
@@ -55,6 +56,7 @@ private:
     QSharedPointer<common::ITwsClient> _client;
     QMap<QString, CliCommand *> _commands;
     account::Account _account;
+    data::DataManager _dataManager;
 };
 
 class QuitCommand : public CliCommand
@@ -110,6 +112,19 @@ public slots:
 private:
     account::Account &_account;
     const QString &_accountId;
+};
+
+class WatchlistCliCommand : public CliCommand
+{
+    Q_OBJECT
+public:
+    explicit WatchlistCliCommand(data::DataManager &dataManager, QObject *parent = nullptr);
+    QString description() override { return "Displays watchlist"; }
+public slots:
+    void execute(const QStringList &params) override;
+
+private:
+    data::DataManager &_dataManager;
 };
 
 #endif // CLICOMMAND_H
