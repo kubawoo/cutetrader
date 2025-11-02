@@ -30,8 +30,8 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app)
                        {"database", "Database filename", "database"},
                        {"host", "IBKR gateway/TWS host name", "host", "localhost"},
                        {"port", "IBKR gateway/TWS port number", "port", "4002"},
-                       {"clientId", "IBKR's client ID", "clientId", "1"},
-                       {"accountId", "IBKR's account id", "accountId"},
+                       {"client-id", "IBKR's client ID", "client-id", "1"},
+                       {"account-id", "IBKR's account id", "account-id"},
                        {"debug", "Enables debug logging"}});
     parser.process(app);
 }
@@ -57,11 +57,11 @@ bool setupApp(const QCommandLineParser &parser, AppConfig &appConfig)
     if (!ok) {
         return false;
     }
-    appConfig.clientId = parser.value("clientId").toInt(&ok);
+    appConfig.clientId = parser.value("client-id").toInt(&ok);
     if (!ok) {
         return false;
     }
-    appConfig.accountId = parser.value("accountId");
+    appConfig.accountId = parser.value("account-id");
 
     QScopedPointer<common::IAppFactory> factory = parser.isSet("mocked")
                                                       ? QScopedPointer<common::IAppFactory>(new mocked::MockAppFactory)

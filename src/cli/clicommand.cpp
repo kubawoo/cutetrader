@@ -56,11 +56,14 @@ void CliCommandManager::onError(const QString &reason, bool fatal)
 
 void CliCommandManager::command(const QString &cmd)
 {
-    // TODO split cmd by white space
-    if (_commands.contains(cmd)) {
-        _commands[cmd]->execute({}); // parse params
+    QStringList args = cmd.split(' ', Qt::SkipEmptyParts);
+    QString command = args[0];
+    QStringList params = args.sliced(1);
+
+    if (_commands.contains(command)) {
+        _commands[command]->execute(params); // parse params
     } else {
-        emit commandDone("Unrecognized command '" + cmd + "'. Type 'help' for available commands.");
+        emit commandDone("Unrecognized command '" + command + "'. Type 'help' for available commands.");
     }
 }
 
@@ -137,7 +140,7 @@ void HelpCommand::execute(const QStringList &params)
     commands.sort();
     QString s;
     for (auto cmd : commands) {
-        s += cmd + "\t" + _commandManager->commands()[cmd]->description() + "\n";
+        s += cmd + "\n\t" + _commandManager->commands()[cmd]->description() + "\n";
     }
     emit finished(s);
 }
@@ -208,9 +211,14 @@ WatchlistCliCommand::WatchlistCliCommand(data::DataManager &dataManager, QObject
 
 void WatchlistCliCommand::execute(const QStringList &params)
 {
-    QString s;
-    for (auto i : _dataManager.getAllSecurities()) {
-        s += i.symbol() + "\n";
+    if (!params.empty() && params[0] == "show") {
+        QString s;
+        for (auto i : _dataManager.getAllSecurities()) {
+            s += i.symbol() + "\n";
+        }
+        emit finished(s);
+    } else {
+        QString s = "Usage:\n\twatchlist [action] [options]\n\nAvailable actions:\n\tshow - displays the watchlist";
+        emit finished(s);
     }
-    emit finished(s);
 }
