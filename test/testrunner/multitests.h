@@ -6,14 +6,14 @@
 #ifndef MULTITESTS_H
 #define MULTITESTS_H
 
-#include <QTest>
 #include <QList>
-#include <QString>
-#include <QSharedPointer>
-#include <QMetaType>
-#include <QMetaObject>
+#include <QLoggingCategory>
 #include <QMetaMethod>
-
+#include <QMetaObject>
+#include <QMetaType>
+#include <QSharedPointer>
+#include <QString>
+#include <QTest>
 
 namespace MultiTests {
 typedef QList<QObject *> TestCasesList;
@@ -116,11 +116,11 @@ inline bool isValidTestSlot(const QMetaMethod &sl)
      */
 inline void listTestFunctionsFromCase(QObject *testObj)
 {
-    qDebug() << "==" << qPrintable(testObj->metaObject()->className()) << "==";
+    qInfo() << "==" << qPrintable(testObj->metaObject()->className()) << "==";
     for (int i = 0; i < testObj->metaObject()->methodCount(); ++i) {
         QMetaMethod sl = testObj->metaObject()->method(i);
         if (isValidTestSlot(sl)) {
-            qDebug() << sl.methodSignature();
+            qInfo() << sl.methodSignature();
         }
     }
 }
@@ -269,9 +269,7 @@ inline int run(int argc, char *argv[])
 
     return ret;
 }
-}
-
-
+} // namespace MultiTests
 
 template<class T>
 class MultiTests_Case
@@ -299,6 +297,7 @@ public:
 #define MULTI_TESTS_MAIN \
     int main(int argc, char *argv[]) \
     { \
+        QLoggingCategory::defaultCategory()->setEnabled(QtMsgType::QtDebugMsg, false); \
         QCoreApplication app(argc, argv); \
         srand(time(NULL)); \
         return MultiTests::run(argc, argv); \

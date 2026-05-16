@@ -9,7 +9,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Test Sql Network)
+find_package(Qt6 REQUIRED COMPONENTS Core Test Sql Network)
 qt_standard_project_setup()
 
 add_subdirectory(src/account)
