@@ -13,7 +13,6 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets Test Sql Network)
 qt_standard_project_setup()
 
 add_subdirectory(src/account)
-add_subdirectory(src/app)
 add_subdirectory(src/cli)
 add_subdirectory(src/common)
 add_subdirectory(src/data)
