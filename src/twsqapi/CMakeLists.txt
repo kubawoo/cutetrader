@@ -6,5 +6,5 @@ add_library(twsqapi STATIC
     ${HEADERS}
 )
 
-target_link_libraries(twsqapi PRIVATE Qt6::Core Qt6::Network common)
+target_link_libraries(twsqapi PRIVATE Qt6::Core Qt6::Network common ProtoMessages)
 target_include_directories(twsqapi INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})

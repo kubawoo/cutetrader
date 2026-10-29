@@ -9,8 +9,18 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Test Sql Network)
+find_package(Qt6 REQUIRED COMPONENTS Core Test Sql Network Protobuf Quick Qml)
 qt_standard_project_setup()
+
+
+file(GLOB PROTO_SOURCES "../twsapi_macunix.1049.02/IBJts/source/proto/*.proto")
+
+qt_add_protobuf(ProtoMessages
+    GENERATE_PACKAGE_SUBFOLDERS
+    PROTO_FILES
+        ${PROTO_SOURCES}
+)
+
 
 add_subdirectory(src/account)
 add_subdirectory(src/cli)
