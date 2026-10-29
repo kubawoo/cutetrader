@@ -81,12 +81,18 @@ void CliCommandManager::onManagedAccounts(const QStringList &accounts)
 {
     qDebug() << "accountId: " << _accountId;
     qDebug() << "accounts: " << accounts;
-    if (_accountId.isEmpty() && accounts.size() == 1) {
-        _accountId = accounts[0];
+    if (_accountId.isEmpty()) {
+        if(accounts.size() == 1) {
+            _accountId = accounts[0];
+        } else {
+            qCritical() << "Please specify account, Available accounts: " << accounts;
+            quitCommand();
+            return;
+        }
     }
 
     if (!accounts.contains(_accountId)) {
-        qDebug() << "Account" << _accountId << " not found in " << accounts;
+        qCritical() << "Account" << _accountId << " not found in " << accounts;
         quitCommand();
         return;
     }

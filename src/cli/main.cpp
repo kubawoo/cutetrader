@@ -28,10 +28,10 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app)
     parser.addHelpOption();
     parser.addOptions({{"mocked", "Use mocked API Client (won't connect to TWS)"},
                        {"database", "Database filename", "database"},
-                       {"host", "IBKR gateway/TWS host name", "host", "localhost"},
-                       {"port", "IBKR gateway/TWS port number", "port", "4002"},
-                       {"client-id", "IBKR's client ID", "client-id", "1"},
-                       {"account-id", "IBKR's account id", "account-id"},
+                       {"host", "IBKR gateway/TWS host name. Default: localhost", "host", "localhost"},
+                       {"port", "IBKR gateway/TWS port number. Default: 4002", "port", "4002"},
+                       {"client-id", "IBKR's client ID. Default: 1", "client-id", "1"},
+                       {"account-id", "IBKR's account id. Required if multiple accounts available", "account-id"},
                        {"debug", "Enables debug logging"}});
     parser.process(app);
 }
@@ -50,6 +50,7 @@ bool setupDatabase(common::IAppFactory * factory, const QString & dbName) {
 bool setupApp(const QCommandLineParser &parser, AppConfig &appConfig)
 {
     QLoggingCategory::defaultCategory()->setEnabled(QtMsgType::QtDebugMsg, parser.isSet("debug"));
+    QLoggingCategory::defaultCategory()->setEnabled(QtMsgType::QtCriticalMsg, true);
 
     bool ok;
     appConfig.host = parser.value("host");
@@ -83,7 +84,7 @@ int main(int argc, char *argv[])
 
     AppConfig appConfig;
     if (!setupApp(parser, appConfig)) {
-        qDebug() << "Failed to initialize app";
+        qCritical() << "Failed to initialize app";
         return -1;
     }
 
