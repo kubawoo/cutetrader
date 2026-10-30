@@ -15,6 +15,30 @@ ApplicationWindow {
 
     property bool showConnectionDialog: !ConnectionManager.connected
 
+    Connections {
+        target: ConnectionManager
+        function onConnectedChanged() {
+            console.log("DEBUG: ConnectionManager.onConnectedChanged, connected =", ConnectionManager.connected)
+            if (ConnectionManager.connected) {
+                showConnectionDialog = false
+                connectionDrawer.close()
+            }
+        }
+    }
+
+    Connections {
+        target: root
+        function onShowConnectionDialogChanged() {
+            console.log("DEBUG: onShowConnectionDialogChanged, value =", showConnectionDialog)
+            if (showConnectionDialog) {
+                connectionDrawer.open()
+                console.log("DEBUG: drawer.open() called")
+            } else {
+                connectionDrawer.close()
+            }
+        }
+    }
+
     header: ToolBar {
         RowLayout {
             anchors.fill: parent
@@ -35,10 +59,11 @@ ApplicationWindow {
                 text: ConnectionManager.connected ? "Disconnect" : "Connect"
                 enabled: !ConnectionManager.connected || ConnectionManager.status !== "Connecting..."
                 onClicked: {
+                    console.log("DEBUG: Connect button clicked, connected =", ConnectionManager.connected)
                     if (ConnectionManager.connected) {
                         ConnectionManager.disconnectFromTws()
                     } else {
-                        showConnectionDialog = true
+                        connectionDrawer.open()
                     }
                 }
                 Layout.rightMargin: 10
@@ -52,7 +77,11 @@ ApplicationWindow {
         width: Math.min(400, root.width * 0.9)
         height: root.height
         dragMargin: 0
-        onOpened: connectionDialog.resetForm()
+        onOpened: {
+            console.log("DEBUG: drawer opened")
+            connectionDialog.resetForm()
+        }
+        onClosed: console.log("DEBUG: drawer closed")
         ConnectionDialog {
             id: connectionDialog
             anchors.fill: parent
@@ -75,15 +104,5 @@ ApplicationWindow {
         TabButton { text: qsTr("Account") }
         TabButton { text: qsTr("Portfolio") }
         TabButton { text: qsTr("Orders") }
-    }
-
-    Connections {
-        target: ConnectionManager
-        function onConnectedChanged() {
-            if (ConnectionManager.connected) {
-                showConnectionDialog = false
-                connectionDrawer.close()
-            }
-        }
     }
 }

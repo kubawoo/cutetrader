@@ -95,6 +95,9 @@ common::ITwsClient * ConnectionManager::client() const
 
 void ConnectionManager::connectToTws()
 {
+    qDebug() << "ConnectionManager::connectToTws() called, m_useMock =", m_useMock,
+              "m_host =", m_host, "m_port =", m_port, "m_clientId =", m_clientId;
+
     if (m_client) {
         cleanupConnections();
         delete m_client;
@@ -110,6 +113,7 @@ void ConnectionManager::connectToTws()
     emit statusChanged(m_status);
 
     bool ok = m_client->connect(m_host, m_port, m_clientId);
+    qDebug() << "ConnectionManager::connectToTws() connect result =", ok;
     if (!ok) {
         m_status = "Connection failed";
         emit statusChanged(m_status);
@@ -137,7 +141,6 @@ void ConnectionManager::requestAccountData()
         emit errorOccurred("Not connected to TWS");
         return;
     }
-    m_client->requestManagedAccounts();
     m_client->requestCurrentTime();
 }
 
@@ -191,10 +194,8 @@ void ConnectionManager::onConnected()
     m_status = "Connected";
     emit statusChanged(m_status);
 
-    if (!m_accountId.isEmpty()) {
-        m_client->startClient(m_accountId);
-    }
-    requestAccountData();
+    // Don't request data here - wait for managedAccountsSignal like CLI does
+    // The managed accounts will arrive automatically after handshake
 }
 
 void ConnectionManager::onDisconnected()
@@ -231,6 +232,7 @@ void ConnectionManager::onManagedAccounts(const QStringList &accounts)
     }
 
     m_client->startClient(m_accountId);
+    requestAccountData();
 }
 
 void ConnectionManager::onAccountValueUpdated(const QString &key, const QString &value, const QString &currency)
