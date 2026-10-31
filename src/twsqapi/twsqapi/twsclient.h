@@ -41,7 +41,7 @@ private:
     void _handleAccountValue(AccountValueServerMessage *msg);
     void _handleAccountUpdateTime(AccountUpdateTimeServerMessage *msg);
     void _handleCurrentTime(CurrentTimeServerMessage *msg);
-    void _handleSymbolSamples(SymbolSamplesSrverMessage *msg);
+    void _handleSymbolSamples(SymbolSamplesServerMessage *msg);
     void _handleContractData(ContractDataServerMessage *msg);
     void _handleContractDataEnd(ContractDataEndServerMessage *msg);
     void _handlePortfolioValue(PortfolioValueServerMessage *msg);

@@ -257,7 +257,7 @@ void ServerMessageTest::testSymbolSamplesServerMessage()
                           "54321"};
 
     twsqapi::ServerMessage *sm = factory.create(fields);
-    twsqapi::SymbolSamplesSrverMessage *msg = dynamic_cast<twsqapi::SymbolSamplesSrverMessage *>(sm);
+    twsqapi::SymbolSamplesServerMessage *msg = dynamic_cast<twsqapi::SymbolSamplesServerMessage *>(sm);
 
     QVERIFY(msg);
     QCOMPARE(msg->requestId(), 123);

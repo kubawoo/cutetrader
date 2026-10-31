@@ -123,7 +123,7 @@ void TwsClient::onMessage(QSharedPointer<ServerMessage> msg)
         break;
     }
     case responses::SYMBOL_SAMPLES: {
-        _handleSymbolSamples(msg.dynamicCast<SymbolSamplesSrverMessage>().get());
+        _handleSymbolSamples(msg.dynamicCast<SymbolSamplesServerMessage>().get());
         break;
     }
     case responses::CONTRACT_DATA: {
@@ -176,7 +176,7 @@ void TwsClient::_handleCurrentTime(CurrentTimeServerMessage *msg)
     emit currentTimeSignal(msg->dateTime());
 }
 
-void TwsClient::_handleSymbolSamples(SymbolSamplesSrverMessage *msg) {
+void TwsClient::_handleSymbolSamples(SymbolSamplesServerMessage *msg) {
     qDebug() << "symbolSamples";
     int reqId = msg->requestId();
     ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(_cache.get(reqId));

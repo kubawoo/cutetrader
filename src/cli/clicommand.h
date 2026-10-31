@@ -127,4 +127,22 @@ private:
     data::DataManager &_dataManager;
 };
 
+class SearchSymbolsCliCommand : public CliCommand
+{
+    Q_OBJECT
+public:
+    explicit SearchSymbolsCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent = nullptr);
+    QString description() override { return "Search for symbols matching a pattern"; }
+    QStringList parametersDescription() { return {"<pattern>"}; }
+public slots:
+    void execute(const QStringList &params) override;
+private slots:
+    void onMatchingSymbolsReady(const int &requestId, const QList<common::ContractDetailsDTO> &details);
+
+private:
+    QSharedPointer<common::ITwsClient> _client;
+    int _reqId = 0;
+    bool _waiting = false;
+};
+
 #endif // CLICOMMAND_H

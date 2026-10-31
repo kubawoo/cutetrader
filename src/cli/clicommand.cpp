@@ -105,6 +105,7 @@ void CliCommandManager::setupCommands()
     _commands["help"] = new HelpCommand(this);
     _commands["time"] = new ServerTimeCliCommand(_client, this);
     _commands["watchlist"] = new WatchlistCliCommand(_dataManager, this);
+    _commands["search"] = new SearchSymbolsCliCommand(_client, this);
 
     for (auto c : _commands.values()) {
         connect(c, &CliCommand::finished, this, &CliCommandManager::commandResult);
@@ -227,4 +228,45 @@ void WatchlistCliCommand::execute(const QStringList &params)
         QString s = "Usage:\n\twatchlist [action] [options]\n\nAvailable actions:\n\tshow - displays the watchlist";
         emit finished(s);
     }
+}
+
+SearchSymbolsCliCommand::SearchSymbolsCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent)
+    : CliCommand{parent}
+    , _client{client}
+{
+    QObject::connect(_client.data(), &common::ITwsClient::matchingSymbolsReadySignal,
+                     this, &SearchSymbolsCliCommand::onMatchingSymbolsReady);
+}
+
+void SearchSymbolsCliCommand::execute(const QStringList &params)
+{
+    if (params.empty()) {
+        emit finished("Usage: search <symbol pattern>");
+        return;
+    }
+    if (_waiting) {
+        emit finished("Already waiting for search results. Please wait.");
+        return;
+    }
+    _waiting = true;
+    _client->requestMatchingSymbols(params[0], &_reqId);
+}
+
+void SearchSymbolsCliCommand::onMatchingSymbolsReady(const int &requestId, const QList<common::ContractDetailsDTO> &details)
+{
+    if (!_waiting || requestId != _reqId)
+        return;
+    _waiting = false;
+
+    QString s;
+    if (details.isEmpty()) {
+        s = "No symbols found";
+    } else {
+        s += "Contract ID\tSymbol\tDescription\tCurrency\n";
+        s += "----------------------------------------\n";
+        for (auto const &d : details) {
+            s += QString::number(d.contractId) + "\t" + d.symbol + "\t" + d.description + "\t" + d.currency + "\n";
+        }
+    }
+    emit finished(s);
 }

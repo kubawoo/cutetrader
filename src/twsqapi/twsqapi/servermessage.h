@@ -113,10 +113,10 @@ private:
 };
 
 
-class SymbolSamplesSrverMessage : public ServerMessage
+class SymbolSamplesServerMessage : public ServerMessage
 {
 public:
-    SymbolSamplesSrverMessage(const QStringList & fields);
+    SymbolSamplesServerMessage(const QStringList & fields);
     int requestId() { return _reqId; }
     const QList<common::ContractDetailsDTO>& contracts() { return _contracts; }
 private:
