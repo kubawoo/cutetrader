@@ -283,7 +283,7 @@ HistoricalDataCliCommand::HistoricalDataCliCommand(QSharedPointer<common::ITwsCl
 void HistoricalDataCliCommand::execute(const QStringList &params)
 {
     if (params.isEmpty()) {
-        emit finished("Usage: historical <contractId> [endDateTime] [durationStr] [barSizeSetting] [whatToShow] [useRTH] [formatDate]");
+        emit finished("Usage: historical <symbol|contractId> [endDateTime] [durationStr] [barSizeSetting] [whatToShow] [useRTH] [formatDate]");
         return;
     }
     if (_waiting) {
@@ -291,18 +291,28 @@ void HistoricalDataCliCommand::execute(const QStringList &params)
         return;
     }
     _waiting = true;
-    long contractId = params[0].toLong();
+    _symbol = params[0];
     QString endDateTime = params.size() > 1 ? params[1] : QString();
     QString durationStr = params.size() > 2 ? params[2] : QString("1 M");
     QString barSizeSetting = params.size() > 3 ? params[3] : QString("1 day");
     QString whatToShow = params.size() > 4 ? params[4] : QString("TRADES");
     int useRTH = params.size() > 5 ? params[5].toInt() : 1;
     int formatDate = params.size() > 6 ? params[6].toInt() : 2;
-    _client->requestHistoricalData(contractId, endDateTime, durationStr, barSizeSetting,
-                                   whatToShow, useRTH, formatDate, &_reqId);
+
+    // Check if params[0] is a numeric contractId or a symbol
+    bool ok = false;
+    long contractId = params[0].toLong(&ok);
+    if (ok) {
+        _client->requestHistoricalData(contractId, endDateTime, durationStr, barSizeSetting,
+                                       whatToShow, useRTH, formatDate, &_reqId);
+    } else {
+        _client->requestHistoricalData(params[0], endDateTime, durationStr, barSizeSetting,
+                                       whatToShow, useRTH, formatDate, &_reqId);
+    }
 }
 
-void HistoricalDataCliCommand::onHistoricalDataReady(const int &requestId, const QList<common::BarDTO> &bars)
+void HistoricalDataCliCommand::onHistoricalDataReady(const int &requestId, const QList<common::BarDTO> &bars,
+                                                     const QString &description)
 {
     if (!_waiting || requestId != _reqId)
         return;
@@ -312,6 +322,10 @@ void HistoricalDataCliCommand::onHistoricalDataReady(const int &requestId, const
     if (bars.isEmpty()) {
         s = "No historical data";
     } else {
+        if (!description.isEmpty()) {
+            s += "Company: " + description + "\n\n";
+        }
+        s += "Symbol: " + _symbol + "\n\n";
         s += "Time\tOpen\tHigh\tLow\tClose\tVolume\tWAP\tCount\tAverage\n";
         s += "------------------------------------------------------------\n";
         for (auto const &b : bars) {

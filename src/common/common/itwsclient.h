@@ -25,6 +25,10 @@ public slots:
                                        const QString & durationStr, const QString & barSizeSetting,
                                        const QString & whatToShow, int useRTH, int formatDate,
                                        int * reqId = nullptr) = 0;
+    virtual void requestHistoricalData(const QString & symbol, const QString & endDateTime,
+                                       const QString & durationStr, const QString & barSizeSetting,
+                                       const QString & whatToShow, int useRTH, int formatDate,
+                                       int * reqId = nullptr) = 0;
 
 public:
     virtual bool connect(const QString& host, int port, int clientId = 0) = 0;
@@ -36,7 +40,8 @@ signals:
     void errorSignal(const QString &reason, bool fatal = false);
     void currentTimeSignal(const QDateTime & time);
     void managedAccountsSignal(const QStringList & accounts);
-    void historicalDataReadySignal(int requestId, const QList<common::BarDTO> & bars);
+    void historicalDataReadySignal(int requestId, const QList<common::BarDTO> & bars,
+                                   const QString & description = QString());
     void accountValueUpdatedSignal(const QString & key, const QString & value, const QString & currency);
     void portfolioPositionUpdatedSignal(const common::PortfolioPositionDTO & position);
     void contractDetailReadySignal(const int & requestId, const QList<common::ContractDetailsDTO> & details);

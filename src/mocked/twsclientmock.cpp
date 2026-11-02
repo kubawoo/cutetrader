@@ -149,8 +149,30 @@ void TwsClientMock::requestHistoricalData(long contractId, const QString & endDa
     Q_UNUSED(useRTH)
     Q_UNUSED(formatDate)
     _setRequestId(reqId, _requestId++);
-    emit historicalDataReadySignal(*reqId, {});
+    emit historicalDataReadySignal(*reqId, {}, QString());
 }
 
+void TwsClientMock::requestHistoricalData(const QString & symbol, const QString & endDateTime,
+                                          const QString & durationStr, const QString & barSizeSetting,
+                                          const QString & whatToShow, int useRTH, int formatDate,
+                                          int * reqId)
+{
+    Q_UNUSED(symbol)
+    Q_UNUSED(endDateTime)
+    Q_UNUSED(durationStr)
+    Q_UNUSED(barSizeSetting)
+    Q_UNUSED(whatToShow)
+    Q_UNUSED(useRTH)
+    Q_UNUSED(formatDate)
+    _setRequestId(reqId, _requestId++);
+    QString description;
+    for (auto dto : _contractsMap.values()) {
+        if (dto.symbol == symbol) {
+            description = dto.description;
+            break;
+        }
+    }
+    emit historicalDataReadySignal(*reqId, {}, description);
+}
 
 }

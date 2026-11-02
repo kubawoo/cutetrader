@@ -150,17 +150,19 @@ class HistoricalDataCliCommand : public CliCommand
     Q_OBJECT
 public:
     explicit HistoricalDataCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent = nullptr);
-    QString description() override { return "Request historical data for a contract"; }
-    QStringList parametersDescription() { return {"<contractId> [endDateTime] [durationStr] [barSizeSetting] [whatToShow] [useRTH] [formatDate]"}; }
+    QString description() override { return "Request historical data for a symbol or contractId"; }
+    QStringList parametersDescription() { return {"<symbol|contractId> [endDateTime] [durationStr] [barSizeSetting] [whatToShow] [useRTH] [formatDate]"}; }
 public slots:
     void execute(const QStringList &params) override;
 private slots:
-    void onHistoricalDataReady(const int &requestId, const QList<common::BarDTO> &bars);
+    void onHistoricalDataReady(const int &requestId, const QList<common::BarDTO> &bars,
+                               const QString &description);
 
 private:
     QSharedPointer<common::ITwsClient> _client;
     int _reqId = 0;
     bool _waiting = false;
+    QString _symbol;
 };
 
 #endif // CLICOMMAND_H

@@ -44,12 +44,31 @@ public slots:
                                const QString & durationStr, const QString & barSizeSetting,
                                const QString & whatToShow, int useRTH, int formatDate,
                                int * reqId = nullptr) override;
+    void requestHistoricalData(const QString & symbol, const QString & endDateTime,
+                               const QString & durationStr, const QString & barSizeSetting,
+                               const QString & whatToShow, int useRTH, int formatDate,
+                               int * reqId = nullptr) override;
 
 
 
 private slots:
     void onMessage(QSharedPointer<ServerMessage> msg);
     void onError(const QString & reason, bool fatal = false);
+
+private:
+    struct PendingSymbolHistoricalDataRequest {
+        int originalReqId;
+        QString symbol;
+        QString endDateTime;
+        QString durationStr;
+        QString barSizeSetting;
+        QString whatToShow;
+        int useRTH;
+        int formatDate;
+    };
+
+    QMap<int, PendingSymbolHistoricalDataRequest> _pendingSymbolHistoricalDataRequests;
+    QMap<int, QString> _historicalDataDescriptions;
 
 private:
     void _handleManagedAccounts(ManagedAccountsServerMessage *msg);

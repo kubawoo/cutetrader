@@ -156,6 +156,63 @@ void TwsClient::requestHistoricalData(long contractId, const QString & endDateTi
     _client->send(RequestContractDetailsClientMessage(currentReqId, contractId));
 }
 
+void TwsClient::requestHistoricalData(const QString &symbol, const QString & endDateTime,
+                                      const QString & durationStr, const QString & barSizeSetting,
+                                      const QString & whatToShow, int useRTH, int formatDate,
+                                      int *reqId)
+{
+    int currentReqId = _requestId++;
+    _setRequestId(reqId, currentReqId);
+
+    PendingSymbolHistoricalDataRequest pending;
+    pending.originalReqId = currentReqId;
+    pending.symbol = symbol;
+    pending.endDateTime = endDateTime;
+    pending.durationStr = durationStr;
+    pending.barSizeSetting = barSizeSetting;
+    pending.whatToShow = whatToShow;
+    pending.useRTH = useRTH;
+    pending.formatDate = formatDate;
+
+    // Check cache for matching symbols first
+    QStringList keys = {"requestMatchingSymbols", symbol};
+    auto cacheEntry = _cache.get(keys);
+
+    if(cacheEntry.first >= 0 && cacheEntry.second && cacheEntry.second->ready()) {
+        // Cache hit - resolve immediately
+        ContractDetailsCacheEntry * entry = dynamic_cast<ContractDetailsCacheEntry*>(cacheEntry.second);
+        if(entry && !entry->contractDetails.isEmpty()) {
+            const auto &contract = entry->contractDetails.first();
+            _historicalDataDescriptions[currentReqId] = contract.description;
+
+            PendingHistoricalDataRequest hdPending;
+            hdPending.contractId = contract.contractId;
+            hdPending.endDateTime = pending.endDateTime;
+            hdPending.durationStr = pending.durationStr;
+            hdPending.barSizeSetting = pending.barSizeSetting;
+            hdPending.whatToShow = pending.whatToShow;
+            hdPending.useRTH = pending.useRTH;
+            hdPending.formatDate = pending.formatDate;
+            hdPending.reqId = currentReqId;
+
+            _sendHistoricalDataRequest(hdPending, contract);
+            QStringList hdKeys = {"requestHistoricalData", QString::number(contract.contractId), pending.endDateTime,
+                                  pending.durationStr, pending.barSizeSetting, pending.whatToShow};
+            _cache.add(currentReqId, new HistoricalDataCacheEntry(), hdKeys);
+            return;
+        }
+    }
+
+    // Cache miss - store pending and request matching symbols
+    _pendingSymbolHistoricalDataRequests[currentReqId] = pending;
+
+    int matchingReqId;
+    requestMatchingSymbols(symbol, &matchingReqId);
+
+    // Re-key by matchingReqId (requestMatchingSymbols may assign a different ID)
+    _pendingSymbolHistoricalDataRequests[matchingReqId] = _pendingSymbolHistoricalDataRequests.take(currentReqId);
+}
+
 void TwsClient::onMessage(QSharedPointer<ServerMessage> msg)
 {
     qDebug() << "TwsClient::onMessage" << msg->id();
@@ -261,6 +318,33 @@ void TwsClient::_handleSymbolSamples(SymbolSamplesServerMessage *msg) {
         entry->contractDetails.append(msg->contracts());
         entry->setReady();
         emit matchingSymbolsReadySignal(reqId, entry->contractDetails);
+
+        // Check if this was a symbol-based historical data lookup
+        auto it = _pendingSymbolHistoricalDataRequests.find(reqId);
+        if(it != _pendingSymbolHistoricalDataRequests.end()) {
+            PendingSymbolHistoricalDataRequest pending = it.value();
+            _pendingSymbolHistoricalDataRequests.erase(it);
+
+            if(!entry->contractDetails.isEmpty()) {
+                const auto &contract = entry->contractDetails.first();
+                _historicalDataDescriptions[pending.originalReqId] = contract.description;
+
+                PendingHistoricalDataRequest hdPending;
+                hdPending.contractId = contract.contractId;
+                hdPending.endDateTime = pending.endDateTime;
+                hdPending.durationStr = pending.durationStr;
+                hdPending.barSizeSetting = pending.barSizeSetting;
+                hdPending.whatToShow = pending.whatToShow;
+                hdPending.useRTH = pending.useRTH;
+                hdPending.formatDate = pending.formatDate;
+                hdPending.reqId = pending.originalReqId;
+
+                _sendHistoricalDataRequest(hdPending, contract);
+                QStringList hdKeys = {"requestHistoricalData", QString::number(contract.contractId), pending.endDateTime,
+                                      pending.durationStr, pending.barSizeSetting, pending.whatToShow};
+                _cache.add(pending.originalReqId, new HistoricalDataCacheEntry(), hdKeys);
+            }
+        }
     }
 }
 
@@ -324,7 +408,8 @@ void TwsClient::_handleHistoricalDataEnd(HistoricalDataEndServerMessage *msg)
     HistoricalDataCacheEntry * entry =  dynamic_cast<HistoricalDataCacheEntry*>(_cache.get(msg->requestId()));
     if(entry) {
         entry->setReady();
-        emit historicalDataReadySignal(msg->requestId(), entry->bars);
+        QString description = _historicalDataDescriptions.take(msg->requestId());
+        emit historicalDataReadySignal(msg->requestId(), entry->bars, description);
     }
 }
 
