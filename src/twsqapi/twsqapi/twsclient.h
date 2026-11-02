@@ -2,6 +2,7 @@
 #define TWSQAPI_TWSCLIENT_H
 
 #include <QObject>
+#include <QMap>
 #include "socketclient.h"
 #include "cache.h"
 
@@ -9,6 +10,17 @@
 
 
 namespace twsqapi {
+
+struct PendingHistoricalDataRequest {
+    long contractId;
+    QString endDateTime;
+    QString durationStr;
+    QString barSizeSetting;
+    QString whatToShow;
+    int useRTH;
+    int formatDate;
+    int reqId;
+};
 
 class TwsClient : public common::ITwsClient
 {
@@ -28,6 +40,11 @@ public slots:
     void requestOpenOrders() override;
     void requestContractDetails(long contractId, int * reqId = nullptr) override;
     void requestMatchingSymbols(const QString & pattern, int * reqId = nullptr) override;
+    void requestHistoricalData(long contractId, const QString & endDateTime,
+                               const QString & durationStr, const QString & barSizeSetting,
+                               const QString & whatToShow, int useRTH, int formatDate,
+                               int * reqId = nullptr) override;
+
 
 
 private slots:
@@ -45,6 +62,13 @@ private:
     void _handleContractData(ContractDataServerMessage *msg);
     void _handleContractDataEnd(ContractDataEndServerMessage *msg);
     void _handlePortfolioValue(PortfolioValueServerMessage *msg);
+    void _handleHistoricalData(HistoricalDataServerMessage *msg);
+    void _handleHistoricalDataUpdate(HistoricalDataUpdateServerMessage *msg);
+    void _handleHistoricalDataEnd(HistoricalDataEndServerMessage *msg);
+
+    void _sendHistoricalDataRequest(const PendingHistoricalDataRequest &pending,
+                                     const common::ContractDetailsDTO &contractDetails);
+    QString _securityTypeToIbString(common::SecurityType type) const;
 
 private:
     SocketClient * _client;
@@ -52,6 +76,7 @@ private:
     long _nextOrderId;
     Cache _cache;
     unsigned int _requestId;
+    QMap<long, QList<PendingHistoricalDataRequest>> _pendingHistoricalDataRequests;
 };
 
 }

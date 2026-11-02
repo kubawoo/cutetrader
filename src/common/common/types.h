@@ -70,6 +70,19 @@ struct QuoteDTO
     int volume;
 };
 
+struct BarDTO
+{
+    QString time;
+    double open;
+    double high;
+    double low;
+    double close;
+    double wap;
+    double volume;
+    int barCount;
+    double average;
+};
+
 }
 
 

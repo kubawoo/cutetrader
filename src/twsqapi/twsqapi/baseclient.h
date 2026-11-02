@@ -37,6 +37,9 @@ protected:
     bool _isHandshakeDone();
     int _getApiVersion();
 
+public:
+    int apiVersion() const { return _apiVersion; }
+
 private:
     void _send(const QByteArray & msg);
     void _processData(const QByteArray & data);

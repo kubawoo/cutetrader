@@ -34,6 +34,7 @@ ServerMessage::ServerMessage(const QStringList& fields, int id, int version, int
     if (_version > responses::NO_VERSION) {
         int v = fields[1].toInt(&_valid);
         _valid = _valid && v == _version;
+        CHECK_VALID(_valid, "Message version mismatch");
     }
 }
 
@@ -102,6 +103,18 @@ ServerMessage *ServerMessageFactory::create(const QStringList & fields)
     case responses::PORTFOLIO_VALUE:
         qDebug() << "RESPONSE: PortfolioValueServerMessage";
         msg =  new PortfolioValueServerMessage(fields);
+        break;
+    case responses::HISTORICAL_DATA:
+        qDebug() << "RESPONSE: HistoricalDataServerMessage";
+        msg =  new HistoricalDataServerMessage(fields);
+        break;
+    case responses::HISTORICAL_DATA_END:
+        qDebug() << "RESPONSE: HistoricalDataEndServerMessage";
+        msg =  new HistoricalDataEndServerMessage(fields);
+        break;
+    case responses::HISTORICAL_DATA_UPDATE:
+        qDebug() << "RESPONSE: HistoricalDataUpdateServerMessage";
+        msg =  new HistoricalDataUpdateServerMessage(fields);
         break;
     default:
         qDebug() << "Unsupported server msg" << id;
@@ -330,6 +343,102 @@ PortfolioValueServerMessage::PortfolioValueServerMessage(const QStringList &fiel
         _position.strike = fields[6].toDouble(&_valid);
         CHECK_VALID(_valid, "Invalid strike");
     }
+}
+
+HistoricalDataServerMessage::HistoricalDataServerMessage(const QStringList &fields)
+    : ServerMessage(fields, responses::HISTORICAL_DATA, responses::HISTORICAL_DATA_VERSION, responses::HISTORICAL_DATA_FIELDS)
+{
+    CHECK_VALID(_valid, "Base validation failed");
+    // For server version >= 124, there's no version field in the response
+    // Field 0: msgId (17)
+    // Field 1: reqId
+    // Field 2: itemCount
+    // Field 3+: bars (8 fields each: time, open, high, low, close, volume, wap, count)
+    _reqId = fields[1].toInt(&_valid);
+    CHECK_VALID(_valid, "Invalid reqId");
+
+    int itemCount = fields[2].toInt(&_valid);
+    CHECK_VALID(_valid, "Invalid itemCount");
+
+    // Parse multiple bars: each bar has 8 fields for server version >= 124
+    // Fields per bar: time, open, high, low, close, volume, wap, count
+    const int fieldsPerBar = 8;
+    const int startIdx = 3;
+    int numBars = qMin(itemCount, (fields.size() - startIdx) / fieldsPerBar);
+
+    for (int i = 0; i < numBars; ++i) {
+        int idx = startIdx + i * fieldsPerBar;
+        if (idx + fieldsPerBar - 1 >= fields.size()) {
+            break;
+        }
+        common::BarDTO bar;
+        bar.time = fields[idx];
+        bar.open = fields[idx + 1].toDouble(&_valid);
+        if (!_valid) break;
+        bar.high = fields[idx + 2].toDouble(&_valid);
+        if (!_valid) break;
+        bar.low = fields[idx + 3].toDouble(&_valid);
+        if (!_valid) break;
+        bar.close = fields[idx + 4].toDouble(&_valid);
+        if (!_valid) break;
+        bar.volume = fields[idx + 5].toDouble(&_valid);
+        if (!_valid) break;
+        bar.wap = fields[idx + 6].toDouble(&_valid);
+        if (!_valid) break;
+        bar.barCount = fields[idx + 7].toInt(&_valid);
+        if (!_valid) break;
+        _bars.append(bar);
+    }
+}
+
+HistoricalDataEndServerMessage::HistoricalDataEndServerMessage(const QStringList &fields)
+    : ServerMessage(fields, responses::HISTORICAL_DATA_END, responses::HISTORICAL_DATA_END_VERSION, responses::HISTORICAL_DATA_END_FIELDS)
+{
+    CHECK_VALID(_valid, "Base validation failed");
+    // For server version >= 124, there's no version field in the response
+    // Field 0: msgId (108)
+    // Field 1: reqId
+    // Field 2: startDate
+    // Field 3: endDate
+    _reqId = fields[1].toInt(&_valid);
+    CHECK_VALID(_valid, "Invalid reqId");
+    _startDate = fields[2];
+    _endDate = fields[3];
+}
+
+HistoricalDataUpdateServerMessage::HistoricalDataUpdateServerMessage(const QStringList &fields)
+    : ServerMessage(fields, responses::HISTORICAL_DATA_UPDATE, responses::HISTORICAL_DATA_UPDATE_VERSION, responses::HISTORICAL_DATA_UPDATE_FIELDS)
+{
+    CHECK_VALID(_valid, "Base validation failed");
+    // For server version >= 124, there's no version field in the response
+    // Field 0: msgId (90)
+    // Field 1: reqId
+    // Field 2: bar.count
+    // Field 3: bar.time
+    // Field 4: bar.open
+    // Field 5: bar.close
+    // Field 6: bar.high
+    // Field 7: bar.low
+    // Field 8: bar.wap
+    // Field 9: bar.volume
+    _reqId = fields[1].toInt(&_valid);
+    CHECK_VALID(_valid, "Invalid reqId");
+
+    _bar.barCount = fields[2].toInt(&_valid);
+    CHECK_VALID(_valid, "Invalid barCount");
+    _bar.time = fields[3];
+    _bar.open = fields[4].toDouble(&_valid);
+    CHECK_VALID(_valid, "Invalid open");
+    _bar.close = fields[5].toDouble(&_valid);
+    CHECK_VALID(_valid, "Invalid close");
+    _bar.high = fields[6].toDouble(&_valid);
+    CHECK_VALID(_valid, "Invalid high");
+    _bar.low = fields[7].toDouble(&_valid);
+    CHECK_VALID(_valid, "Invalid low");
+    _bar.wap = fields[8].toDouble(&_valid);
+    CHECK_VALID(_valid, "Invalid wap");
+    _bar.volume = fields[9].toDouble(&_valid);
+    CHECK_VALID(_valid, "Invalid volume");
 }
 
 }

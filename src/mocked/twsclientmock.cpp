@@ -136,5 +136,21 @@ void TwsClientMock::requestMatchingSymbols(const QString &pattern, int * reqId)
 
 }
 
+void TwsClientMock::requestHistoricalData(long contractId, const QString & endDateTime,
+                                          const QString & durationStr, const QString & barSizeSetting,
+                                          const QString & whatToShow, int useRTH, int formatDate,
+                                          int * reqId)
+{
+    Q_UNUSED(contractId)
+    Q_UNUSED(endDateTime)
+    Q_UNUSED(durationStr)
+    Q_UNUSED(barSizeSetting)
+    Q_UNUSED(whatToShow)
+    Q_UNUSED(useRTH)
+    Q_UNUSED(formatDate)
+    _setRequestId(reqId, _requestId++);
+    emit historicalDataReadySignal(*reqId, {});
+}
+
 
 }
