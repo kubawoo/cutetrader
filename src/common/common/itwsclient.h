@@ -29,6 +29,7 @@ public slots:
                                        const QString & durationStr, const QString & barSizeSetting,
                                        const QString & whatToShow, int useRTH, int formatDate,
                                        int * reqId = nullptr) = 0;
+    virtual void cancelHistoricalData(int reqId) = 0;
 
 public:
     virtual bool connect(const QString& host, int port, int clientId = 0) = 0;

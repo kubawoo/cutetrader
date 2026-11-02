@@ -107,6 +107,7 @@ void CliCommandManager::setupCommands()
     _commands["watchlist"] = new WatchlistCliCommand(_dataManager, this);
     _commands["search"] = new SearchSymbolsCliCommand(_client, this);
     _commands["historical"] = new HistoricalDataCliCommand(_client, this);
+    _commands["cancel-historical"] = new CancelHistoricalDataCliCommand(_client, this);
 
     for (auto c : _commands.values()) {
         connect(c, &CliCommand::finished, this, &CliCommandManager::commandResult);
@@ -309,6 +310,7 @@ void HistoricalDataCliCommand::execute(const QStringList &params)
         _client->requestHistoricalData(params[0], endDateTime, durationStr, barSizeSetting,
                                        whatToShow, useRTH, formatDate, &_reqId);
     }
+    emit finished("Requested historical data (reqId: " + QString::number(_reqId) + ")");
 }
 
 void HistoricalDataCliCommand::onHistoricalDataReady(const int &requestId, const QList<common::BarDTO> &bars,
@@ -336,4 +338,25 @@ void HistoricalDataCliCommand::onHistoricalDataReady(const int &requestId, const
         }
     }
     emit finished(s);
+}
+
+CancelHistoricalDataCliCommand::CancelHistoricalDataCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent)
+    : CliCommand{parent}
+    , _client(client)
+{}
+
+void CancelHistoricalDataCliCommand::execute(const QStringList &params)
+{
+    if (params.isEmpty()) {
+        emit finished("Usage: cancel-historical <reqId>");
+        return;
+    }
+    bool ok = false;
+    int reqId = params[0].toInt(&ok);
+    if (!ok) {
+        emit finished("Invalid request ID: " + params[0]);
+        return;
+    }
+    _client->cancelHistoricalData(reqId);
+    emit finished("Cancelled historical data request " + QString::number(reqId));
 }

@@ -29,6 +29,9 @@ constexpr int REQ_CURRENT_TIME_VERSION = 1;
 constexpr int REQ_HISTORICAL_DATA = 20;
 constexpr int REQ_HISTORICAL_DATA_VERSION = 6;
 
+constexpr int CANCEL_HISTORICAL_DATA = 25;
+constexpr int CANCEL_HISTORICAL_DATA_VERSION = 1;
+
 constexpr int START_API = 71;
 constexpr int START_API_VERSION = 2;
 

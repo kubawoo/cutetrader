@@ -175,4 +175,9 @@ void TwsClientMock::requestHistoricalData(const QString & symbol, const QString 
     emit historicalDataReadySignal(*reqId, {}, description);
 }
 
+void TwsClientMock::cancelHistoricalData(int reqId)
+{
+    Q_UNUSED(reqId)
+    // Mock implementation - no-op
+}
 }

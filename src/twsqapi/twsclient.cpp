@@ -213,6 +213,14 @@ void TwsClient::requestHistoricalData(const QString &symbol, const QString & end
     _pendingSymbolHistoricalDataRequests[matchingReqId] = _pendingSymbolHistoricalDataRequests.take(currentReqId);
 }
 
+void TwsClient::cancelHistoricalData(int reqId)
+{
+    qDebug() << "Canceling historical data request" << reqId;
+    _client->send(CancelHistoricalDataClientMessage(reqId));
+    // Remove description if present
+    _historicalDataDescriptions.remove(reqId);
+}
+
 void TwsClient::onMessage(QSharedPointer<ServerMessage> msg)
 {
     qDebug() << "TwsClient::onMessage" << msg->id();

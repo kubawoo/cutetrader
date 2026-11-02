@@ -210,4 +210,15 @@ QStringList RequestHistoricalDataClientMessage::fields() const {
     return result;
 }
 
+CancelHistoricalDataClientMessage::CancelHistoricalDataClientMessage(const int reqId)
+    : _reqId(reqId) {
+    qDebug() << "REQUEST: CancelHistoricalDataClientMessage" << reqId;
+}
+
+QStringList CancelHistoricalDataClientMessage::fields() const {
+    return {QString::number(requests::CANCEL_HISTORICAL_DATA),
+            QString::number(requests::CANCEL_HISTORICAL_DATA_VERSION),
+            QString::number(_reqId)};
+}
+
 } // namespace twsqapi

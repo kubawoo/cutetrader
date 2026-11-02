@@ -147,5 +147,15 @@ private:
     QString _includeExpired;
 };
 
+class CancelHistoricalDataClientMessage : public ClientMessage
+{
+public:
+    CancelHistoricalDataClientMessage(const int reqId);
+protected:
+    QStringList fields() const override;
+private:
+    int _reqId;
+};
+
 }
 #endif

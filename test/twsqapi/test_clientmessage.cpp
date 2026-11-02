@@ -119,3 +119,16 @@ void ClientMessageTest::testRequestHistoricalDataClientMessage()
     QVERIFY(str.contains("1 M"));
     QVERIFY(str.contains("TRADES"));
 }
+
+void ClientMessageTest::testCancelHistoricalDataClientMessage()
+{
+    auto msg = twsqapi::CancelHistoricalDataClientMessage(42);
+    // Fields: msgId=25, version=1, reqId=42
+    // Joined: "25\0" + "1\0" + "42\0" = 8 bytes + size prefix (4 bytes) = 12 bytes
+    QCOMPARE(msg.encode(),
+             QByteArray("\x00\x00\x00\x08"
+                        "25\x00"
+                        "1\x00"
+                        "42\x00",
+                        12));
+}

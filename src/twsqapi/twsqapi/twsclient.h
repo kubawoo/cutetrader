@@ -48,6 +48,7 @@ public slots:
                                const QString & durationStr, const QString & barSizeSetting,
                                const QString & whatToShow, int useRTH, int formatDate,
                                int * reqId = nullptr) override;
+    void cancelHistoricalData(int reqId) override;
 
 
 
