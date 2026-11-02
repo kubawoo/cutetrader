@@ -882,3 +882,281 @@ void ServerMessageTest::testInvalidPortfolioValueServerMessage()
               ""};
     QVERIFY(!factory.create(fields));
 }
+
+void ServerMessageTest::testAccountUpdateTimeMessage()
+{
+    twsqapi::ServerMessageFactory factory;
+
+    // Valid input test case
+    QStringList fields = {
+        QString::number(twsqapi::responses::ACCT_UPDATE_TIME),
+        QString::number(twsqapi::responses::ACCT_UPDATE_TIME_VERSION),
+        "14:30"
+    };
+
+    twsqapi::ServerMessage *sm = factory.create(fields);
+    twsqapi::AccountUpdateTimeServerMessage *msg = dynamic_cast<twsqapi::AccountUpdateTimeServerMessage *>(sm);
+
+    QVERIFY(msg);
+    QCOMPARE(msg->time().hour(), 14);
+    QCOMPARE(msg->time().minute(), 30);
+
+    delete sm;
+}
+
+void ServerMessageTest::testInvalidAccountUpdateTimeMessage()
+{
+    twsqapi::ServerMessageFactory factory;
+
+    // Invalid version
+    QStringList fields = {
+        QString::number(twsqapi::responses::ACCT_UPDATE_TIME),
+        QString::number(twsqapi::responses::ACCT_UPDATE_TIME_VERSION - 1),
+        "14:30"
+    };
+    QVERIFY(!factory.create(fields));
+
+    // Missing time field
+    fields = {
+        QString::number(twsqapi::responses::ACCT_UPDATE_TIME),
+        QString::number(twsqapi::responses::ACCT_UPDATE_TIME_VERSION)
+    };
+    QVERIFY(!factory.create(fields));
+}
+
+void ServerMessageTest::testAccountDownloadEndMessage()
+{
+    twsqapi::ServerMessageFactory factory;
+
+    // Valid input test case
+    QStringList fields = {
+        QString::number(twsqapi::responses::ACCT_DOWNLOAD_END),
+        QString::number(twsqapi::responses::ACCT_DOWNLOAD_END_VERSION),
+        "U12345678"
+    };
+
+    twsqapi::ServerMessage *sm = factory.create(fields);
+    twsqapi::AccountDownloadEndServerMessage *msg = dynamic_cast<twsqapi::AccountDownloadEndServerMessage *>(sm);
+
+    QVERIFY(msg);
+    QCOMPARE(msg->account(), "U12345678");
+
+    delete sm;
+}
+
+void ServerMessageTest::testInvalidAccountDownloadEndMessage()
+{
+    twsqapi::ServerMessageFactory factory;
+
+    // Invalid version
+    QStringList fields = {
+        QString::number(twsqapi::responses::ACCT_DOWNLOAD_END),
+        QString::number(twsqapi::responses::ACCT_DOWNLOAD_END_VERSION - 1),
+        "U12345678"
+    };
+    QVERIFY(!factory.create(fields));
+
+    // Missing account field
+    fields = {
+        QString::number(twsqapi::responses::ACCT_DOWNLOAD_END),
+        QString::number(twsqapi::responses::ACCT_DOWNLOAD_END_VERSION)
+    };
+    QVERIFY(!factory.create(fields));
+}
+
+void ServerMessageTest::testHistoricalDataMessage()
+{
+    twsqapi::ServerMessageFactory factory;
+
+    // Valid input test case - 2 bars
+    QStringList fields = {
+        QString::number(twsqapi::responses::HISTORICAL_DATA),
+        QString::number(100),       // reqId
+        QString::number(2),         // itemCount
+
+        // Bar 1
+        "20230101 09:30:00",      // time
+        "100.00",                 // open
+        "101.00",                 // high
+        "99.00",                  // low
+        "100.50",                 // close
+        "1000",                   // volume
+        "100.25",                 // wap
+        "1",                      // barCount
+
+        // Bar 2
+        "20230101 09:31:00",      // time
+        "100.50",                 // open
+        "102.00",                 // high
+        "100.00",                 // low
+        "101.50",                 // close
+        "1500",                   // volume
+        "100.75",                 // wap
+        "2"                       // barCount
+    };
+
+    twsqapi::ServerMessage *sm = factory.create(fields);
+    twsqapi::HistoricalDataServerMessage *msg = dynamic_cast<twsqapi::HistoricalDataServerMessage *>(sm);
+
+    QVERIFY(msg);
+    QCOMPARE(msg->requestId(), 100);
+    QCOMPARE(msg->bars().size(), 2);
+
+    const QList<common::BarDTO> &bars = msg->bars();
+    QCOMPARE(bars[0].time, "20230101 09:30:00");
+    QCOMPARE(bars[0].open, 100.0);
+    QCOMPARE(bars[0].high, 101.0);
+    QCOMPARE(bars[0].low, 99.0);
+    QCOMPARE(bars[0].close, 100.5);
+    QCOMPARE(bars[0].volume, 1000.0);
+    QCOMPARE(bars[0].wap, 100.25);
+    QCOMPARE(bars[0].barCount, 1);
+
+    QCOMPARE(bars[1].time, "20230101 09:31:00");
+    QCOMPARE(bars[1].open, 100.5);
+    QCOMPARE(bars[1].high, 102.0);
+    QCOMPARE(bars[1].low, 100.0);
+    QCOMPARE(bars[1].close, 101.5);
+    QCOMPARE(bars[1].volume, 1500.0);
+    QCOMPARE(bars[1].wap, 100.75);
+    QCOMPARE(bars[1].barCount, 2);
+
+    delete sm;
+}
+
+void ServerMessageTest::testInvalidHistoricalDataMessage()
+{
+    twsqapi::ServerMessageFactory factory;
+
+    // Non-numeric reqId
+    QStringList fields = {
+        QString::number(twsqapi::responses::HISTORICAL_DATA),
+        "abc",                  // reqId
+        QString::number(1),     // itemCount
+        "20230101 09:30:00",    // time
+        "100.00",               // open
+        "101.00",               // high
+        "99.00",                // low
+        "100.50",               // close
+        "1000",                 // volume
+        "100.25",               // wap
+        "1"                     // barCount
+    };
+    QVERIFY(!factory.create(fields));
+
+    // Non-numeric itemCount
+    fields = {
+        QString::number(twsqapi::responses::HISTORICAL_DATA),
+        QString::number(100),   // reqId
+        "abc",                // itemCount
+    };
+    QVERIFY(!factory.create(fields));
+}
+
+void ServerMessageTest::testHistoricalDataEndMessage()
+{
+    twsqapi::ServerMessageFactory factory;
+
+    // Valid input test case
+    QStringList fields = {
+        QString::number(twsqapi::responses::HISTORICAL_DATA_END),
+        QString::number(100),     // reqId
+        "20230101",               // startDate
+        "20230131"                // endDate
+    };
+
+    twsqapi::ServerMessage *sm = factory.create(fields);
+    twsqapi::HistoricalDataEndServerMessage *msg = dynamic_cast<twsqapi::HistoricalDataEndServerMessage *>(sm);
+
+    QVERIFY(msg);
+    QCOMPARE(msg->requestId(), 100);
+    QCOMPARE(msg->startDate(), "20230101");
+    QCOMPARE(msg->endDate(), "20230131");
+
+    delete sm;
+}
+
+void ServerMessageTest::testInvalidHistoricalDataEndMessage()
+{
+    twsqapi::ServerMessageFactory factory;
+
+    // Non-numeric reqId
+    QStringList fields = {
+        QString::number(twsqapi::responses::HISTORICAL_DATA_END),
+        "abc",                  // reqId
+        "20230101",
+        "20230131"
+    };
+    QVERIFY(!factory.create(fields));
+
+    }
+
+void ServerMessageTest::testHistoricalDataUpdateMessage()
+{
+    twsqapi::ServerMessageFactory factory;
+
+    // Valid input test case
+    QStringList fields = {
+        QString::number(twsqapi::responses::HISTORICAL_DATA_UPDATE),
+        QString::number(100),     // reqId
+        QString::number(1),       // barCount
+        "20230101 09:30:00",      // time
+        "100.00",                 // open
+        "100.50",                 // close
+        "101.00",                 // high
+        "99.00",                  // low
+        "100.25",                 // wap
+        "1000"                    // volume
+    };
+
+    twsqapi::ServerMessage *sm = factory.create(fields);
+    twsqapi::HistoricalDataUpdateServerMessage *msg = dynamic_cast<twsqapi::HistoricalDataUpdateServerMessage *>(sm);
+
+    QVERIFY(msg);
+    QCOMPARE(msg->requestId(), 100);
+    QCOMPARE(msg->bar().barCount, 1);
+    QCOMPARE(msg->bar().time, "20230101 09:30:00");
+    QCOMPARE(msg->bar().open, 100.0);
+    QCOMPARE(msg->bar().close, 100.5);
+    QCOMPARE(msg->bar().high, 101.0);
+    QCOMPARE(msg->bar().low, 99.0);
+    QCOMPARE(msg->bar().wap, 100.25);
+    QCOMPARE(msg->bar().volume, 1000.0);
+
+    delete sm;
+}
+
+void ServerMessageTest::testInvalidHistoricalDataUpdateMessage()
+{
+    twsqapi::ServerMessageFactory factory;
+
+    // Non-numeric reqId
+    QStringList fields = {
+        QString::number(twsqapi::responses::HISTORICAL_DATA_UPDATE),
+        "abc",                  // reqId
+        QString::number(1),
+        "20230101 09:30:00",
+        "100.00",
+        "100.50",
+        "101.00",
+        "99.00",
+        "100.25",
+        "1000"
+    };
+    QVERIFY(!factory.create(fields));
+
+    // Non-numeric barCount
+    fields = {
+        QString::number(twsqapi::responses::HISTORICAL_DATA_UPDATE),
+        QString::number(100),
+        "abc",                  // barCount
+        "20230101 09:30:00",
+        "100.00",
+        "100.50",
+        "101.00",
+        "99.00",
+        "100.25",
+        "1000"
+    };
+    QVERIFY(!factory.create(fields));
+}

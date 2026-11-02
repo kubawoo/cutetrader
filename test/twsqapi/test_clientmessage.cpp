@@ -76,6 +76,46 @@ void ClientMessageTest::testRequestContractDetailsClientMessage()
                         "0\x00"
                         "\x00"
                         "\x00"
+                        "\x00"
                         "\x00",
                         37));
+}
+
+void ClientMessageTest::testRequestHistoricalDataClientMessage()
+{
+    // Test with server version 198 (>= 124)
+    auto msg = twsqapi::RequestHistoricalDataClientMessage(3, 265598,
+                                                           "",          // endDateTime
+                                                           "1 day",    // barSizeSetting
+                                                           "1 M",      // durationStr
+                                                           "TRADES",   // whatToShow
+                                                           1,          // useRTH
+                                                           2,          // formatDate
+                                                           198,        // serverVersion
+                                                           "AAPL",     // symbol
+                                                           "STK",      // secType
+                                                           "",         // lastTradeDateOrContractMonth
+                                                           "",         // strike
+                                                           "",         // right
+                                                           "",         // multiplier
+                                                           "SMART",    // exchange
+                                                           "NASDAQ",   // primaryExchange
+                                                           "USD",      // currency
+                                                           "",         // localSymbol
+                                                           "",         // tradingClass
+                                                           "0");       // includeExpired
+    QByteArray encoded = msg.encode();
+    QVERIFY(!encoded.isEmpty());
+    // Verify it contains the key fields
+    QString str(encoded);
+    QVERIFY(str.contains("20")); // msgId
+    QVERIFY(str.contains("265598")); // contractId
+    QVERIFY(str.contains("AAPL"));
+    QVERIFY(str.contains("STK"));
+    QVERIFY(str.contains("SMART"));
+    QVERIFY(str.contains("NASDAQ"));
+    QVERIFY(str.contains("USD"));
+    QVERIFY(str.contains("1 day"));
+    QVERIFY(str.contains("1 M"));
+    QVERIFY(str.contains("TRADES"));
 }
