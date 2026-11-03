@@ -19,7 +19,7 @@ jobs:
       - name: Install Qt6 and dependencies
         uses: jurplel/install-qt-action@v4
         with:
-          version: "6.8.3"
+          version: "6.11.2"
           cached: true
           host: "linux"
           target: "desktop"
