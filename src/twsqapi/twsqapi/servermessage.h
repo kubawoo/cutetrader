@@ -188,6 +188,25 @@ private:
     common::BarDTO _bar;
 };
 
+class OpenOrderServerMessage : public ServerMessage
+{
+public:
+    OpenOrderServerMessage(const QStringList & fields);
+    int requestId() { return _reqId; }
+    const QList<common::OrderDTO> & orders() { return _orders; }
+private:
+    int _reqId;
+    QList<common::OrderDTO> _orders;
+};
+
+class OpenOrderEndServerMessage : public ServerMessage
+{
+public:
+    OpenOrderEndServerMessage(const QStringList & fields);
+    int requestId() { return _reqId; }
+private:
+    int _reqId;
+};
 
 }
 

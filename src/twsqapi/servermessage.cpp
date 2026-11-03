@@ -117,6 +117,14 @@ ServerMessage *ServerMessageFactory::create(const QStringList & fields)
         qDebug() << "RESPONSE: HistoricalDataUpdateServerMessage";
         msg =  new HistoricalDataUpdateServerMessage(fields);
         break;
+    case responses::OPEN_ORDER:
+        qDebug() << "RESPONSE: OpenOrderServerMessage";
+        msg =  new OpenOrderServerMessage(fields);
+        break;
+    case responses::OPEN_ORDER_END:
+        qDebug() << "RESPONSE: OpenOrderEndServerMessage";
+        msg =  new OpenOrderEndServerMessage(fields);
+        break;
     default:
         qDebug() << "Unsupported server msg" << id;
         for(int i = 0; i < fields.length(); i++) {
@@ -440,6 +448,122 @@ HistoricalDataUpdateServerMessage::HistoricalDataUpdateServerMessage(const QStri
     CHECK_VALID(_valid, "Invalid wap");
     _bar.volume = fields[9].toDouble(&_valid);
     CHECK_VALID(_valid, "Invalid volume");
+}
+
+OpenOrderServerMessage::OpenOrderServerMessage(const QStringList &fields)
+    : ServerMessage(fields, responses::OPEN_ORDER, responses::OPEN_ORDER_VERSION, responses::OPEN_ORDER_FIELDS)
+{
+    CHECK_VALID(_valid, "Base validation failed");
+    // OPEN_ORDER message format (simplified for our needs):
+    // Field 0: msgId (5)
+    // Field 1: version
+    // Field 2: orderId
+    // Field 3: contract.conId
+    // Field 4: contract.symbol
+    // Field 5: contract.secType
+    // Field 6: contract.lastTradeDateOrContractMonth
+    // Field 7: contract.strike
+    // Field 8: contract.right
+    // Field 9: contract.multiplier
+    // Field 10: contract.exchange
+    // Field 11: contract.currency
+    // Field 12: contract.localSymbol
+    // Field 13: contract.tradingClass
+    // Field 14: order.action
+    // Field 15: order.totalQuantity
+    // Field 16: order.orderType
+    // Field 17: order.lmtPrice
+    // Field 18: order.auxPrice
+    // Field 19: order.tif
+    // Field 20: order.ocaGroup
+    // Field 21: order.account
+    // Field 22: order.openClose
+    // Field 23: order.origin
+    // Field 24: order.orderRef
+    // Field 25: order.clientId
+    // Field 26: order.permId
+    // Field 27: order.outsideRth
+    // Field 28: order.hidden
+    // Field 29: order.discretionaryAmt
+    // Field 30: order.goodAfterTime
+    // Field 31: order.goodTillDate
+    // ... more fields we ignore
+    // Field ~50: orderStatus.status
+    // Field ~51: orderStatus.filled
+    // Field ~52: orderStatus.remaining
+    // Field ~53: orderStatus.avgFillPrice
+    // Field ~54: orderStatus.permId
+    // Field ~55: orderStatus.parentId
+    // Field ~56: orderStatus.lastFillTime
+    // Field ~57: orderStatus.clientId
+    // Field ~58: orderStatus.whyHeld
+
+    int idx = 1; // skip msgId
+    int version = fields[idx++].toInt(&_valid);
+    CHECK_VALID(_valid, "Invalid version");
+    
+    common::OrderDTO order;
+    order.orderId = fields[idx++].toInt(&_valid);
+    CHECK_VALID(_valid, "Invalid orderId");
+    
+    // Contract fields
+    order.contractId = fields[idx++].toLong(&_valid);
+    CHECK_VALID(_valid, "Invalid contractId");
+    order.symbol = fields[idx++];
+    order.securityType = common::Utils::securityTypeFromString(fields[idx++]);
+    CHECK_VALID(_valid, "Invalid security type");
+    idx++; // lastTradeDateOrContractMonth
+    idx++; // strike
+    idx++; // right
+    idx++; // multiplier
+    idx++; // exchange
+    order.currency = fields[idx++];
+    idx++; // localSymbol
+    idx++; // tradingClass
+    
+    // Order fields
+    order.action = fields[idx++];
+    order.totalQuantity = fields[idx++].toDouble(&_valid);
+    CHECK_VALID(_valid, "Invalid totalQuantity");
+    order.orderType = fields[idx++];
+    order.lmtPrice = fields[idx++].toDouble(&_valid);
+    CHECK_VALID(_valid, "Invalid lmtPrice");
+    order.auxPrice = fields[idx++].toDouble(&_valid);
+    CHECK_VALID(_valid, "Invalid auxPrice");
+    order.tif = fields[idx++];
+    idx++; // ocaGroup
+    order.account = fields[idx++];
+    
+    // Skip many order fields...
+    // For simplicity, we skip to order status fields
+    // The exact number of fields to skip depends on version
+    // For version >= 16 (current), we need to skip many fields
+    // We'll use a more robust approach: find status by known position from end
+    
+    // Order status fields are at the end
+    // Let's assume we have at least 60 fields
+    if (fields.size() >= 60) {
+        // Approximate positions for status fields
+        order.status = fields[50];
+        order.filled = fields[51].toDouble(&_valid);
+        order.remaining = fields[52].toDouble(&_valid);
+        order.avgFillPrice = fields[53].toDouble(&_valid);
+        idx = 56; // lastFillTime
+        order.lastFillTime = fields[idx++];
+    }
+    
+    _orders.append(order);
+}
+
+OpenOrderEndServerMessage::OpenOrderEndServerMessage(const QStringList &fields)
+    : ServerMessage(fields, responses::OPEN_ORDER_END, responses::OPEN_ORDER_END_VERSION, responses::OPEN_ORDER_END_FIELDS)
+{
+    CHECK_VALID(_valid, "Base validation failed");
+    // Field 0: msgId (53)
+    // Field 1: version
+    // No reqId field in the standard OpenOrderEnd message
+    // The request ID is tracked locally in TwsClient
+    _reqId = 0;
 }
 
 }

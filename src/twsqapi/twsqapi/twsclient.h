@@ -85,6 +85,8 @@ private:
     void _handleHistoricalData(HistoricalDataServerMessage *msg);
     void _handleHistoricalDataUpdate(HistoricalDataUpdateServerMessage *msg);
     void _handleHistoricalDataEnd(HistoricalDataEndServerMessage *msg);
+    void _handleOpenOrder(OpenOrderServerMessage *msg);
+    void _handleOpenOrderEnd(OpenOrderEndServerMessage *msg);
 
     void _sendHistoricalDataRequest(const PendingHistoricalDataRequest &pending,
                                      const common::ContractDetailsDTO &contractDetails);
@@ -97,6 +99,8 @@ private:
     Cache _cache;
     unsigned int _requestId;
     QMap<long, QList<PendingHistoricalDataRequest>> _pendingHistoricalDataRequests;
+    QList<common::OrderDTO> _pendingOpenOrders;
+    int _openOrdersReqId = 0;
 };
 
 }
