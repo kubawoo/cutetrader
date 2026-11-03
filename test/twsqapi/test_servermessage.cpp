@@ -1,6 +1,7 @@
 #include "test_servermessage.h"
 #include <twsqapi/servermessage.h>
 #include <twsqapi/constants.h>
+#include <QTimeZone>
 
 void ServerMessageTest::testServerMessageFactory()
 {
@@ -108,7 +109,7 @@ void ServerMessageTest::testErrorMessage()
     twsqapi::ServerMessage *sm = factory.create(fields);
     twsqapi::ErrorServerMessage *msg = dynamic_cast<twsqapi::ErrorServerMessage *>(sm);
     QVERIFY(msg);
-    QDateTime expected(QDate(2025, 9, 28), QTime(19, 2, 27));
+    QDateTime expected(QDate(2025, 9, 28), QTime(17, 2, 27), QTimeZone::UTC);
     QCOMPARE(msg->errorTime(), expected);
     QCOMPARE(msg->errorCode(), 2104);
     QCOMPARE(msg->errorId(), -1);
@@ -201,7 +202,7 @@ void ServerMessageTest::testCurrentTimeMessage()
     twsqapi::CurrentTimeServerMessage *msg = dynamic_cast<twsqapi::CurrentTimeServerMessage*>(sm);
     QVERIFY(msg);
     QVERIFY(msg->dateTime().isValid());
-    QDateTime expected(QDate(2025, 9, 28), QTime(19, 2, 27));
+    QDateTime expected(QDate(2025, 9, 28), QTime(17, 2, 27), QTimeZone::UTC);
     QCOMPARE(msg->dateTime(), expected);
     delete sm;
 }

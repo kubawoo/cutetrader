@@ -2,6 +2,7 @@
 #include "twsqapi/constants.h"
 
 #include <QDebug>
+#include <QTimeZone>
 #include "common/utils.h"
 
 #define CHECK_VALID(x, msg) \
@@ -176,7 +177,7 @@ ErrorServerMessage::ErrorServerMessage(const QStringList &fields)
     long timestamp = fields[5].toLong(&_valid);
     CHECK_VALID(_valid, "Invalid error timestamp");
 
-    _errorTime = QDateTime::fromSecsSinceEpoch(timestamp);
+    _errorTime = QDateTime::fromSecsSinceEpoch(timestamp, QTimeZone::UTC);
 }
 
 
@@ -212,7 +213,7 @@ CurrentTimeServerMessage::CurrentTimeServerMessage(const QStringList &fields)
     long timestamp = fields[2].toLong(&_valid);
     CHECK_VALID(_valid, "Invalid current time timestamp");
 
-    _dateTime = QDateTime::fromSecsSinceEpoch(timestamp);
+    _dateTime = QDateTime::fromSecsSinceEpoch(timestamp, QTimeZone::UTC);
 }
 
 SymbolSamplesServerMessage::SymbolSamplesServerMessage(const QStringList &fields)
