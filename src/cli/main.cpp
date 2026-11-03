@@ -79,9 +79,6 @@ int main(int argc, char *argv[])
     app.setApplicationVersion(QString(__DATE__) + " " + QString(__TIME__));
     QThread::currentThread()->setObjectName("MainThread");
 
-    // Build time info
-    qDebug() << "Build time:" << QString(__DATE__) << QString(__TIME__);
-
     QCommandLineParser parser;
     parseCommandLine(parser, app);
 
