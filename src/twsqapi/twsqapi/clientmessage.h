@@ -98,5 +98,64 @@ private:
     long _contractId;
 };
 
+class RequestHistoricalDataClientMessage : public ClientMessage
+{
+public:
+    RequestHistoricalDataClientMessage(const int reqId, const long contractId,
+                                       const QString & endDateTime,
+                                       const QString & barSizeSetting,
+                                       const QString & durationStr,
+                                       const QString & whatToShow,
+                                       int useRTH,
+                                       int formatDate,
+                                       int serverVersion,
+                                       const QString & symbol = QString(),
+                                       const QString & secType = QString(),
+                                       const QString & lastTradeDateOrContractMonth = QString(),
+                                       const QString & strike = QString(),
+                                       const QString & right = QString(),
+                                       const QString & multiplier = QString(),
+                                       const QString & exchange = QString(),
+                                       const QString & primaryExchange = QString(),
+                                       const QString & currency = QString(),
+                                       const QString & localSymbol = QString(),
+                                       const QString & tradingClass = QString(),
+                                       const QString & includeExpired = QString());
+protected:
+    QStringList fields() const override;
+private:
+    int _reqId;
+    long _contractId;
+    QString _endDateTime;
+    QString _barSizeSetting;
+    QString _durationStr;
+    QString _whatToShow;
+    int _useRTH;
+    int _formatDate;
+    int _serverVersion;
+    QString _symbol;
+    QString _secType;
+    QString _lastTradeDateOrContractMonth;
+    QString _strike;
+    QString _right;
+    QString _multiplier;
+    QString _exchange;
+    QString _primaryExchange;
+    QString _currency;
+    QString _localSymbol;
+    QString _tradingClass;
+    QString _includeExpired;
+};
+
+class CancelHistoricalDataClientMessage : public ClientMessage
+{
+public:
+    CancelHistoricalDataClientMessage(const int reqId);
+protected:
+    QStringList fields() const override;
+private:
+    int _reqId;
+};
+
 }
 #endif

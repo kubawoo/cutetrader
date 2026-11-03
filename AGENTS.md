@@ -6,12 +6,16 @@ Qt6/C++23 CLI trading application for Interactive Brokers TWS API.
 
 ```sh
 cmake -B build -DCMAKE_BUILD_TYPE=Debug
-cmake --build build
+cmake --build build -j4
 
 ./build/src/cli/cutetrader-cli [--mocked] [--database <file>] [--host localhost] [--port 4002] [--client-id 1] [--account-id <id>] [--debug]
 ```
 
 Pass `--mocked` to avoid connecting to TWS (uses `mocked::MockAppFactory`).
+
+## Agent constraints
+
+- **Do not access anything outside the project directory** (`$PWD`) — no reading/writing files, running commands, or accessing resources outside this path.
 
 ## Tests
 

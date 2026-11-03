@@ -127,4 +127,56 @@ private:
     data::DataManager &_dataManager;
 };
 
+class SearchSymbolsCliCommand : public CliCommand
+{
+    Q_OBJECT
+public:
+    explicit SearchSymbolsCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent = nullptr);
+    QString description() override { return "Search for symbols matching a pattern"; }
+    QStringList parametersDescription() { return {"<pattern>"}; }
+public slots:
+    void execute(const QStringList &params) override;
+private slots:
+    void onMatchingSymbolsReady(const int &requestId, const QList<common::ContractDetailsDTO> &details);
+
+private:
+    QSharedPointer<common::ITwsClient> _client;
+    int _reqId = 0;
+    bool _waiting = false;
+};
+
+class HistoricalDataCliCommand : public CliCommand
+{
+    Q_OBJECT
+public:
+    explicit HistoricalDataCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent = nullptr);
+    QString description() override { return "Request historical data for a symbol or contractId"; }
+    QStringList parametersDescription() { return {"<symbol|contractId> [endDateTime] [durationStr] [barSizeSetting] [whatToShow] [useRTH] [formatDate]"}; }
+public slots:
+    void execute(const QStringList &params) override;
+private slots:
+    void onHistoricalDataReady(const int &requestId, const QList<common::BarDTO> &bars,
+                               const QString &description);
+
+private:
+    QSharedPointer<common::ITwsClient> _client;
+    int _reqId = 0;
+    bool _waiting = false;
+    QString _symbol;
+};
+
+class CancelHistoricalDataCliCommand : public CliCommand
+{
+    Q_OBJECT
+public:
+    explicit CancelHistoricalDataCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent = nullptr);
+    QString description() override { return "Cancel a historical data request by request ID"; }
+    QStringList parametersDescription() { return {"<reqId>"}; }
+public slots:
+    void execute(const QStringList &params) override;
+
+private:
+    QSharedPointer<common::ITwsClient> _client;
+};
+
 #endif // CLICOMMAND_H

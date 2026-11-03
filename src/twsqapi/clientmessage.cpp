@@ -126,4 +126,99 @@ QStringList RequestContractDetailsClientMessage::fields() const {
     };
 }
 
+RequestHistoricalDataClientMessage::RequestHistoricalDataClientMessage(
+    const int reqId, const long contractId,
+    const QString & endDateTime,
+    const QString & barSizeSetting,
+    const QString & durationStr,
+    const QString & whatToShow,
+    int useRTH,
+    int formatDate,
+    int serverVersion,
+    const QString & symbol,
+    const QString & secType,
+    const QString & lastTradeDateOrContractMonth,
+    const QString & strike,
+    const QString & right,
+    const QString & multiplier,
+    const QString & exchange,
+    const QString & primaryExchange,
+    const QString & currency,
+    const QString & localSymbol,
+    const QString & tradingClass,
+    const QString & includeExpired)
+    : _reqId(reqId), _contractId(contractId),
+      _endDateTime(endDateTime), _barSizeSetting(barSizeSetting),
+      _durationStr(durationStr), _whatToShow(whatToShow),
+      _useRTH(useRTH), _formatDate(formatDate),
+      _serverVersion(serverVersion),
+      _symbol(symbol), _secType(secType),
+      _lastTradeDateOrContractMonth(lastTradeDateOrContractMonth),
+      _strike(strike), _right(right), _multiplier(multiplier),
+      _exchange(exchange), _primaryExchange(primaryExchange),
+      _currency(currency), _localSymbol(localSymbol),
+      _tradingClass(tradingClass), _includeExpired(includeExpired) {}
+
+QStringList RequestHistoricalDataClientMessage::fields() const {
+    QStringList result;
+    result << QString::number(requests::REQ_HISTORICAL_DATA);
+
+    // VERSION field is only sent for server versions < MIN_SERVER_VER_SYNT_REALTIME_BARS (124)
+    constexpr int MIN_SERVER_VER_SYNT_REALTIME_BARS = 124;
+    if (_serverVersion < MIN_SERVER_VER_SYNT_REALTIME_BARS) {
+        result << QString::number(requests::REQ_HISTORICAL_DATA_VERSION);
+    }
+
+    result << QString::number(_reqId);
+
+    // Contract fields
+    // conId is sent for server versions >= MIN_SERVER_VER_TRADING_CLASS (68)
+    constexpr int MIN_SERVER_VER_TRADING_CLASS = 68;
+    if (_serverVersion >= MIN_SERVER_VER_TRADING_CLASS) {
+        result << QString::number(_contractId);
+    }
+    result << _symbol;
+    result << _secType;
+    result << _lastTradeDateOrContractMonth;
+    result << (_strike.isEmpty() ? "0" : _strike);
+    result << _right;
+    result << _multiplier;
+    result << (_exchange.isEmpty() ? "SMART" : _exchange);
+    result << _primaryExchange;
+    result << _currency;
+    result << _localSymbol;
+    if (_serverVersion >= MIN_SERVER_VER_TRADING_CLASS) {
+        result << _tradingClass;
+    }
+    // includeExpired is sent for server versions >= 31
+    result << (_includeExpired.isEmpty() ? "0" : _includeExpired);
+
+    // Historical data fields
+    // endDateTime and barSizeSetting are sent for server versions >= 20
+    result << _endDateTime;
+    result << _barSizeSetting;
+    result << _durationStr;
+    result << QString::number(_useRTH);
+    result << _whatToShow;
+    // formatDate is sent for server versions >= 16
+    result << QString::number(_formatDate);
+
+    // Version 6+ fields
+    result << "0"; // keepUpToDate
+    result << "";  // chartOptions
+
+    return result;
+}
+
+CancelHistoricalDataClientMessage::CancelHistoricalDataClientMessage(const int reqId)
+    : _reqId(reqId) {
+    qDebug() << "REQUEST: CancelHistoricalDataClientMessage" << reqId;
+}
+
+QStringList CancelHistoricalDataClientMessage::fields() const {
+    return {QString::number(requests::CANCEL_HISTORICAL_DATA),
+            QString::number(requests::CANCEL_HISTORICAL_DATA_VERSION),
+            QString::number(_reqId)};
+}
+
 } // namespace twsqapi

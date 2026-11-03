@@ -21,12 +21,19 @@ public slots:
     void requestOpenOrders() override;
     void requestContractDetails(long contractId, int * reqId = nullptr) override;
     void requestMatchingSymbols(const QString & pattern, int * reqId = nullptr) override;
+    void requestHistoricalData(long contractId, const QString & endDateTime,
+                               const QString & durationStr, const QString & barSizeSetting,
+                               const QString & whatToShow, int useRTH, int formatDate,
+                               int * reqId = nullptr) override;
+    void requestHistoricalData(const QString & symbol, const QString & endDateTime,
+                               const QString & durationStr, const QString & barSizeSetting,
+                               const QString & whatToShow, int useRTH, int formatDate,
+                               int * reqId = nullptr) override;
+    void cancelHistoricalData(int reqId) override;
 
 public:
     bool connect(const QString& host, int port, int clientId = 0) override;
     bool isConnected() override;
-//    int requestHistoricalData(const Contract &contract, const QString &endDateTime,
-//                               const QString &durationString, const QString &barSizeSetting);
 
 private:
     void _timerTask();

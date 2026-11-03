@@ -105,6 +105,9 @@ void CliCommandManager::setupCommands()
     _commands["help"] = new HelpCommand(this);
     _commands["time"] = new ServerTimeCliCommand(_client, this);
     _commands["watchlist"] = new WatchlistCliCommand(_dataManager, this);
+    _commands["search"] = new SearchSymbolsCliCommand(_client, this);
+    _commands["historical"] = new HistoricalDataCliCommand(_client, this);
+    _commands["cancel-historical"] = new CancelHistoricalDataCliCommand(_client, this);
 
     for (auto c : _commands.values()) {
         connect(c, &CliCommand::finished, this, &CliCommandManager::commandResult);
@@ -227,4 +230,133 @@ void WatchlistCliCommand::execute(const QStringList &params)
         QString s = "Usage:\n\twatchlist [action] [options]\n\nAvailable actions:\n\tshow - displays the watchlist";
         emit finished(s);
     }
+}
+
+SearchSymbolsCliCommand::SearchSymbolsCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent)
+    : CliCommand{parent}
+    , _client{client}
+{
+    QObject::connect(_client.data(), &common::ITwsClient::matchingSymbolsReadySignal,
+                     this, &SearchSymbolsCliCommand::onMatchingSymbolsReady);
+}
+
+void SearchSymbolsCliCommand::execute(const QStringList &params)
+{
+    if (params.empty()) {
+        emit finished("Usage: search <symbol pattern>");
+        return;
+    }
+    if (_waiting) {
+        emit finished("Already waiting for search results. Please wait.");
+        return;
+    }
+    _waiting = true;
+    _client->requestMatchingSymbols(params[0], &_reqId);
+}
+
+void SearchSymbolsCliCommand::onMatchingSymbolsReady(const int &requestId, const QList<common::ContractDetailsDTO> &details)
+{
+    if (!_waiting || requestId != _reqId)
+        return;
+    _waiting = false;
+
+    QString s;
+    if (details.isEmpty()) {
+        s = "No symbols found";
+    } else {
+        s += "Contract ID\tSymbol\tDescription\tCurrency\n";
+        s += "----------------------------------------\n";
+        for (auto const &d : details) {
+            s += QString::number(d.contractId) + "\t" + d.symbol + "\t" + d.description + "\t" + d.currency + "\n";
+        }
+    }
+    emit finished(s);
+}
+
+HistoricalDataCliCommand::HistoricalDataCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent)
+    : CliCommand{parent}
+    , _client(client)
+{
+    QObject::connect(_client.data(), &common::ITwsClient::historicalDataReadySignal,
+                     this, &HistoricalDataCliCommand::onHistoricalDataReady);
+}
+
+void HistoricalDataCliCommand::execute(const QStringList &params)
+{
+    if (params.isEmpty()) {
+        emit finished("Usage: historical <symbol|contractId> [endDateTime] [durationStr] [barSizeSetting] [whatToShow] [useRTH] [formatDate]");
+        return;
+    }
+    if (_waiting) {
+        emit finished("Already waiting for historical data. Please wait.");
+        return;
+    }
+    _waiting = true;
+    _symbol = params[0];
+    QString endDateTime = params.size() > 1 ? params[1] : QString();
+    QString durationStr = params.size() > 2 ? params[2] : QString("1 M");
+    QString barSizeSetting = params.size() > 3 ? params[3] : QString("1 day");
+    QString whatToShow = params.size() > 4 ? params[4] : QString("TRADES");
+    int useRTH = params.size() > 5 ? params[5].toInt() : 1;
+    int formatDate = params.size() > 6 ? params[6].toInt() : 2;
+
+    // Check if params[0] is a numeric contractId or a symbol
+    bool ok = false;
+    long contractId = params[0].toLong(&ok);
+    if (ok) {
+        _client->requestHistoricalData(contractId, endDateTime, durationStr, barSizeSetting,
+                                       whatToShow, useRTH, formatDate, &_reqId);
+    } else {
+        _client->requestHistoricalData(params[0], endDateTime, durationStr, barSizeSetting,
+                                       whatToShow, useRTH, formatDate, &_reqId);
+    }
+    emit finished("Requested historical data (reqId: " + QString::number(_reqId) + ")");
+}
+
+void HistoricalDataCliCommand::onHistoricalDataReady(const int &requestId, const QList<common::BarDTO> &bars,
+                                                     const QString &description)
+{
+    if (!_waiting || requestId != _reqId)
+        return;
+    _waiting = false;
+
+    QString s;
+    if (bars.isEmpty()) {
+        s = "No historical data";
+    } else {
+        if (!description.isEmpty()) {
+            s += "Company: " + description + "\n\n";
+        }
+        s += "Symbol: " + _symbol + "\n\n";
+        s += "Time\tOpen\tHigh\tLow\tClose\tVolume\tWAP\tCount\tAverage\n";
+        s += "------------------------------------------------------------\n";
+        for (auto const &b : bars) {
+            s += b.time + "\t" + QString::number(b.open) + "\t" + QString::number(b.high) + "\t"
+                 + QString::number(b.low) + "\t" + QString::number(b.close) + "\t"
+                 + QString::number(b.volume) + "\t" + QString::number(b.wap) + "\t"
+                 + QString::number(b.barCount) + "\t" + QString::number(b.average) + "\n";
+        }
+    }
+    emit finished(s);
+}
+
+CancelHistoricalDataCliCommand::CancelHistoricalDataCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent)
+    : CliCommand{parent}
+    , _client(client)
+{}
+
+void CancelHistoricalDataCliCommand::execute(const QStringList &params)
+{
+    if (params.isEmpty()) {
+        emit finished("Usage: cancel-historical <reqId>");
+        return;
+    }
+    bool ok = false;
+    int reqId = params[0].toInt(&ok);
+    if (!ok) {
+        emit finished("Invalid request ID: " + params[0]);
+        return;
+    }
+    _client->cancelHistoricalData(reqId);
+    emit finished("Cancelled historical data request " + QString::number(reqId));
 }

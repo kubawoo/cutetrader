@@ -14,6 +14,8 @@ private slots:
     void testRequestCurrentTimeClientMessage();
     void testRequestMatchingSymbolsClientMessage();
     void testRequestContractDetailsClientMessage();
+    void testRequestHistoricalDataClientMessage();
+    void testCancelHistoricalDataClientMessage();
 };
 
 
