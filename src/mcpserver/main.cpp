@@ -349,6 +349,10 @@ int main(int argc, char *argv[])
     QCommandLineOption mockedOption("mocked", "Use mocked TWS client (no real TWS connection needed)");
     parser.addOption(mockedOption);
 
+    QCommandLineOption debugOption(QStringList() << "d" << "debug",
+                                   "Enable debug logging");
+    parser.addOption(debugOption);
+
     parser.process(app);
 
     const QString backend = parser.value(backendOption);
@@ -357,12 +361,35 @@ int main(int argc, char *argv[])
     const int port = parser.value(portOption).toInt();
     const int clientId = parser.value(clientIdOption).toInt();
     const bool useMocked = parser.isSet(mockedOption);
+    const bool debug = parser.isSet(debugOption);
+
+    // Set up debug logging
+    if (!debug) {
+        qInstallMessageHandler([](QtMsgType type, const QMessageLogContext &, const QString &msg) {
+            if (type == QtDebugMsg) return; // Suppress qDebug()
+            // Allow warnings, critical, fatal
+            fprintf(stderr, "%s\n", qPrintable(msg));
+        });
+    }
+
+    // Display startup info
+    qInfo() << "=== cutetrader-mcpserver starting ===";
+    qInfo() << "Backend:" << backend;
+    if (backend == "sse" || backend == "streamablehttp") {
+        qInfo() << "Listen address:" << address;
+    }
+    if (!useMocked) {
+        qInfo() << "TWS host:" << host << "port:" << port << "client ID:" << clientId;
+    } else {
+        qInfo() << "Mode: mocked (no real TWS connection)";
+    }
+    qInfo() << "==========================================";
+    qInfo() << "Press Ctrl-C to quit...";
 
     // Create TWS client (real or mocked)
     common::ITwsClient *twsClient = nullptr;
     if (useMocked) {
         twsClient = new mocked::TwsClientMock(&app);
-        qDebug() << "Using mocked TWS client";
     } else {
         twsClient = new twsqapi::TwsClient(&app);
     }
