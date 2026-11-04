@@ -44,6 +44,7 @@ add_subdirectory(src/data)
 add_subdirectory(src/mocked)
 add_subdirectory(src/quant)
 add_subdirectory(src/twsqapi)
+add_subdirectory(src/mcpserver)
 
 add_subdirectory(test/testrunner)
 
