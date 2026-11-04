@@ -157,5 +157,13 @@ private:
     int _reqId;
 };
 
+class RequestOpenOrdersClientMessage : public ClientMessage
+{
+public:
+    RequestOpenOrdersClientMessage();
+protected:
+    QStringList fields() const override;
+};
+
 }
 #endif

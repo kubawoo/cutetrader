@@ -3,6 +3,7 @@
 
 using common::SecurityType;
 using common::ContractDetailsDTO;
+using common::OrderDTO;
 
 namespace mocked {
 
@@ -22,6 +23,15 @@ TwsClientMock::TwsClientMock(QObject *parent)
         {4, {4, "EWZ", "USD", "Ishares Msci Brazil ETF", "ARCA", "", SecurityType::STOCK, {SecurityType::OPTION}}},
         {5, {5, "TSLA", "USD", "Tesla Inc.", "NYSE", "", SecurityType::STOCK, {SecurityType::OPTION}}},
         {6, {6, "AAPL", "USD", "Apple Inc.", "NYSE", "", SecurityType::STOCK, {SecurityType::OPTION}}}
+    };
+
+    // Sample open orders
+    _sampleOrders = {
+        {1001, 1, "SPY", SecurityType::STOCK, "USD", "BUY", 100, "LMT", 450.00, 0.0, "DAY", "Submitted", 0, 100, 0.0, "", "mocked1"},
+        {1002, 2, "TLT", SecurityType::STOCK, "USD", "SELL", 50, "MKT", 0.0, 0.0, "DAY", "PreSubmitted", 0, 50, 0.0, "", "mocked1"},
+        {1003, 5, "TSLA", SecurityType::STOCK, "USD", "BUY", 10, "LMT", 250.00, 0.0, "GTC", "PendingSubmit", 0, 10, 0.0, "", "mocked1"},
+        {1004, 6, "AAPL", SecurityType::STOCK, "USD", "SELL", 25, "STP", 0.0, 175.00, "DAY", "Submitted", 0, 25, 0.0, "", "mocked1"},
+        {1005, 3, "IWM", SecurityType::STOCK, "USD", "BUY", 75, "LMT", 200.50, 0.0, "DAY", "Filled", 75, 0, 200.50, QDateTime::currentDateTime().toString("yyyyMMdd HH:mm:ss"), "mocked1"}
     };
 }
 
@@ -54,7 +64,8 @@ void TwsClientMock::startClient(const QString &accountId)
 
 void TwsClientMock::requestOpenOrders()
 {
-
+    int reqId = _requestId++;
+    emit openOrderSignal(reqId, _sampleOrders);
 }
 
 bool TwsClientMock::connect(const QString &host, int port, int clientId)

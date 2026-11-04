@@ -108,6 +108,7 @@ void CliCommandManager::setupCommands()
     _commands["search"] = new SearchSymbolsCliCommand(_client, this);
     _commands["historical"] = new HistoricalDataCliCommand(_client, this);
     _commands["cancel-historical"] = new CancelHistoricalDataCliCommand(_client, this);
+    _commands["orders"] = new OrderListCliCommand(_client, this);
 
     for (auto c : _commands.values()) {
         connect(c, &CliCommand::finished, this, &CliCommandManager::commandResult);
@@ -359,4 +360,42 @@ void CancelHistoricalDataCliCommand::execute(const QStringList &params)
     }
     _client->cancelHistoricalData(reqId);
     emit finished("Cancelled historical data request " + QString::number(reqId));
+}
+
+OrderListCliCommand::OrderListCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent)
+    : CliCommand{parent}
+    , _client(client)
+{
+    QObject::connect(_client.data(), &common::ITwsClient::openOrderSignal,
+                     this, &OrderListCliCommand::onOpenOrdersReady);
+}
+
+void OrderListCliCommand::execute(const QStringList &params)
+{
+    Q_UNUSED(params);
+    if (_waiting) {
+        emit finished("Already waiting for orders. Please wait.");
+        return;
+    }
+    _waiting = true;
+    _client->requestOpenOrders();
+}
+
+void OrderListCliCommand::onOpenOrdersReady(const int &requestId, const QList<common::OrderDTO> &orders)
+{
+    if (!_waiting)
+        return;
+    _waiting = false;
+
+    QString s;
+    if (orders.isEmpty()) {
+        s = "No open orders";
+    } else {
+        s += "OrderId\tContractId\tSymbol\tAction\tQty\tType\tLmtPrice\tAuxPrice\tTIF\tStatus\tFilled\tRemaining\tAvgFillPrice\tLastFillTime\tAccount\n";
+        s += "----------------------------------------------------------------------------------------------------\n";
+        for (auto const &o : orders) {
+            s += QString::number(o.orderId) + "\t" + QString::number(o.contractId) + "\t" + o.symbol + "\t" + o.action + "\t" + QString::number(o.totalQuantity) + "\t" + o.orderType + "\t" + QString::number(o.lmtPrice) + "\t" + QString::number(o.auxPrice) + "\t" + o.tif + "\t" + o.status + "\t" + QString::number(o.filled) + "\t" + QString::number(o.remaining) + "\t" + QString::number(o.avgFillPrice) + "\t" + o.lastFillTime + "\t" + o.account + "\n";
+        }
+    }
+    emit finished(s);
 }

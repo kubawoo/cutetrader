@@ -53,7 +53,9 @@ void TwsClient::requestManagedAccounts()
 
 void TwsClient::requestOpenOrders()
 {
-
+    _pendingOpenOrders.clear();
+    _openOrdersReqId = _requestId++;
+    _client->send(RequestOpenOrdersClientMessage());
 }
 
 void TwsClient::requestContractDetails(long contractId, int *reqId)
@@ -280,6 +282,14 @@ void TwsClient::onMessage(QSharedPointer<ServerMessage> msg)
         _handleHistoricalDataUpdate(msg.dynamicCast<HistoricalDataUpdateServerMessage>().get());
         break;
     }
+    case responses::OPEN_ORDER: {
+        _handleOpenOrder(msg.dynamicCast<OpenOrderServerMessage>().get());
+        break;
+    }
+    case responses::OPEN_ORDER_END: {
+        _handleOpenOrderEnd(msg.dynamicCast<OpenOrderEndServerMessage>().get());
+        break;
+    }
     default:
         qDebug() << "TwsClient::onMessage unsupported msg id" << msg->id();
     }
@@ -492,6 +502,18 @@ QString TwsClient::_securityTypeToIbString(common::SecurityType type) const
     default:
         return "";
     }
+}
+
+void TwsClient::_handleOpenOrder(OpenOrderServerMessage *msg)
+{
+    _pendingOpenOrders.append(msg->orders());
+}
+
+void TwsClient::_handleOpenOrderEnd(OpenOrderEndServerMessage *msg)
+{
+    Q_UNUSED(msg);
+    emit openOrderSignal(_openOrdersReqId, _pendingOpenOrders);
+    _pendingOpenOrders.clear();
 }
 
 }

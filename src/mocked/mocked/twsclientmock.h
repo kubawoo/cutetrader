@@ -45,6 +45,7 @@ private:
     QTimer * _timer;
 
     QMap<long, common::ContractDetailsDTO> _contractsMap;
+    QList<common::OrderDTO> _sampleOrders;
 };
 }
 

@@ -37,6 +37,8 @@ constexpr int START_API_VERSION = 2;
 
 constexpr int REQ_MATCHING_SYMBOLS = 81;
 
+constexpr int REQ_OPEN_ORDERS = 5;
+constexpr int REQ_OPEN_ORDERS_VERSION = 1;
 
 
 
@@ -173,6 +175,14 @@ constexpr int CONTRACT_DATA_END_FIELDS = 3;
 constexpr int ACCT_DOWNLOAD_END = 54;
 constexpr int ACCT_DOWNLOAD_END_VERSION = 1;
 constexpr int ACCT_DOWNLOAD_END_FIELDS = 3;
+
+constexpr int OPEN_ORDER = 5;
+constexpr int OPEN_ORDER_VERSION = NO_VERSION;
+constexpr int OPEN_ORDER_FIELDS = UNKNOWN_FIELDS_COUNT;
+
+constexpr int OPEN_ORDER_END = 53;
+constexpr int OPEN_ORDER_END_VERSION = 1;
+constexpr int OPEN_ORDER_END_FIELDS = 2;
 
 constexpr int SYMBOL_SAMPLES = 79;
 

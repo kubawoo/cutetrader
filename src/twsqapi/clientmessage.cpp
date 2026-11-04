@@ -221,4 +221,13 @@ QStringList CancelHistoricalDataClientMessage::fields() const {
             QString::number(_reqId)};
 }
 
+RequestOpenOrdersClientMessage::RequestOpenOrdersClientMessage() {
+    qDebug() << "REQUEST: RequestOpenOrdersClientMessage";
+}
+
+QStringList RequestOpenOrdersClientMessage::fields() const {
+    return {QString::number(requests::REQ_OPEN_ORDERS),
+            QString::number(1)};
+}
+
 } // namespace twsqapi

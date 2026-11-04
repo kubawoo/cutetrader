@@ -83,6 +83,27 @@ struct BarDTO
     double average;
 };
 
+struct OrderDTO
+{
+    int orderId;
+    long contractId;
+    QString symbol;
+    common::SecurityType securityType;
+    QString currency;
+    QString action; // BUY, SELL
+    double totalQuantity;
+    QString orderType; // MKT, LMT, STP, etc.
+    double lmtPrice;
+    double auxPrice;
+    QString tif; // DAY, GTC, etc.
+    QString status; // PendingSubmit, Submitted, Filled, Cancelled, etc.
+    double filled;
+    double remaining;
+    double avgFillPrice;
+    QString lastFillTime;
+    QString account;
+};
+
 }
 
 
