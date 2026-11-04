@@ -37,6 +37,16 @@ set(CMAKE_AUTORCC ON)
 find_package(Qt6 REQUIRED COMPONENTS Core Test Sql Network)
 qt_standard_project_setup()
 
+# Try to find QtMcp components (optional)
+find_package(Qt6 COMPONENTS McpCommon McpClient McpServer QUIET)
+set(QT_MCP_FOUND FALSE)
+if(Qt6McpCommon_FOUND AND Qt6McpClient_FOUND AND Qt6McpServer_FOUND)
+    set(QT_MCP_FOUND TRUE)
+    message(STATUS "QtMcp components found - mcpserver will be built")
+else()
+    message(STATUS "QtMcp components not found - mcpserver will NOT be built")
+endif()
+
 add_subdirectory(src/account)
 add_subdirectory(src/cli)
 add_subdirectory(src/common)
@@ -44,7 +54,10 @@ add_subdirectory(src/data)
 add_subdirectory(src/mocked)
 add_subdirectory(src/quant)
 add_subdirectory(src/twsqapi)
-add_subdirectory(src/mcpserver)
+
+if(QT_MCP_FOUND)
+    add_subdirectory(src/mcpserver)
+endif()
 
 add_subdirectory(test/testrunner)
 

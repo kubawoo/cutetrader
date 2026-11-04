@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
-# Find QtMcp from the build directory
-list(APPEND CMAKE_PREFIX_PATH "/home/kuba/Projects/qtmcp/build/lib64/cmake")
-
-find_package(Qt6 REQUIRED COMPONENTS Core Network Sql McpCommon McpClient McpServer)
+# QtMcp components already found in parent CMakeLists.txt
+# This directory is only added when QT_MCP_FOUND is TRUE
 
 file(GLOB PROJECT_SOURCES "*.cpp")
 file(GLOB PROJECT_HEADERS "*.h")
