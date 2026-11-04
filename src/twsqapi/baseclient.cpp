@@ -148,6 +148,7 @@ void BaseClient::_handleHandshake(const QStringList &fields)
     qDebug() << "Server time" << fields[1];
 
     _handshakeDone = true;
+    emit handshakeCompleted();
     StartApiClientMessage startApi(_clientId);
     send(startApi);
 }

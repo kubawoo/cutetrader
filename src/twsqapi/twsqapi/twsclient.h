@@ -55,6 +55,8 @@ public slots:
 private slots:
     void onMessage(QSharedPointer<ServerMessage> msg);
     void onError(const QString & reason, bool fatal = false);
+    void onHandshakeCompleted();
+    void onDisconnected();
 
 private:
     struct PendingSymbolHistoricalDataRequest {

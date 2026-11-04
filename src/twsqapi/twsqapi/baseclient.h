@@ -25,6 +25,8 @@ signals:
     void message(QSharedPointer<ServerMessage> msg);
     void error(const QString & reason, bool fatal = false);
     void _dataRead();
+    void handshakeCompleted();
+    void disconnected();
 
 
 protected slots:
