@@ -13,6 +13,8 @@ TwsClient::TwsClient(QObject *parent)
 {
     QObject::connect(_client, &SocketClient::message, this, &TwsClient::onMessage);
     QObject::connect(_client, &SocketClient::error, this, &TwsClient::onError);
+    QObject::connect(_client, &SocketClient::handshakeCompleted, this, &TwsClient::onHandshakeCompleted);
+    QObject::connect(_client, &SocketClient::disconnected, this, &TwsClient::onDisconnected);
 }
 
 TwsClient::~TwsClient()
@@ -514,6 +516,16 @@ void TwsClient::_handleOpenOrderEnd(OpenOrderEndServerMessage *msg)
     Q_UNUSED(msg);
     emit openOrderSignal(_openOrdersReqId, _pendingOpenOrders);
     _pendingOpenOrders.clear();
+}
+
+void TwsClient::onHandshakeCompleted()
+{
+    emit connectedSignal();
+}
+
+void TwsClient::onDisconnected()
+{
+    emit disconnectedSignal();
 }
 
 }

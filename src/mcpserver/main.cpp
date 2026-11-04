@@ -63,9 +63,9 @@ public:
         : QMcpServer(backend, parent)
         , _twsClient(twsClient)
     {
-        // Note: Real TwsClient doesn't emit connectedSignal/disconnectedSignal
-        // It relies on isConnected() which checks the underlying socket state
-        // Mocked client does emit these signals for compatibility
+        // Real TwsClient emits connectedSignal after API handshake completes
+        // and disconnectedSignal when the socket disconnects
+        
         connect(_twsClient, &common::ITwsClient::connectedSignal, this, [this]() {
             qDebug() << "TWS connected (signal)";
             emit started();
