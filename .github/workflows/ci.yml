@@ -24,6 +24,27 @@ jobs:
           host: "linux"
           target: "desktop"
 
+      - name: Verify QtMcp installation
+        id: qtmcp-check
+        run: |
+          if find ${{ env.QT_ROOT_DIR }} -name "Qt6McpServerConfig.cmake" 2>/dev/null | grep -q .; then
+            echo "QtMcp found in Qt installation"
+            echo "qtmcp_found=true" >> $GITHUB_OUTPUT
+          else
+            echo "QtMcp NOT found, will build from source (github.com/signal-slot/qtmcp)"
+            echo "qtmcp_found=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build QtMcp from source (if not in installer)
+        if: steps.qtmcp-check.outputs.qtmcp_found == 'false'
+        run: |
+          echo "Building QtMcp from source..."
+          git clone --depth 1 https://github.com/signal-slot/qtmcp.git
+          cd qtmcp
+          cmake -B build -DCMAKE_INSTALL_PREFIX=${{ env.QT_ROOT_DIR }} -DCMAKE_PREFIX_PATH=${{ env.QT_ROOT_DIR }}
+          cmake --build build -j$(nproc)
+          cmake --install build
+
       - name: Install system dependencies
         run: |
           sudo apt-get update

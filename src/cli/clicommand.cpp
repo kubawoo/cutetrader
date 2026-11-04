@@ -204,7 +204,9 @@ void AccountSummaryCliCommand::execute(const QStringList &params)
     if (!_account.portfolio().options().empty()) {
         s += "Options:\n";
         for (auto option : _account.portfolio().options()) {
-            s += " " + option.symbol() + " " + QString::number(option.position()) + " "
+            s += " " + option.symbol() + " " + option.typeAsString() + " strike=" + QString::number(option.strike())
+                 + " exp=" + option.expiration().toString("yyyy-MM-dd")
+                 + " " + QString::number(option.position()) + " "
                  + QString::number(option.marketPrice()) + " " + QString::number(option.marketValue()) + "\n";
         }
         s += "\n";
