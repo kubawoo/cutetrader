@@ -24,7 +24,11 @@ TwsClient::~TwsClient()
 
 bool TwsClient::connect(const QString &host, int port, int clientId)
 {
-    return _client->connect(host, port, clientId);
+    bool ok = _client->connect(host, port, clientId);
+    if (ok) {
+        emit connectedSignal();
+    }
+    return ok;
 }
 
 bool TwsClient::isConnected()
