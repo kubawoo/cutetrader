@@ -76,6 +76,59 @@ void ClientMessageTest::testRequestContractDetailsClientMessage()
                         "0\x00"
                         "\x00"
                         "\x00"
+                        "\x00"
                         "\x00",
                         37));
+}
+
+void ClientMessageTest::testRequestHistoricalDataClientMessage()
+{
+    // Test with server version 198 (>= 124)
+    auto msg = twsqapi::RequestHistoricalDataClientMessage(3, 265598,
+                                                           "",          // endDateTime
+                                                           "1 day",    // barSizeSetting
+                                                           "1 M",      // durationStr
+                                                           "TRADES",   // whatToShow
+                                                           1,          // useRTH
+                                                           2,          // formatDate
+                                                           198,        // serverVersion
+                                                           "AAPL",     // symbol
+                                                           "STK",      // secType
+                                                           "",         // lastTradeDateOrContractMonth
+                                                           "",         // strike
+                                                           "",         // right
+                                                           "",         // multiplier
+                                                           "SMART",    // exchange
+                                                           "NASDAQ",   // primaryExchange
+                                                           "USD",      // currency
+                                                           "",         // localSymbol
+                                                           "",         // tradingClass
+                                                           "0");       // includeExpired
+    QByteArray encoded = msg.encode();
+    QVERIFY(!encoded.isEmpty());
+    // Verify it contains the key fields
+    QString str(encoded);
+    QVERIFY(str.contains("20")); // msgId
+    QVERIFY(str.contains("265598")); // contractId
+    QVERIFY(str.contains("AAPL"));
+    QVERIFY(str.contains("STK"));
+    QVERIFY(str.contains("SMART"));
+    QVERIFY(str.contains("NASDAQ"));
+    QVERIFY(str.contains("USD"));
+    QVERIFY(str.contains("1 day"));
+    QVERIFY(str.contains("1 M"));
+    QVERIFY(str.contains("TRADES"));
+}
+
+void ClientMessageTest::testCancelHistoricalDataClientMessage()
+{
+    auto msg = twsqapi::CancelHistoricalDataClientMessage(42);
+    // Fields: msgId=25, version=1, reqId=42
+    // Joined: "25\0" + "1\0" + "42\0" = 8 bytes + size prefix (4 bytes) = 12 bytes
+    QCOMPARE(msg.encode(),
+             QByteArray("\x00\x00\x00\x08"
+                        "25\x00"
+                        "1\x00"
+                        "42\x00",
+                        12));
 }

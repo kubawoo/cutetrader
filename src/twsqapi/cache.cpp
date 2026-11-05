@@ -94,4 +94,15 @@ ContractDetailsCacheEntry::~ContractDetailsCacheEntry()
 
 }
 
+HistoricalDataCacheEntry::HistoricalDataCacheEntry()
+    : CacheEntry(300)
+{
+
+}
+
+HistoricalDataCacheEntry::~HistoricalDataCacheEntry()
+{
+
+}
+
 }

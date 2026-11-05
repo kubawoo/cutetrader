@@ -6,3 +6,6 @@ src/twsapi
 src/twsclient
 tcpflow
 *.db
+
+# TWS API files
+_twsapi

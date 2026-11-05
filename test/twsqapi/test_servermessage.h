@@ -27,6 +27,16 @@ private slots:
     void testInvalidContractDataEndServerMessage();
     void testPortfolioValueServerMessage();
     void testInvalidPortfolioValueServerMessage();
+    void testAccountUpdateTimeMessage();
+    void testInvalidAccountUpdateTimeMessage();
+    void testAccountDownloadEndMessage();
+    void testInvalidAccountDownloadEndMessage();
+    void testHistoricalDataMessage();
+    void testInvalidHistoricalDataMessage();
+    void testHistoricalDataEndMessage();
+    void testInvalidHistoricalDataEndMessage();
+    void testHistoricalDataUpdateMessage();
+    void testInvalidHistoricalDataUpdateMessage();
 };
 
 #endif // TEST_SERVERMESSAGE_H

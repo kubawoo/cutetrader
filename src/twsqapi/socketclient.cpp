@@ -11,6 +11,9 @@ namespace twsqapi {
 SocketClient::SocketClient(QObject *parent)
     : BaseClient(parent)
 {
+    QObject::connect(&_socket, &QTcpSocket::disconnected, this, [this]() {
+        emit disconnected();
+    });
 }
 
 SocketClient::~SocketClient()

@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QLoggingCategory>
+#include <QMap>
 #include <QSqlDatabase>
 #include <QThread>
 #include "cliappfactory.h"
@@ -72,11 +73,38 @@ bool setupApp(const QCommandLineParser &parser, AppConfig &appConfig)
     return setupDatabase(factory.get(), parser.value("database"));
 }
 
+#ifndef GIT_COMMIT_HASH
+#define GIT_COMMIT_HASH "unknown"
+#endif
+
+// Parse __DATE__ (format: "MMM DD YYYY" or "MMM  D YYYY") to ISO format "YYYY-MM-DD"
+static QString parseBuildDate(const char *dateStr)
+{
+    QString s = QString::fromLatin1(dateStr).simplified(); // "Nov 3 2026"
+    QStringList parts = s.split(' ');
+    if (parts.size() != 3)
+        return QString::fromLatin1(dateStr);
+
+    static const QMap<QString, QString> monthMap = {
+        {"Jan", "01"}, {"Feb", "02"}, {"Mar", "03"}, {"Apr", "04"},
+        {"May", "05"}, {"Jun", "06"}, {"Jul", "07"}, {"Aug", "08"},
+        {"Sep", "09"}, {"Oct", "10"}, {"Nov", "11"}, {"Dec", "12"}
+    };
+
+    QString month = monthMap.value(parts[0], "01");
+    QString day = parts[1].rightJustified(2, '0');
+    QString year = parts[2];
+    return year + "-" + month + "-" + day;
+}
+
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
     app.setApplicationName("cutetrader-cli");
-    app.setApplicationVersion(QString(__DATE__) + " " + QString(__TIME__));
+    app.setApplicationVersion(QString("ver. %1 built on %2 %3")
+                                  .arg(GIT_COMMIT_HASH)
+                                  .arg(parseBuildDate(__DATE__))
+                                  .arg(__TIME__));
     QThread::currentThread()->setObjectName("MainThread");
 
     QCommandLineParser parser;

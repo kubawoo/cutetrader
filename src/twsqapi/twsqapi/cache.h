@@ -31,6 +31,15 @@ public:
     QList<common::ContractDetailsDTO> contractDetails;
 };
 
+class HistoricalDataCacheEntry : public CacheEntry
+{
+public:
+    HistoricalDataCacheEntry();
+    ~HistoricalDataCacheEntry();
+
+    QList<common::BarDTO> bars;
+};
+
 class Cache
 {
 public:

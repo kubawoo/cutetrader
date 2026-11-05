@@ -6,12 +6,27 @@ Qt6/C++23 CLI trading application for Interactive Brokers TWS API.
 
 ```sh
 cmake -B build -DCMAKE_BUILD_TYPE=Debug
-cmake --build build
+cmake --build build -j4
 
 ./build/src/cli/cutetrader-cli [--mocked] [--database <file>] [--host localhost] [--port 4002] [--client-id 1] [--account-id <id>] [--debug]
 ```
 
 Pass `--mocked` to avoid connecting to TWS (uses `mocked::MockAppFactory`).
+
+### MCP Server (optional)
+
+The MCP server (`cutetrader-mcpserver`) is only built if QtMcp components are found:
+
+```sh
+# If QtMcp is available, the server is built automatically
+./build/src/mcpserver/cutetrader-mcpserver [--mocked] [--backend stdio|sse|streamablehttp] [--address host:port] [--host localhost] [--port 4002] [--client-id 1]
+```
+
+QtMcp is an optional dependency. If not found, cmake will print "QtMcp components not found - mcpserver will NOT be built" and skip it.
+
+## Agent constraints
+
+- **Do not access anything outside the project directory** (`$PWD`) — no reading/writing files, running commands, or accessing resources outside this path.
 
 ## Tests
 
@@ -41,6 +56,7 @@ Test registration pattern: declare test class in `test/<domain>/test_<subject>.h
 | `src/twsqapi/` | TWS API communication — socket client, message parsing, cache |
 | `src/quant/` | Quantitative — Black-Scholes, calculations |
 | `src/mocked/` | Mock implementations of `IAppFactory`/`ITwsClient` for testing |
+| `src/mcpserver/` | MCP (Model Context Protocol) server for AI tool integration (optional, requires QtMcp) |
 
 Includes use `target_include_directories` so headers look like `#include <common/types.h>` (headers live in `src/<lib>/<lib>/`).
 

@@ -25,6 +25,8 @@ signals:
     void message(QSharedPointer<ServerMessage> msg);
     void error(const QString & reason, bool fatal = false);
     void _dataRead();
+    void handshakeCompleted();
+    void disconnected();
 
 
 protected slots:
@@ -36,6 +38,9 @@ protected:
     void _connectHandshake(const QString &opts);
     bool _isHandshakeDone();
     int _getApiVersion();
+
+public:
+    int apiVersion() const { return _apiVersion; }
 
 private:
     void _send(const QByteArray & msg);

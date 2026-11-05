@@ -113,10 +113,10 @@ private:
 };
 
 
-class SymbolSamplesSrverMessage : public ServerMessage
+class SymbolSamplesServerMessage : public ServerMessage
 {
 public:
-    SymbolSamplesSrverMessage(const QStringList & fields);
+    SymbolSamplesServerMessage(const QStringList & fields);
     int requestId() { return _reqId; }
     const QList<common::ContractDetailsDTO>& contracts() { return _contracts; }
 private:
@@ -153,6 +153,60 @@ private:
     common::PortfolioPositionDTO _position;
 };
 
+class HistoricalDataServerMessage : public ServerMessage
+{
+public:
+    HistoricalDataServerMessage(const QStringList & fields);
+    int requestId() { return _reqId; }
+    const QList<common::BarDTO> & bars() { return _bars; }
+private:
+    int _reqId;
+    QList<common::BarDTO> _bars;
+};
+
+class HistoricalDataEndServerMessage : public ServerMessage
+{
+public:
+    HistoricalDataEndServerMessage(const QStringList & fields);
+    int requestId() { return _reqId; }
+    const QString & startDate() { return _startDate; }
+    const QString & endDate() { return _endDate; }
+private:
+    int _reqId;
+    QString _startDate;
+    QString _endDate;
+};
+
+class HistoricalDataUpdateServerMessage : public ServerMessage
+{
+public:
+    HistoricalDataUpdateServerMessage(const QStringList & fields);
+    int requestId() { return _reqId; }
+    const common::BarDTO & bar() { return _bar; }
+private:
+    int _reqId;
+    common::BarDTO _bar;
+};
+
+class OpenOrderServerMessage : public ServerMessage
+{
+public:
+    OpenOrderServerMessage(const QStringList & fields);
+    int requestId() { return _reqId; }
+    const QList<common::OrderDTO> & orders() { return _orders; }
+private:
+    int _reqId;
+    QList<common::OrderDTO> _orders;
+};
+
+class OpenOrderEndServerMessage : public ServerMessage
+{
+public:
+    OpenOrderEndServerMessage(const QStringList & fields);
+    int requestId() { return _reqId; }
+private:
+    int _reqId;
+};
 
 }
 

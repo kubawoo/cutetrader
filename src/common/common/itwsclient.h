@@ -21,12 +21,19 @@ public slots:
     virtual void requestOpenOrders() = 0;
     virtual void requestContractDetails(long contractId, int * reqId = nullptr) = 0;
     virtual void requestMatchingSymbols(const QString & pattern, int * reqId = nullptr) = 0;
+    virtual void requestHistoricalData(long contractId, const QString & endDateTime,
+                                       const QString & durationStr, const QString & barSizeSetting,
+                                       const QString & whatToShow, int useRTH, int formatDate,
+                                       int * reqId = nullptr) = 0;
+    virtual void requestHistoricalData(const QString & symbol, const QString & endDateTime,
+                                       const QString & durationStr, const QString & barSizeSetting,
+                                       const QString & whatToShow, int useRTH, int formatDate,
+                                       int * reqId = nullptr) = 0;
+    virtual void cancelHistoricalData(int reqId) = 0;
 
 public:
     virtual bool connect(const QString& host, int port, int clientId = 0) = 0;
     virtual bool isConnected() = 0;
-//    int requestHistoricalData(const Contract &contract, const QString &endDateTime,
-//                               const QString &durationString, const QString &barSizeSetting);
 
 signals:
     void connectedSignal();
@@ -34,12 +41,14 @@ signals:
     void errorSignal(const QString &reason, bool fatal = false);
     void currentTimeSignal(const QDateTime & time);
     void managedAccountsSignal(const QStringList & accounts);
-//    void historicalDataReadySignal(long requestId, QList<Bar> *bars);
+    void historicalDataReadySignal(int requestId, const QList<common::BarDTO> & bars,
+                                   const QString & description = QString());
     void accountValueUpdatedSignal(const QString & key, const QString & value, const QString & currency);
     void portfolioPositionUpdatedSignal(const common::PortfolioPositionDTO & position);
     void contractDetailReadySignal(const int & requestId, const QList<common::ContractDetailsDTO> & details);
     void matchingSymbolsReadySignal(const int & requestId, const QList<common::ContractDetailsDTO> & details);
     void updateAccountTimeSignal(const QTime & time);
+    void openOrderSignal(const int & requestId, const QList<common::OrderDTO> & orders);
 
 protected:
     void _setRequestId(int * holder, int value);

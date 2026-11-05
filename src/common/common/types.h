@@ -8,7 +8,23 @@ namespace common {
 
 
 enum class SecurityType {
-    UNSUPPORTED, STOCK, OPTION, FUTURE, FUTURE_OPTION, INDEX
+    UNSUPPORTED,
+    STOCK,
+    OPTION,
+    FUTURE,
+    FUTURE_OPTION,
+    INDEX,
+    CFD,
+    BAG,
+    BOND,
+    CASH,
+    CMDTY,
+    CONTFUT,
+    CRYPTO,
+    FUND,
+    IOPT,
+    NEWS,
+    WAR
 };
 
 enum class OptionType {
@@ -52,6 +68,40 @@ struct QuoteDTO
     double low;
     double high;
     int volume;
+};
+
+struct BarDTO
+{
+    QString time;
+    double open;
+    double high;
+    double low;
+    double close;
+    double wap;
+    double volume;
+    int barCount;
+    double average;
+};
+
+struct OrderDTO
+{
+    int orderId;
+    long contractId;
+    QString symbol;
+    common::SecurityType securityType;
+    QString currency;
+    QString action; // BUY, SELL
+    double totalQuantity;
+    QString orderType; // MKT, LMT, STP, etc.
+    double lmtPrice;
+    double auxPrice;
+    QString tif; // DAY, GTC, etc.
+    QString status; // PendingSubmit, Submitted, Filled, Cancelled, etc.
+    double filled;
+    double remaining;
+    double avgFillPrice;
+    QString lastFillTime;
+    QString account;
 };
 
 }
