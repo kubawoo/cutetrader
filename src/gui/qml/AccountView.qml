@@ -110,6 +110,10 @@ Pane {
             accountModel.clear()
             for (var key in data) {
                 var item = data[key]
+                // Skip entries that don't have the expected {value, currency} structure
+                if (typeof item !== 'object' || item === null || typeof item.value === 'undefined') {
+                    continue
+                }
                 accountModel.append({
                     "key": key,
                     "value": item.value,

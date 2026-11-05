@@ -66,6 +66,7 @@ private slots:
     void onAccountValueUpdated(const QString &key, const QString &value, const QString &currency);
     void onPortfolioPositionUpdated(const common::PortfolioPositionDTO &position);
     void onUpdateAccountTime(const QTime &time);
+    void onOpenOrders(const int &requestId, const QList<common::OrderDTO> &orders);
 
 private:
     void setupConnections();
@@ -82,6 +83,7 @@ private:
     QStringList m_availableAccounts;
     QVariantMap m_accountData;
     QVariantList m_portfolioPositions;
+    QVariantList m_openOrders;
 };
 
 #endif // CONNECTION_MANAGER_H

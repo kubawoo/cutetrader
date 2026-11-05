@@ -43,10 +43,10 @@ Pane {
                         Text { text: model.orderId; width: 80; elide: Text.ElideRight; verticalAlignment: Text.AlignVCenter }
                         Text { text: model.symbol; width: 100; elide: Text.ElideRight; verticalAlignment: Text.AlignVCenter }
                         Text { text: model.action; width: 80; elide: Text.ElideRight; verticalAlignment: Text.AlignVCenter }
-                        Text { text: model.quantity; width: 80; elide: Text.ElideRight; horizontalAlignment: Text.AlignRight; verticalAlignment: Text.AlignVCenter }
+                        Text { text: helpers.formatNumber(model.quantity); width: 80; elide: Text.ElideRight; horizontalAlignment: Text.AlignRight; verticalAlignment: Text.AlignVCenter }
                         Text { text: model.orderType; width: 100; elide: Text.ElideRight; verticalAlignment: Text.AlignVCenter }
                         Text {
-                            text: typeof model.limitPrice === 'number' ? model.limitPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : model.limitPrice
+                            text: helpers.formatNumber(model.limitPrice)
                             width: 100
                             elide: Text.ElideRight
                             horizontalAlignment: Text.AlignRight
@@ -113,8 +113,35 @@ Pane {
         id: ordersModel
     }
 
+    QtObject {
+        id: helpers
+        function formatNumber(value) {
+            var num = Number(value)
+            if (isNaN(num)) {
+                return value
+            }
+            // Qt's JS engine ignores the options of toLocaleString(), so use toFixed().
+            return num.toFixed(2)
+        }
+    }
+
     Connections {
         target: ConnectionManager
+        function onOpenOrdersReceived(orders) {
+            ordersModel.clear()
+            for (var i = 0; i < orders.length; ++i) {
+                var order = orders[i]
+                ordersModel.append({
+                    "orderId": order.orderId,
+                    "symbol": order.symbol,
+                    "action": order.action,
+                    "quantity": order.totalQuantity,
+                    "orderType": order.orderType,
+                    "limitPrice": order.lmtPrice,
+                    "status": order.status
+                })
+            }
+        }
         function onConnectedChanged() {
             if (!ConnectionManager.connected) {
                 ordersModel.clear()

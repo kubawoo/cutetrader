@@ -42,12 +42,12 @@ Pane {
                         anchors.margins: 5
                         Text { text: model.symbol; width: 100; elide: Text.ElideRight; verticalAlignment: Text.AlignVCenter }
                         Text { text: model.type; width: 80; elide: Text.ElideRight; verticalAlignment: Text.AlignVCenter }
-                        Text { text: model.position; width: 80; elide: Text.ElideRight; horizontalAlignment: Text.AlignRight; verticalAlignment: Text.AlignVCenter }
-                        Text { text: model.marketPrice; width: 100; elide: Text.ElideRight; horizontalAlignment: Text.AlignRight; verticalAlignment: Text.AlignVCenter }
-                        Text { text: model.marketValue; width: 100; elide: Text.ElideRight; horizontalAlignment: Text.AlignRight; verticalAlignment: Text.AlignVCenter }
-                        Text { text: model.averageCost; width: 100; elide: Text.ElideRight; horizontalAlignment: Text.AlignRight; verticalAlignment: Text.AlignVCenter }
+                        Text { text: helpers.formatNumber(model.position); width: 80; elide: Text.ElideRight; horizontalAlignment: Text.AlignRight; verticalAlignment: Text.AlignVCenter }
+                        Text { text: helpers.formatNumber(model.marketPrice); width: 100; elide: Text.ElideRight; horizontalAlignment: Text.AlignRight; verticalAlignment: Text.AlignVCenter }
+                        Text { text: helpers.formatNumber(model.marketValue); width: 100; elide: Text.ElideRight; horizontalAlignment: Text.AlignRight; verticalAlignment: Text.AlignVCenter }
+                        Text { text: helpers.formatNumber(model.averageCost); width: 100; elide: Text.ElideRight; horizontalAlignment: Text.AlignRight; verticalAlignment: Text.AlignVCenter }
                         Text {
-                            text: typeof model.unrealizedPNL === 'number' ? model.unrealizedPNL.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : model.unrealizedPNL
+                            text: helpers.formatNumber(model.unrealizedPNL)
                             color: typeof model.unrealizedPNL === 'number' && model.unrealizedPNL >= 0 ? "#4CAF50" : (typeof model.unrealizedPNL === 'number' ? "#F44336" : "#000")
                             font.bold: true
                             width: 100
@@ -56,7 +56,7 @@ Pane {
                             verticalAlignment: Text.AlignVCenter
                         }
                         Text {
-                            text: typeof model.realizedPNL === 'number' ? model.realizedPNL.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : model.realizedPNL
+                            text: helpers.formatNumber(model.realizedPNL)
                             width: 100
                             elide: Text.ElideRight
                             horizontalAlignment: Text.AlignRight
@@ -125,6 +125,15 @@ Pane {
             case 5: return "INDEX"
             default: return "OTHER"
             }
+        }
+        function formatNumber(value) {
+            var num = Number(value)
+            if (isNaN(num)) {
+                return value
+            }
+            // Note: Qt's JS engine ignores the options argument of toLocaleString(),
+            // so toFixed() is used to guarantee two decimal places.
+            return num.toFixed(2)
         }
     }
 

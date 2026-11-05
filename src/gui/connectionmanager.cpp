@@ -150,8 +150,9 @@ void ConnectionManager::requestPortfolio()
         emit errorOccurred("Not connected to TWS");
         return;
     }
-    m_portfolioPositions.clear();
-    m_client->requestOpenOrders();
+    // Portfolio positions arrive as part of the account update stream;
+    // re-emit the currently known positions to refresh the view.
+    emit portfolioReceived(m_portfolioPositions);
 }
 
 void ConnectionManager::requestOpenOrders()
@@ -172,6 +173,7 @@ void ConnectionManager::setupConnections()
     connect(m_client, &common::ITwsClient::accountValueUpdatedSignal, this, &ConnectionManager::onAccountValueUpdated);
     connect(m_client, &common::ITwsClient::portfolioPositionUpdatedSignal, this, &ConnectionManager::onPortfolioPositionUpdated);
     connect(m_client, &common::ITwsClient::updateAccountTimeSignal, this, &ConnectionManager::onUpdateAccountTime);
+    connect(m_client, &common::ITwsClient::openOrderSignal, this, &ConnectionManager::onOpenOrders);
 }
 
 void ConnectionManager::cleanupConnections()
@@ -184,6 +186,7 @@ void ConnectionManager::cleanupConnections()
         disconnect(m_client, &common::ITwsClient::accountValueUpdatedSignal, this, &ConnectionManager::onAccountValueUpdated);
         disconnect(m_client, &common::ITwsClient::portfolioPositionUpdatedSignal, this, &ConnectionManager::onPortfolioPositionUpdated);
         disconnect(m_client, &common::ITwsClient::updateAccountTimeSignal, this, &ConnectionManager::onUpdateAccountTime);
+        disconnect(m_client, &common::ITwsClient::openOrderSignal, this, &ConnectionManager::onOpenOrders);
     }
 }
 
@@ -233,6 +236,7 @@ void ConnectionManager::onManagedAccounts(const QStringList &accounts)
 
     m_client->startClient(m_accountId);
     requestAccountData();
+    requestOpenOrders();
 }
 
 void ConnectionManager::onAccountValueUpdated(const QString &key, const QString &value, const QString &currency)
@@ -276,4 +280,33 @@ void ConnectionManager::onUpdateAccountTime(const QTime &time)
 {
     m_accountData["lastUpdateTime"] = time.toString();
     emit accountDataReceived(m_accountData);
+}
+
+void ConnectionManager::onOpenOrders(const int &requestId, const QList<common::OrderDTO> &orders)
+{
+    Q_UNUSED(requestId)
+
+    m_openOrders.clear();
+    for (const auto &order : orders) {
+        QVariantMap orderMap;
+        orderMap["orderId"] = order.orderId;
+        orderMap["contractId"] = QVariant::fromValue(static_cast<qlonglong>(order.contractId));
+        orderMap["symbol"] = order.symbol;
+        orderMap["securityType"] = static_cast<int>(order.securityType);
+        orderMap["currency"] = order.currency;
+        orderMap["action"] = order.action;
+        orderMap["totalQuantity"] = order.totalQuantity;
+        orderMap["orderType"] = order.orderType;
+        orderMap["lmtPrice"] = order.lmtPrice;
+        orderMap["auxPrice"] = order.auxPrice;
+        orderMap["tif"] = order.tif;
+        orderMap["status"] = order.status;
+        orderMap["filled"] = order.filled;
+        orderMap["remaining"] = order.remaining;
+        orderMap["avgFillPrice"] = order.avgFillPrice;
+        orderMap["lastFillTime"] = order.lastFillTime;
+        orderMap["account"] = order.account;
+        m_openOrders.append(orderMap);
+    }
+    emit openOrdersReceived(m_openOrders);
 }
