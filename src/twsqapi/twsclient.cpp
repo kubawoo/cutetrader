@@ -57,7 +57,7 @@ void TwsClient::requestOpenOrders()
 {
     _pendingOpenOrders.clear();
     _openOrdersReqId = _requestId++;
-    _client->send(RequestOpenOrdersClientMessage());
+    _client->send(RequestOpenOrdersClientMessage(_openOrdersReqId));
 }
 
 void TwsClient::requestContractDetails(long contractId, int *reqId)
@@ -284,6 +284,10 @@ void TwsClient::onMessage(QSharedPointer<ServerMessage> msg)
         _handleHistoricalDataUpdate(msg.dynamicCast<HistoricalDataUpdateServerMessage>().get());
         break;
     }
+    case responses::ORDER_STATUS: {
+        _handleOrderStatus(msg.dynamicCast<OrderStatusServerMessage>().get());
+        break;
+    }
     case responses::OPEN_ORDER: {
         _handleOpenOrder(msg.dynamicCast<OpenOrderServerMessage>().get());
         break;
@@ -504,6 +508,25 @@ QString TwsClient::_securityTypeToIbString(common::SecurityType type) const
     default:
         return "";
     }
+}
+
+void TwsClient::_handleOrderStatus(OrderStatusServerMessage *msg)
+{
+    const common::OrderStatusDTO &status = msg->orderStatus();
+
+    // Keep already-received open orders in sync so that the list emitted at
+    // OPEN_ORDER_END carries the latest execution state.
+    for (common::OrderDTO &order : _pendingOpenOrders) {
+        if (order.orderId == status.orderId) {
+            order.status = status.status;
+            order.filled = status.filled;
+            order.remaining = status.remaining;
+            order.avgFillPrice = status.avgFillPrice;
+            break;
+        }
+    }
+
+    emit orderStatusSignal(status);
 }
 
 void TwsClient::_handleOpenOrder(OpenOrderServerMessage *msg)

@@ -87,6 +87,7 @@ private:
     void _handleHistoricalData(HistoricalDataServerMessage *msg);
     void _handleHistoricalDataUpdate(HistoricalDataUpdateServerMessage *msg);
     void _handleHistoricalDataEnd(HistoricalDataEndServerMessage *msg);
+    void _handleOrderStatus(OrderStatusServerMessage *msg);
     void _handleOpenOrder(OpenOrderServerMessage *msg);
     void _handleOpenOrderEnd(OpenOrderEndServerMessage *msg);
 

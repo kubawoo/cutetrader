@@ -83,6 +83,21 @@ struct BarDTO
     double average;
 };
 
+struct OrderStatusDTO
+{
+    int orderId;
+    QString status;
+    double filled;
+    double remaining;
+    double avgFillPrice;
+    long permId;
+    int parentId;
+    double lastFillPrice;
+    int clientId;
+    QString whyHeld;
+    double mktCapPrice;
+};
+
 struct OrderDTO
 {
     int orderId;

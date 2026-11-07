@@ -160,9 +160,11 @@ private:
 class RequestOpenOrdersClientMessage : public ClientMessage
 {
 public:
-    RequestOpenOrdersClientMessage();
+    RequestOpenOrdersClientMessage(int reqId);
 protected:
     QStringList fields() const override;
+private:
+    int _reqId;
 };
 
 }

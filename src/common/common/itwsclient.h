@@ -49,6 +49,7 @@ signals:
     void matchingSymbolsReadySignal(const int & requestId, const QList<common::ContractDetailsDTO> & details);
     void updateAccountTimeSignal(const QTime & time);
     void openOrderSignal(const int & requestId, const QList<common::OrderDTO> & orders);
+    void orderStatusSignal(const common::OrderStatusDTO & status);
 
 protected:
     void _setRequestId(int * holder, int value);

@@ -13,20 +13,22 @@
         } \
     }
 
+
 namespace twsqapi {
 
-ServerMessage::ServerMessage(const QStringList& fields, int id, int version, int fieldsCount)
-    :_id(id), _version(version), _fieldsCount(fieldsCount), _valid(true)
+ServerMessage::ServerMessage(const QStringList& fields, int id, int version, int fieldsCount, bool extraFieldsAllowed)
+    :_id(id), _version(version), _valid(true)
 {
-    if (_fieldsCount > responses::UNKNOWN_FIELDS_COUNT) {
+    if (!extraFieldsAllowed) {
         //check exact number of fields
-        _valid = _fieldsCount == fields.length();
+        _valid = fields.length() == fieldsCount;
+        CHECK_VALID(_valid, "Field count mismatch");
     } else {
-        //some messages may have variable number of fields. but must not be empty
-        _valid = !fields.empty();
+        //some messages may have variable number of fields, but must not be empty
+        _valid = fields.length() >= fieldsCount;
+        CHECK_VALID(_valid, "Not enough fields");
     }
 
-    CHECK_VALID(_valid, "Field count mismatch or empty fields");
 
     int i = fields[0].toInt(&_valid);
     _valid = _valid && i == _id;
@@ -35,7 +37,7 @@ ServerMessage::ServerMessage(const QStringList& fields, int id, int version, int
     if (_version > responses::NO_VERSION) {
         int v = fields[1].toInt(&_valid);
         _valid = _valid && v == _version;
-        CHECK_VALID(_valid, "Message version mismatch");
+        CHECK_VALID(_valid, "Message version mismatch, expected");
     }
 }
 
@@ -117,6 +119,10 @@ ServerMessage *ServerMessageFactory::create(const QStringList & fields)
         qDebug() << "RESPONSE: HistoricalDataUpdateServerMessage";
         msg =  new HistoricalDataUpdateServerMessage(fields);
         break;
+    case responses::ORDER_STATUS:
+        qDebug() << "RESPONSE: OrderStatusServerMessage";
+        msg =  new OrderStatusServerMessage(fields);
+        break;
     case responses::OPEN_ORDER:
         qDebug() << "RESPONSE: OpenOrderServerMessage";
         msg =  new OpenOrderServerMessage(fields);
@@ -133,7 +139,7 @@ ServerMessage *ServerMessageFactory::create(const QStringList & fields)
         break;
     }
 
-    if(!msg->valid()) {
+    if(msg && !msg->valid()) {
         qDebug() << "Invalid msg";
         delete msg;
         for(int i = 0; i < fields.length(); i++) {
@@ -225,7 +231,7 @@ CurrentTimeServerMessage::CurrentTimeServerMessage(const QStringList &fields)
 }
 
 SymbolSamplesServerMessage::SymbolSamplesServerMessage(const QStringList &fields)
-    : ServerMessage(fields, responses::SYMBOL_SAMPLES)
+    : ServerMessage(fields, responses::SYMBOL_SAMPLES, responses::SYMBOL_SAMPLES_VERSION, responses::SYMBOL_SAMPLES_MIN_FIELDS, true)
 {
     CHECK_VALID(_valid, "Base validation failed");
 
@@ -274,7 +280,7 @@ SymbolSamplesServerMessage::SymbolSamplesServerMessage(const QStringList &fields
 }
 
 ContractDataServerMessage::ContractDataServerMessage(const QStringList &fields)
-    : ServerMessage(fields, responses::CONTRACT_DATA, responses::NO_VERSION, responses::UNKNOWN_FIELDS_COUNT)
+    : ServerMessage(fields, responses::CONTRACT_DATA, responses::CONTRACT_DATA_VERSION, responses::CONTRACT_DATA_MIN_FIELDS, true)
 {
     CHECK_VALID(_valid, "Base validation failed");
     _valid = fields.length() >= 22; // at least 22 fields, might be more
@@ -355,7 +361,7 @@ PortfolioValueServerMessage::PortfolioValueServerMessage(const QStringList &fiel
 }
 
 HistoricalDataServerMessage::HistoricalDataServerMessage(const QStringList &fields)
-    : ServerMessage(fields, responses::HISTORICAL_DATA, responses::HISTORICAL_DATA_VERSION, responses::HISTORICAL_DATA_FIELDS)
+    : ServerMessage(fields, responses::HISTORICAL_DATA, responses::HISTORICAL_DATA_VERSION, responses::HISTORICAL_DATA_FIELDS, true)
 {
     CHECK_VALID(_valid, "Base validation failed");
     // For server version >= 124, there's no version field in the response
@@ -416,7 +422,7 @@ HistoricalDataEndServerMessage::HistoricalDataEndServerMessage(const QStringList
 }
 
 HistoricalDataUpdateServerMessage::HistoricalDataUpdateServerMessage(const QStringList &fields)
-    : ServerMessage(fields, responses::HISTORICAL_DATA_UPDATE, responses::HISTORICAL_DATA_UPDATE_VERSION, responses::HISTORICAL_DATA_UPDATE_FIELDS)
+    : ServerMessage(fields, responses::HISTORICAL_DATA_UPDATE, responses::HISTORICAL_DATA_UPDATE_VERSION, responses::HISTORICAL_DATA_UPDATE_FIELDS, true)
 {
     CHECK_VALID(_valid, "Base validation failed");
     // For server version >= 124, there's no version field in the response
@@ -450,108 +456,100 @@ HistoricalDataUpdateServerMessage::HistoricalDataUpdateServerMessage(const QStri
     CHECK_VALID(_valid, "Invalid volume");
 }
 
-OpenOrderServerMessage::OpenOrderServerMessage(const QStringList &fields)
-    : ServerMessage(fields, responses::OPEN_ORDER, responses::OPEN_ORDER_VERSION, responses::OPEN_ORDER_FIELDS)
+OrderStatusServerMessage::OrderStatusServerMessage(const QStringList &fields)
+    : ServerMessage(fields, responses::ORDER_STATUS, responses::ORDER_STATUS_VERSION, responses::ORDER_STATUS_FIELDS)
 {
     CHECK_VALID(_valid, "Base validation failed");
-    // OPEN_ORDER message format (simplified for our needs):
-    // Field 0: msgId (5)
-    // Field 1: version
-    // Field 2: orderId
-    // Field 3: contract.conId
-    // Field 4: contract.symbol
-    // Field 5: contract.secType
-    // Field 6: contract.lastTradeDateOrContractMonth
-    // Field 7: contract.strike
-    // Field 8: contract.right
-    // Field 9: contract.multiplier
-    // Field 10: contract.exchange
-    // Field 11: contract.currency
-    // Field 12: contract.localSymbol
-    // Field 13: contract.tradingClass
-    // Field 14: order.action
-    // Field 15: order.totalQuantity
-    // Field 16: order.orderType
-    // Field 17: order.lmtPrice
-    // Field 18: order.auxPrice
-    // Field 19: order.tif
-    // Field 20: order.ocaGroup
-    // Field 21: order.account
-    // Field 22: order.openClose
-    // Field 23: order.origin
-    // Field 24: order.orderRef
-    // Field 25: order.clientId
-    // Field 26: order.permId
-    // Field 27: order.outsideRth
-    // Field 28: order.hidden
-    // Field 29: order.discretionaryAmt
-    // Field 30: order.goodAfterTime
-    // Field 31: order.goodTillDate
-    // ... more fields we ignore
-    // Field ~50: orderStatus.status
-    // Field ~51: orderStatus.filled
-    // Field ~52: orderStatus.remaining
-    // Field ~53: orderStatus.avgFillPrice
-    // Field ~54: orderStatus.permId
-    // Field ~55: orderStatus.parentId
-    // Field ~56: orderStatus.lastFillTime
-    // Field ~57: orderStatus.clientId
-    // Field ~58: orderStatus.whyHeld
+    // ORDER_STATUS message (server version >= 131 / MIN_SERVER_VER_MARKET_CAP_PRICE,
+    // so there is no version field and mktCapPrice is present):
+    // Field 0:  msgId (3)
+    // Field 1:  orderId
+    // Field 2:  status
+    // Field 3:  filled
+    // Field 4:  remaining
+    // Field 5:  avgFillPrice
+    // Field 6:  permId
+    // Field 7:  parentId
+    // Field 8:  lastFillPrice
+    // Field 9:  clientId
+    // Field 10: whyHeld
+    // Field 11: mktCapPrice
 
-    int idx = 1; // skip msgId
-    int version = fields[idx++].toInt(&_valid);
-    CHECK_VALID(_valid, "Invalid version");
-    
-    common::OrderDTO order;
-    order.orderId = fields[idx++].toInt(&_valid);
-    CHECK_VALID(_valid, "Invalid orderId");
-    
-    // Contract fields
-    order.contractId = fields[idx++].toLong(&_valid);
-    CHECK_VALID(_valid, "Invalid contractId");
-    order.symbol = fields[idx++];
-    order.securityType = common::Utils::securityTypeFromString(fields[idx++]);
-    CHECK_VALID(_valid, "Invalid security type");
-    idx++; // lastTradeDateOrContractMonth
-    idx++; // strike
-    idx++; // right
-    idx++; // multiplier
-    idx++; // exchange
-    order.currency = fields[idx++];
-    idx++; // localSymbol
-    idx++; // tradingClass
-    
-    // Order fields
-    order.action = fields[idx++];
-    order.totalQuantity = fields[idx++].toDouble(&_valid);
-    CHECK_VALID(_valid, "Invalid totalQuantity");
-    order.orderType = fields[idx++];
-    order.lmtPrice = fields[idx++].toDouble(&_valid);
-    CHECK_VALID(_valid, "Invalid lmtPrice");
-    order.auxPrice = fields[idx++].toDouble(&_valid);
-    CHECK_VALID(_valid, "Invalid auxPrice");
-    order.tif = fields[idx++];
-    idx++; // ocaGroup
-    order.account = fields[idx++];
-    
-    // Skip many order fields...
-    // For simplicity, we skip to order status fields
-    // The exact number of fields to skip depends on version
-    // For version >= 16 (current), we need to skip many fields
-    // We'll use a more robust approach: find status by known position from end
-    
-    // Order status fields are at the end
-    // Let's assume we have at least 60 fields
-    if (fields.size() >= 60) {
-        // Approximate positions for status fields
-        order.status = fields[50];
-        order.filled = fields[51].toDouble(&_valid);
-        order.remaining = fields[52].toDouble(&_valid);
-        order.avgFillPrice = fields[53].toDouble(&_valid);
-        idx = 56; // lastFillTime
-        order.lastFillTime = fields[idx++];
-    }
-    
+
+    common::OrderStatusDTO status{};
+
+    status.orderId = fields[1].toInt(&_valid);
+    CHECK_VALID(_valid, "Invalid orderId: " + fields[1]);
+
+    status.status = fields[2];
+    status.filled = fields[3].toDouble(&_valid);
+    CHECK_VALID(_valid, "Invalid filled: " + fields[3]);
+
+    status.remaining = fields[4].toDouble(&_valid);
+    CHECK_VALID(_valid, "Invalid remaining: " + fields[4]);
+
+    status.avgFillPrice = fields[5].toDouble(&_valid);
+    CHECK_VALID(_valid, "Invalid fillPrice: " + fields[5]);
+
+    status.permId = fields[6].toLong(&_valid);
+    CHECK_VALID(_valid, "Invalid permId: " + fields[6]);
+
+    status.parentId = fields[7].toInt(&_valid);
+    CHECK_VALID(_valid, "Invalid parentId: " + fields[7]);
+
+    status.lastFillPrice = fields[8].toDouble(&_valid);
+    CHECK_VALID(_valid, "Invalid lastFillPrice: " + fields[8]);
+
+    status.clientId = fields[9].toInt(&_valid);
+    CHECK_VALID(_valid, "Invalid clientId: " + fields[9]);
+
+    status.whyHeld = fields[10];
+    status.mktCapPrice = fields[11].toDouble(&_valid);
+    CHECK_VALID(_valid, "Invalid mktCapPrice: " + fields[11]);
+    _orderStatus = status;
+}
+
+OpenOrderServerMessage::OpenOrderServerMessage(const QStringList &fields)
+    : ServerMessage(fields, responses::OPEN_ORDER, responses::OPEN_ORDER_VERSION, responses::OPEN_ORDER_FIELDS, true)
+{
+    CHECK_VALID(_valid, "Base validation failed");
+
+    common::OrderDTO order{};
+
+    order.orderId = fields[1].toInt(&_valid);
+    CHECK_VALID(_valid, "Invalid orderId: " + fields[1]);
+
+    // contract fields
+    order.contractId = fields[2].toLong(&_valid);
+    CHECK_VALID(_valid, "Invalid contractId: " + fields[2]);
+
+    order.symbol = fields[3];
+
+    order.securityType = common::Utils::securityTypeFromString(fields[4]);
+    /*
+     * TODO:
+     * msg "5\x00-3\x00""814279626\x00""F\x00OPT\x00""20280121\x00""15\x00""C\x00""100\x00SMART\x00USD\x00""F     280121C00015000\x00""F\x00""BUY\x00""1\x00LMT\x00""0.05\x00""0.0\x00GTC\x00\x00""DUE062120\x00\x00""0\x00RapidOrder\x00""0\x00""1532091745\x00""0\x00""0\x00""0\x00\x00""1532091745.0/DUE062120/100\x00\x00\x00\x00\x00\x00""0\x00\x00\x00""0\x00\x00-1\x00""0\x00\x00\x00\x00\x00\x00""2147483647\x00""0\x00""0\x00""0\x00\x00""3\x00""0\x00""0\x00\x00""0\x00""0\x00\x00""0\x00None\x00\x00""0\x00\x00\x00\x00?\x00""0\x00""0\x00\x00""0\x00""0\x00\x00\x00\x00\x00\x00""0\x00""0\x00""0\x00""2147483647\x00""2147483647\x00\x00\x00""0\x00\x00IB\x00""0\x00""0\x00\x00""0\x00""0\x00PreSubmitted\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00\x00\x00\x00\x00\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00-9223372036854775808\x00\x00""0\x00\x00""0\x00""0\x00""0\x00None\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""0\x00\x00\x00\x00""0\x00""1\x00""0\x00""0\x00""0\x00\x00\x00""0\x00\x00\x00\x00\x00\x00\x00""0\x00\x00""0\x00\x00""2147483647\x00"
+*/
+    // take(); // lastTradeDateOrContractMonth
+    // take(); // strike
+    // take(); // right
+    // take(); // multiplier
+    // take(); // exchange
+    // order.currency = take();
+    // take(); // localSymbol
+    // take(); // tradingClass
+
+    // // core order fields
+    // order.action = take();
+    // order.totalQuantity = takeDouble();
+    // order.orderType = take();
+    // order.lmtPrice = takeDouble();
+    // order.auxPrice = takeDouble();
+    // order.tif = take();
+    // take(); // ocaGroup
+    // order.account = take();
+
+
     _orders.append(order);
 }
 

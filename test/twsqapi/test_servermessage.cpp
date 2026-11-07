@@ -1161,3 +1161,142 @@ void ServerMessageTest::testInvalidHistoricalDataUpdateMessage()
     };
     QVERIFY(!factory.create(fields));
 }
+
+void ServerMessageTest::testOpenOrderMessage()
+{
+    twsqapi::ServerMessageFactory factory;
+
+    // Captured OPEN_ORDER message (server version 198). The order status is not
+    // at a fixed offset because several preceding sections are variable length,
+    // so this exercises the full reference-compatible traversal.
+    QStringList fields = {QString("5"), QString("-2"), QString("814279626"), QString("F"),
+        QString("OPT"), QString("20280121"), QString("15"), QString("C"), QString("100"),
+        QString("SMART"), QString("USD"), QString("F     280121C00015000"), QString("F"),
+        QString("BUY"), QString("1"), QString("LMT"), QString("0.05"), QString("0.0"),
+        QString("GTC"), QString(""), QString("DUE062120"), QString(""), QString("0"),
+        QString("RapidOrder"), QString("0"), QString("1532091745"), QString("0"), QString("0"),
+        QString("0"), QString(""), QString("1532091745.0/DUE062120/100"), QString(""),
+        QString(""), QString(""), QString(""), QString(""), QString("0"), QString(""),
+        QString(""), QString("0"), QString(""), QString("-1"), QString("0"), QString(""),
+        QString(""), QString(""), QString(""), QString(""), QString("2147483647"), QString("0"),
+        QString("0"), QString("0"), QString(""), QString("3"), QString("0"), QString("0"),
+        QString(""), QString("0"), QString("0"), QString(""), QString("0"), QString("None"),
+        QString(""), QString("0"), QString(""), QString(""), QString(""), QString("?"),
+        QString("0"), QString("0"), QString(""), QString("0"), QString("0"), QString(""),
+        QString(""), QString(""), QString(""), QString(""), QString("0"), QString("0"),
+        QString("0"), QString("2147483647"), QString("2147483647"), QString(""), QString(""),
+        QString("0"), QString(""), QString("IB"), QString("0"), QString("0"), QString(""),
+        QString("0"), QString("0"), QString("Submitted"), QString("1.7976931348623157E308"),
+        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"),
+        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"),
+        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"),
+        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"), QString(""),
+        QString(""), QString(""), QString(""), QString(""), QString("1.7976931348623157E308"),
+        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"),
+        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"),
+        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"),
+        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"),
+        QString("-9223372036854775808"), QString(""), QString("0"), QString(""), QString("0"),
+        QString("0"), QString("0"), QString("None"), QString("1.7976931348623157E308"),
+        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"),
+        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"),
+        QString("1.7976931348623157E308"), QString("0"), QString(""), QString(""), QString(""),
+        QString("0"), QString("1"), QString("0"), QString("0"), QString("0"), QString(""),
+        QString(""), QString("0"), QString(""), QString(""), QString(""), QString(""),
+        QString(""), QString(""), QString("0"), QString(""), QString("0"), QString(""),
+        QString("2147483647"), QString("")
+    };
+
+    twsqapi::ServerMessage *sm = factory.create(fields);
+    twsqapi::OpenOrderServerMessage *msg =
+        dynamic_cast<twsqapi::OpenOrderServerMessage *>(sm);
+
+    QVERIFY(msg);
+    const QList<common::OrderDTO> &orders = msg->orders();
+    QCOMPARE(orders.size(), 1);
+
+    const common::OrderDTO &order = orders.first();
+    QCOMPARE(order.orderId, -2);
+    QCOMPARE(order.contractId, static_cast<long>(814279626));
+    QCOMPARE(order.symbol, QString("F"));
+    QCOMPARE(order.securityType, common::SecurityType::OPTION);
+    QCOMPARE(order.currency, QString("USD"));
+    QCOMPARE(order.action, QString("BUY"));
+    QCOMPARE(order.totalQuantity, 1.0);
+    QCOMPARE(order.orderType, QString("LMT"));
+    QCOMPARE(order.lmtPrice, 0.05);
+    QCOMPARE(order.auxPrice, 0.0);
+    QCOMPARE(order.tif, QString("GTC"));
+    QCOMPARE(order.account, QString("DUE062120"));
+    QCOMPARE(order.status, QString("Submitted"));
+
+    delete sm;
+}
+
+void ServerMessageTest::testInvalidOpenOrderMessage()
+{
+    twsqapi::ServerMessageFactory factory;
+
+    // Missing fields after the message id
+    QStringList fields = {QString::number(twsqapi::responses::OPEN_ORDER)};
+    QVERIFY(!factory.create(fields));
+
+    // Non-numeric order id
+    fields = {QString::number(twsqapi::responses::OPEN_ORDER), "abc"};
+    QVERIFY(!factory.create(fields));
+}
+
+void ServerMessageTest::testOrderStatusMessage()
+{
+    twsqapi::ServerMessageFactory factory;
+
+    // Captured ORDER_STATUS message (server version 198, >= 131 so no version
+    // field and mktCapPrice is present).
+    QStringList fields = {
+        QString::number(twsqapi::responses::ORDER_STATUS),
+        "-2",            // orderId
+        "Submitted",     // status
+        "0",             // filled
+        "1",             // remaining
+        "0",             // avgFillPrice
+        "1532091745",    // permId
+        "0",             // parentId
+        "0",             // lastFillPrice
+        "0",             // clientId
+        "",              // whyHeld
+        "0"              // mktCapPrice
+    };
+
+    twsqapi::ServerMessage *sm = factory.create(fields);
+    twsqapi::OrderStatusServerMessage *msg =
+        dynamic_cast<twsqapi::OrderStatusServerMessage *>(sm);
+
+    QVERIFY(msg);
+    const common::OrderStatusDTO &status = msg->orderStatus();
+    QCOMPARE(status.orderId, -2);
+    QCOMPARE(status.status, QString("Submitted"));
+    QCOMPARE(status.filled, 0.0);
+    QCOMPARE(status.remaining, 1.0);
+    QCOMPARE(status.avgFillPrice, 0.0);
+    QCOMPARE(status.permId, static_cast<long>(1532091745));
+    QCOMPARE(status.parentId, 0);
+    QCOMPARE(status.lastFillPrice, 0.0);
+    QCOMPARE(status.clientId, 0);
+    QCOMPARE(status.whyHeld, QString(""));
+    QCOMPARE(status.mktCapPrice, 0.0);
+
+    delete sm;
+}
+
+void ServerMessageTest::testInvalidOrderStatusMessage()
+{
+    twsqapi::ServerMessageFactory factory;
+
+    // Missing fields after the message id
+    QStringList fields = {QString::number(twsqapi::responses::ORDER_STATUS)};
+    QVERIFY(!factory.create(fields));
+
+    // Non-numeric order id
+    fields = {QString::number(twsqapi::responses::ORDER_STATUS), "abc"};
+    QVERIFY(!factory.create(fields));
+}

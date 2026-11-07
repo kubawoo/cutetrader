@@ -4,7 +4,6 @@
 #include <QStringList>
 #include <QTime>
 #include "common/types.h"
-#include "constants.h"
 
 namespace twsqapi {
 class ServerMessage
@@ -12,8 +11,9 @@ class ServerMessage
 public:
     ServerMessage(const QStringList &fields,
                   int id,
-                  int version = responses::NO_VERSION,
-                  int fieldsCount = responses::UNKNOWN_FIELDS_COUNT);
+                  int version,
+                  int fieldsCount,
+                  bool extraFieldsAllowed = false);
     virtual ~ServerMessage();
 
     int id() { return _id; }
@@ -21,7 +21,6 @@ public:
 private:
     int _id;
     int _version;
-    int _fieldsCount;
 protected:
     bool _valid;
 };
@@ -188,6 +187,15 @@ private:
     common::BarDTO _bar;
 };
 
+class OrderStatusServerMessage : public ServerMessage
+{
+public:
+    OrderStatusServerMessage(const QStringList & fields);
+    const common::OrderStatusDTO & orderStatus() { return _orderStatus; }
+private:
+    common::OrderStatusDTO _orderStatus;
+};
+
 class OpenOrderServerMessage : public ServerMessage
 {
 public:
@@ -196,6 +204,7 @@ public:
     const QList<common::OrderDTO> & orders() { return _orders; }
 private:
     int _reqId;
+    //TODO: is this always a single order?
     QList<common::OrderDTO> _orders;
 };
 

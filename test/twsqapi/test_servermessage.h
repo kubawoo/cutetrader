@@ -37,6 +37,10 @@ private slots:
     void testInvalidHistoricalDataEndMessage();
     void testHistoricalDataUpdateMessage();
     void testInvalidHistoricalDataUpdateMessage();
+    void testOrderStatusMessage();
+    void testInvalidOrderStatusMessage();
+    void testOpenOrderMessage();
+    void testInvalidOpenOrderMessage();
 };
 
 #endif // TEST_SERVERMESSAGE_H

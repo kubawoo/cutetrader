@@ -125,7 +125,10 @@ const int REQ_CURRENT_TIME_IN_MILLIS    = 105;
 
 namespace responses {
 constexpr int NO_VERSION = -1;
-constexpr int UNKNOWN_FIELDS_COUNT = -1;
+
+constexpr int ORDER_STATUS = 3;
+constexpr int ORDER_STATUS_VERSION = NO_VERSION;
+constexpr int ORDER_STATUS_FIELDS = 12;
 
 constexpr int ERR_MSG = 4;
 constexpr int ERR_MSG_FIELDS = 6;
@@ -147,6 +150,8 @@ constexpr int NEXT_VALID_ID_VERSION = 1;
 constexpr int NEXT_VALID_ID_FIELDS = 3;
 
 constexpr int CONTRACT_DATA = 10;
+constexpr int CONTRACT_DATA_VERSION = NO_VERSION;
+constexpr int CONTRACT_DATA_MIN_FIELDS = 22;
 
 constexpr int MANAGED_ACCOUNTS = 15;
 constexpr int MANAGED_ACCOUNTS_VERSION = 1;
@@ -158,15 +163,15 @@ constexpr int CURRENT_TIME_FIELDS = 3;
 
 constexpr int HISTORICAL_DATA = 17;
 constexpr int HISTORICAL_DATA_VERSION = NO_VERSION;
-constexpr int HISTORICAL_DATA_FIELDS = UNKNOWN_FIELDS_COUNT;
+constexpr int HISTORICAL_DATA_FIELDS = 3;
 
 constexpr int HISTORICAL_DATA_END = 108;
 constexpr int HISTORICAL_DATA_END_VERSION = NO_VERSION;
-constexpr int HISTORICAL_DATA_END_FIELDS = UNKNOWN_FIELDS_COUNT;
+constexpr int HISTORICAL_DATA_END_FIELDS = 4;
 
 constexpr int HISTORICAL_DATA_UPDATE = 90;
 constexpr int HISTORICAL_DATA_UPDATE_VERSION = NO_VERSION;
-constexpr int HISTORICAL_DATA_UPDATE_FIELDS = UNKNOWN_FIELDS_COUNT;
+constexpr int HISTORICAL_DATA_UPDATE_FIELDS = 10;
 
 constexpr int CONTRACT_DATA_END = 52;
 constexpr int CONTRACT_DATA_END_VERSION = 1;
@@ -178,13 +183,15 @@ constexpr int ACCT_DOWNLOAD_END_FIELDS = 3;
 
 constexpr int OPEN_ORDER = 5;
 constexpr int OPEN_ORDER_VERSION = NO_VERSION;
-constexpr int OPEN_ORDER_FIELDS = UNKNOWN_FIELDS_COUNT;
+constexpr int OPEN_ORDER_FIELDS = 3; //TODO
 
 constexpr int OPEN_ORDER_END = 53;
 constexpr int OPEN_ORDER_END_VERSION = 1;
 constexpr int OPEN_ORDER_END_FIELDS = 2;
 
 constexpr int SYMBOL_SAMPLES = 79;
+constexpr int SYMBOL_SAMPLES_VERSION = NO_VERSION;
+constexpr int SYMBOL_SAMPLES_MIN_FIELDS = 3;
 
 
 /*
