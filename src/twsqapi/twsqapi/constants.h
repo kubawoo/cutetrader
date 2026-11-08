@@ -183,7 +183,7 @@ constexpr int ACCT_DOWNLOAD_END_FIELDS = 3;
 
 constexpr int OPEN_ORDER = 5;
 constexpr int OPEN_ORDER_VERSION = NO_VERSION;
-constexpr int OPEN_ORDER_FIELDS = 3; //TODO
+constexpr int OPEN_ORDER_FIELDS = 20;
 
 constexpr int OPEN_ORDER_END = 53;
 constexpr int OPEN_ORDER_END_VERSION = 1;

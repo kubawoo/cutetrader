@@ -348,6 +348,8 @@ PortfolioValueServerMessage::PortfolioValueServerMessage(const QStringList &fiel
         _position.expiration = QDate::fromString(fields[5], "yyyyMMdd");
         _valid = _position.expiration.isValid();
         CHECK_VALID(_valid, "Invalid expiration date");
+    } else {
+        _position.expiration = QDate();
     }
 
     if (_position.securityType == common::SecurityType::OPTION
@@ -519,35 +521,39 @@ OpenOrderServerMessage::OpenOrderServerMessage(const QStringList &fields)
     order.orderId = fields[1].toInt(&_valid);
     CHECK_VALID(_valid, "Invalid orderId: " + fields[1]);
 
-    // contract fields
     order.contractId = fields[2].toLong(&_valid);
     CHECK_VALID(_valid, "Invalid contractId: " + fields[2]);
 
     order.symbol = fields[3];
 
     order.securityType = common::Utils::securityTypeFromString(fields[4]);
-    /*
-     * TODO:
-     * msg "5\x00-3\x00""814279626\x00""F\x00OPT\x00""20280121\x00""15\x00""C\x00""100\x00SMART\x00USD\x00""F     280121C00015000\x00""F\x00""BUY\x00""1\x00LMT\x00""0.05\x00""0.0\x00GTC\x00\x00""DUE062120\x00\x00""0\x00RapidOrder\x00""0\x00""1532091745\x00""0\x00""0\x00""0\x00\x00""1532091745.0/DUE062120/100\x00\x00\x00\x00\x00\x00""0\x00\x00\x00""0\x00\x00-1\x00""0\x00\x00\x00\x00\x00\x00""2147483647\x00""0\x00""0\x00""0\x00\x00""3\x00""0\x00""0\x00\x00""0\x00""0\x00\x00""0\x00None\x00\x00""0\x00\x00\x00\x00?\x00""0\x00""0\x00\x00""0\x00""0\x00\x00\x00\x00\x00\x00""0\x00""0\x00""0\x00""2147483647\x00""2147483647\x00\x00\x00""0\x00\x00IB\x00""0\x00""0\x00\x00""0\x00""0\x00PreSubmitted\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00\x00\x00\x00\x00\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00-9223372036854775808\x00\x00""0\x00\x00""0\x00""0\x00""0\x00None\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""1.7976931348623157E308\x00""0\x00\x00\x00\x00""0\x00""1\x00""0\x00""0\x00""0\x00\x00\x00""0\x00\x00\x00\x00\x00\x00\x00""0\x00\x00""0\x00\x00""2147483647\x00"
-*/
-    // take(); // lastTradeDateOrContractMonth
-    // take(); // strike
-    // take(); // right
-    // take(); // multiplier
-    // take(); // exchange
-    // order.currency = take();
-    // take(); // localSymbol
-    // take(); // tradingClass
+    _valid = order.securityType != common::SecurityType::UNSUPPORTED;
+    CHECK_VALID(_valid, "Unsupported security type: " + fields[4]);
 
-    // // core order fields
-    // order.action = take();
-    // order.totalQuantity = takeDouble();
-    // order.orderType = take();
-    // order.lmtPrice = takeDouble();
-    // order.auxPrice = takeDouble();
-    // order.tif = take();
-    // take(); // ocaGroup
-    // order.account = take();
+
+    if (order.securityType == common::SecurityType::OPTION
+        || order.securityType == common::SecurityType::FUTURE_OPTION
+        || order.securityType == common::SecurityType::FUTURE) {
+        order.expiration = QDate::fromString(fields[5], "yyyyMMdd");
+        _valid = order.expiration.isValid();
+        CHECK_VALID(_valid, "Invalid expiration date:" + fields[5]);
+    } else {
+        order.expiration = QDate();
+    }
+
+
+    order.currency = fields[9];
+    order.localSymbol = fields[10];
+    order.action = fields[12];
+    order.totalQuantity = fields[13].toDouble(&_valid);
+    CHECK_VALID(_valid, "Invalid quantity value: " + fields[13]);
+    order.orderType = fields[14];
+    order.lmtPrice = fields[15].toDouble(&_valid);
+    CHECK_VALID(_valid, "Invalid limit proce value: " + fields[15]);
+    order.auxPrice = fields[16].toDouble(&_valid);
+    CHECK_VALID(_valid, "Invalid aux proce value: " + fields[16]);
+    order.tif = fields[17];
+    order.account = fields[19];
 
 
     _orders.append(order);

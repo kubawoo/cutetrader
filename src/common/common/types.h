@@ -103,6 +103,7 @@ struct OrderDTO
     int orderId;
     long contractId;
     QString symbol;
+    QString localSymbol;
     common::SecurityType securityType;
     QString currency;
     QString action; // BUY, SELL
@@ -111,12 +112,8 @@ struct OrderDTO
     double lmtPrice;
     double auxPrice;
     QString tif; // DAY, GTC, etc.
-    QString status; // PendingSubmit, Submitted, Filled, Cancelled, etc.
-    double filled;
-    double remaining;
-    double avgFillPrice;
-    QString lastFillTime;
     QString account;
+    QDate expiration;
 };
 
 }
