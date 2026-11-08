@@ -114,6 +114,11 @@ struct OrderDTO
     QString tif; // DAY, GTC, etc.
     QString account;
     QDate expiration;
+    // Execution status fields (updated from ORDER_STATUS messages)
+    QString status;
+    double filled = 0.0;
+    double remaining = 0.0;
+    double avgFillPrice = 0.0;
 };
 
 }

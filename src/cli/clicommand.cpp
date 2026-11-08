@@ -393,10 +393,10 @@ void OrderListCliCommand::onOpenOrdersReady(const int &requestId, const QList<co
     if (orders.isEmpty()) {
         s = "No open orders";
     } else {
-        s += "OrderId\tContractId\tSymbol\tAction\tQty\tType\tLmtPrice\tAuxPrice\tTIF\tStatus\tFilled\tRemaining\tAvgFillPrice\tLastFillTime\tAccount\n";
+        s += "OrderId\tContractId\tSymbol\tAction\tQty\tType\tLmtPrice\tAuxPrice\tTIF\tStatus\tFilled\tRemaining\tAvgFillPrice\tAccount\n";
         s += "----------------------------------------------------------------------------------------------------\n";
         for (auto const &o : orders) {
-            s += QString::number(o.orderId) + "\t" + QString::number(o.contractId) + "\t" + o.symbol + "\t" + o.action + "\t" + QString::number(o.totalQuantity) + "\t" + o.orderType + "\t" + QString::number(o.lmtPrice) + "\t" + QString::number(o.auxPrice) + "\t" + o.tif + "\t" + o.status + "\t" + QString::number(o.filled) + "\t" + QString::number(o.remaining) + "\t" + QString::number(o.avgFillPrice) + "\t" + o.lastFillTime + "\t" + o.account + "\n";
+            s += QString::number(o.orderId) + "\t" + QString::number(o.contractId) + "\t" + o.symbol + "\t" + o.action + "\t" + QString::number(o.totalQuantity) + "\t" + o.orderType + "\t" + QString::number(o.lmtPrice) + "\t" + QString::number(o.auxPrice) + "\t" + o.tif + "\t" + o.status + "\t" + QString::number(o.filled) + "\t" + QString::number(o.remaining) + "\t" + QString::number(o.avgFillPrice) + "\t" + o.account + "\n";
         }
     }
     emit finished(s);

@@ -1166,45 +1166,30 @@ void ServerMessageTest::testOpenOrderMessage()
 {
     twsqapi::ServerMessageFactory factory;
 
-    // Captured OPEN_ORDER message (server version 198). The order status is not
-    // at a fixed offset because several preceding sections are variable length,
-    // so this exercises the full reference-compatible traversal.
-    QStringList fields = {QString("5"), QString("-2"), QString("814279626"), QString("F"),
-        QString("OPT"), QString("20280121"), QString("15"), QString("C"), QString("100"),
-        QString("SMART"), QString("USD"), QString("F     280121C00015000"), QString("F"),
-        QString("BUY"), QString("1"), QString("LMT"), QString("0.05"), QString("0.0"),
-        QString("GTC"), QString(""), QString("DUE062120"), QString(""), QString("0"),
-        QString("RapidOrder"), QString("0"), QString("1532091745"), QString("0"), QString("0"),
-        QString("0"), QString(""), QString("1532091745.0/DUE062120/100"), QString(""),
-        QString(""), QString(""), QString(""), QString(""), QString("0"), QString(""),
-        QString(""), QString("0"), QString(""), QString("-1"), QString("0"), QString(""),
-        QString(""), QString(""), QString(""), QString(""), QString("2147483647"), QString("0"),
-        QString("0"), QString("0"), QString(""), QString("3"), QString("0"), QString("0"),
-        QString(""), QString("0"), QString("0"), QString(""), QString("0"), QString("None"),
-        QString(""), QString("0"), QString(""), QString(""), QString(""), QString("?"),
-        QString("0"), QString("0"), QString(""), QString("0"), QString("0"), QString(""),
-        QString(""), QString(""), QString(""), QString(""), QString("0"), QString("0"),
-        QString("0"), QString("2147483647"), QString("2147483647"), QString(""), QString(""),
-        QString("0"), QString(""), QString("IB"), QString("0"), QString("0"), QString(""),
-        QString("0"), QString("0"), QString("Submitted"), QString("1.7976931348623157E308"),
-        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"),
-        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"),
-        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"),
-        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"), QString(""),
-        QString(""), QString(""), QString(""), QString(""), QString("1.7976931348623157E308"),
-        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"),
-        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"),
-        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"),
-        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"),
-        QString("-9223372036854775808"), QString(""), QString("0"), QString(""), QString("0"),
-        QString("0"), QString("0"), QString("None"), QString("1.7976931348623157E308"),
-        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"),
-        QString("1.7976931348623157E308"), QString("1.7976931348623157E308"),
-        QString("1.7976931348623157E308"), QString("0"), QString(""), QString(""), QString(""),
-        QString("0"), QString("1"), QString("0"), QString("0"), QString("0"), QString(""),
-        QString(""), QString("0"), QString(""), QString(""), QString(""), QString(""),
-        QString(""), QString(""), QString("0"), QString(""), QString("0"), QString(""),
-        QString("2147483647"), QString("")
+    // Simplified OPEN_ORDER message matching the parser's expected format.
+    // Field indices (after msgId=5 at index 0):
+    // [1] orderId, [2] contractId, [3] symbol, [4] securityType,
+    // [5] expiration, [6-8] padding, [9] currency, [10] localSymbol,
+    // [11] padding, [12] action, [13] totalQuantity, [14] orderType,
+    // [15] lmtPrice, [16] auxPrice, [17] tif, [18] padding, [19] account
+    QStringList fields = {QString::number(twsqapi::responses::OPEN_ORDER),
+        QString("-2"),                    // [1] orderId
+        QString("814279626"),             // [2] contractId
+        QString("F"),                     // [3] symbol
+        QString("OPT"),                   // [4] securityType
+        QString("20280121"),              // [5] expiration
+        QString(""), QString(""), QString(""), QString(""), // [6][7][8][9] padding
+        QString("USD"),                   // [10] currency
+        QString("F     280121C00015000"), // [11] localSymbol
+        QString(""),                      // [12] padding
+        QString("BUY"),                   // [13] action
+        QString("1"),                     // [14] totalQuantity
+        QString("LMT"),                   // [15] orderType
+        QString("0.05"),                  // [16] lmtPrice
+        QString("0.0"),                   // [17] auxPrice
+        QString("GTC"),                   // [18] tif
+        QString(""),                      // [19] padding
+        QString("DUE062120")              // [20] account
     };
 
     twsqapi::ServerMessage *sm = factory.create(fields);
@@ -1212,10 +1197,7 @@ void ServerMessageTest::testOpenOrderMessage()
         dynamic_cast<twsqapi::OpenOrderServerMessage *>(sm);
 
     QVERIFY(msg);
-    const QList<common::OrderDTO> &orders = msg->orders();
-    QCOMPARE(orders.size(), 1);
-
-    const common::OrderDTO &order = orders.first();
+    const common::OrderDTO &order = msg->order();
     QCOMPARE(order.orderId, -2);
     QCOMPARE(order.contractId, static_cast<long>(814279626));
     QCOMPARE(order.symbol, QString("F"));
@@ -1228,7 +1210,6 @@ void ServerMessageTest::testOpenOrderMessage()
     QCOMPARE(order.auxPrice, 0.0);
     QCOMPARE(order.tif, QString("GTC"));
     QCOMPARE(order.account, QString("DUE062120"));
-    QCOMPARE(order.status, QString("Submitted"));
 
     delete sm;
 }

@@ -201,11 +201,10 @@ class OpenOrderServerMessage : public ServerMessage
 public:
     OpenOrderServerMessage(const QStringList & fields);
     int requestId() { return _reqId; }
-    const QList<common::OrderDTO> & orders() { return _orders; }
+    const common::OrderDTO & order() { return _order; }
 private:
     int _reqId;
-    //TODO: is this always a single order?
-    QList<common::OrderDTO> _orders;
+    common::OrderDTO _order;
 };
 
 class OpenOrderEndServerMessage : public ServerMessage

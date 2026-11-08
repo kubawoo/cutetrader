@@ -516,47 +516,42 @@ OpenOrderServerMessage::OpenOrderServerMessage(const QStringList &fields)
 {
     CHECK_VALID(_valid, "Base validation failed");
 
-    common::OrderDTO order{};
-
-    order.orderId = fields[1].toInt(&_valid);
+    _order.orderId = fields[1].toInt(&_valid);
     CHECK_VALID(_valid, "Invalid orderId: " + fields[1]);
 
-    order.contractId = fields[2].toLong(&_valid);
+    _order.contractId = fields[2].toLong(&_valid);
     CHECK_VALID(_valid, "Invalid contractId: " + fields[2]);
 
-    order.symbol = fields[3];
+    _order.symbol = fields[3];
 
-    order.securityType = common::Utils::securityTypeFromString(fields[4]);
-    _valid = order.securityType != common::SecurityType::UNSUPPORTED;
+    _order.securityType = common::Utils::securityTypeFromString(fields[4]);
+    _valid = _order.securityType != common::SecurityType::UNSUPPORTED;
     CHECK_VALID(_valid, "Unsupported security type: " + fields[4]);
 
 
-    if (order.securityType == common::SecurityType::OPTION
-        || order.securityType == common::SecurityType::FUTURE_OPTION
-        || order.securityType == common::SecurityType::FUTURE) {
-        order.expiration = QDate::fromString(fields[5], "yyyyMMdd");
-        _valid = order.expiration.isValid();
+    if (_order.securityType == common::SecurityType::OPTION
+        || _order.securityType == common::SecurityType::FUTURE_OPTION
+        || _order.securityType == common::SecurityType::FUTURE) {
+        _order.expiration = QDate::fromString(fields[5], "yyyyMMdd");
+        _valid = _order.expiration.isValid();
         CHECK_VALID(_valid, "Invalid expiration date:" + fields[5]);
     } else {
-        order.expiration = QDate();
+        _order.expiration = QDate();
     }
 
 
-    order.currency = fields[9];
-    order.localSymbol = fields[10];
-    order.action = fields[12];
-    order.totalQuantity = fields[13].toDouble(&_valid);
+    _order.currency = fields[10];
+    _order.localSymbol = fields[11];
+    _order.action = fields[13];
+    _order.totalQuantity = fields[14].toDouble(&_valid);
     CHECK_VALID(_valid, "Invalid quantity value: " + fields[13]);
-    order.orderType = fields[14];
-    order.lmtPrice = fields[15].toDouble(&_valid);
+    _order.orderType = fields[15];
+    _order.lmtPrice = fields[16].toDouble(&_valid);
     CHECK_VALID(_valid, "Invalid limit proce value: " + fields[15]);
-    order.auxPrice = fields[16].toDouble(&_valid);
+    _order.auxPrice = fields[17].toDouble(&_valid);
     CHECK_VALID(_valid, "Invalid aux proce value: " + fields[16]);
-    order.tif = fields[17];
-    order.account = fields[19];
-
-
-    _orders.append(order);
+    _order.tif = fields[18];
+    _order.account = fields[20];
 }
 
 OpenOrderEndServerMessage::OpenOrderEndServerMessage(const QStringList &fields)

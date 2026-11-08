@@ -531,7 +531,7 @@ void TwsClient::_handleOrderStatus(OrderStatusServerMessage *msg)
 
 void TwsClient::_handleOpenOrder(OpenOrderServerMessage *msg)
 {
-    _pendingOpenOrders.append(msg->orders());
+    _pendingOpenOrders.append(msg->order());
 }
 
 void TwsClient::_handleOpenOrderEnd(OpenOrderEndServerMessage *msg)
