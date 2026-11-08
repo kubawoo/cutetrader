@@ -27,6 +27,10 @@ CliCommandManager::CliCommandManager(const QString &host,
             &common::ITwsClient::portfolioPositionUpdatedSignal,
             &_account,
             &account::Account::updatePortfolioPosition);
+    connect(client.data(),
+            &common::ITwsClient::openOrderSignal,
+            &_account,
+            &account::Account::updateOpenOrders);
     connect(client.data(), &common::ITwsClient::managedAccountsSignal, this, &CliCommandManager::onManagedAccounts);
     connect(client.data(), &common::ITwsClient::errorSignal, this, &CliCommandManager::onError);
 
@@ -108,7 +112,7 @@ void CliCommandManager::setupCommands()
     _commands["search"] = new SearchSymbolsCliCommand(_client, this);
     _commands["historical"] = new HistoricalDataCliCommand(_client, this);
     _commands["cancel-historical"] = new CancelHistoricalDataCliCommand(_client, this);
-    _commands["orders"] = new OrderListCliCommand(_client, this);
+    _commands["orders"] = new OrderListCliCommand(_account, this);
 
     for (auto c : _commands.values()) {
         connect(c, &CliCommand::finished, this, &CliCommandManager::commandResult);
@@ -364,31 +368,22 @@ void CancelHistoricalDataCliCommand::execute(const QStringList &params)
     emit finished("Cancelled historical data request " + QString::number(reqId));
 }
 
-OrderListCliCommand::OrderListCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent)
+OrderListCliCommand::OrderListCliCommand(account::Account &account, QObject *parent)
     : CliCommand{parent}
-    , _client(client)
+    , _account(account)
 {
-    QObject::connect(_client.data(), &common::ITwsClient::openOrderSignal,
-                     this, &OrderListCliCommand::onOpenOrdersReady);
+    // No signal connection - we use cached data on demand
 }
 
 void OrderListCliCommand::execute(const QStringList &params)
 {
     Q_UNUSED(params);
-    if (_waiting) {
-        emit finished("Already waiting for orders. Please wait.");
-        return;
-    }
-    _waiting = true;
-    _client->requestOpenOrders();
+    // Use cached orders from Account
+    onOpenOrdersReady(_account.openOrders());
 }
 
-void OrderListCliCommand::onOpenOrdersReady(const int &requestId, const QList<common::OrderDTO> &orders)
+void OrderListCliCommand::onOpenOrdersReady(const QList<common::OrderDTO> &orders)
 {
-    if (!_waiting)
-        return;
-    _waiting = false;
-
     QString s;
     if (orders.isEmpty()) {
         s = "No open orders";

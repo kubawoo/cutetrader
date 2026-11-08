@@ -41,6 +41,7 @@ void TwsClient::startClient(const QString &accountId)
 {
     _accountId = accountId;
     _client->send(StartAccountUpdatesClientMessage(_accountId));
+    requestOpenOrders();
 }
 
 void TwsClient::requestCurrentTime()

@@ -59,6 +59,7 @@ void TwsClientMock::startClient(const QString &accountId)
     if(_connected) {
         _timer->start(60 * 1000); // every minute
         _timerTask();
+        requestOpenOrders();
     }
 }
 
