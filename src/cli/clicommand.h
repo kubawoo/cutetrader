@@ -183,15 +183,17 @@ class OrderListCliCommand : public CliCommand
 {
     Q_OBJECT
 public:
-    explicit OrderListCliCommand(account::Account &account, QObject *parent = nullptr);
-    QString description() override { return "List open orders"; }
+    explicit OrderListCliCommand(account::Account &account, QSharedPointer<common::ITwsClient> client, QObject *parent = nullptr);
+    QString description() override { return "List open orders (use 'orders refresh' to fetch from TWS)"; }
 public slots:
     void execute(const QStringList &params) override;
 private slots:
-    void onOpenOrdersReady(const QList<common::OrderDTO> &orders);
-
+    void onOpenOrdersReady(const int &requestId, const QList<common::OrderDTO> &orders);
 private:
+    void displayOrders(const QList<common::OrderDTO> &orders);
     account::Account &_account;
+    QSharedPointer<common::ITwsClient> _client;
+    bool _waiting;
 };
 
 #endif // CLICOMMAND_H

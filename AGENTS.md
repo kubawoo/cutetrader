@@ -13,6 +13,20 @@ cmake --build build -j4
 
 Pass `--mocked` to avoid connecting to TWS (uses `mocked::MockAppFactory`).
 
+### CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| `account` | Account summary and portfolio overview |
+| `orders` | List open orders (cached); use `orders refresh` to fetch from TWS |
+| `search <pattern>` | Search for contract symbols |
+| `historical <symbol> [params]` | Request historical bars |
+| `cancel-historical <reqId>` | Cancel historical data request |
+| `watchlist` | Show watchlist |
+| `time` | Get server time |
+| `help` | Show available commands |
+| `quit` | Exit CLI |
+
 ### MCP Server (optional)
 
 The MCP server (`cutetrader-mcpserver`) is only built if QtMcp components are found:
@@ -52,13 +66,21 @@ Test registration pattern: declare test class in `test/<domain>/test_<subject>.h
 | `src/cli/` | CLI executable (`cutetrader-cli`) — entrypoint `main.cpp` |
 | `src/common/` | Interfaces (`IAppFactory`, `ITwsClient`, `IDbMigration`), DTOs (`types.h`), utilities |
 | `src/data/` | SQL database layer — `DbBuilder` (migrations), `DataManager`, `Model` |
-| `src/account/` | Portfolio, account info, account model |
+| `src/account/` | Portfolio, account info, account model, **open orders cache** |
 | `src/twsqapi/` | TWS API communication — socket client, message parsing, cache |
 | `src/quant/` | Quantitative — Black-Scholes, calculations |
 | `src/mocked/` | Mock implementations of `IAppFactory`/`ITwsClient` for testing |
 | `src/mcpserver/` | MCP (Model Context Protocol) server for AI tool integration (optional, requires QtMcp) |
 
 Includes use `target_include_directories` so headers look like `#include <common/types.h>` (headers live in `src/<lib>/<lib>/`).
+
+## Open Orders Caching
+
+- On startup, after account selection, open orders are **automatically fetched** and cached in `Account`
+- The `orders` command shows cached data instantly (no network round-trip)
+- `orders refresh` explicitly re-fetches from TWS, updates cache, then displays
+- Incoming `orderStatus` messages automatically update cached order status (fill, cancel, reject)
+- Manual refresh only needed after reconnection or suspected message loss
 
 ## Key conventions
 

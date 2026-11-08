@@ -112,7 +112,7 @@ void CliCommandManager::setupCommands()
     _commands["search"] = new SearchSymbolsCliCommand(_client, this);
     _commands["historical"] = new HistoricalDataCliCommand(_client, this);
     _commands["cancel-historical"] = new CancelHistoricalDataCliCommand(_client, this);
-    _commands["orders"] = new OrderListCliCommand(_account, this);
+    _commands["orders"] = new OrderListCliCommand(_account, _client, this);
 
     for (auto c : _commands.values()) {
         connect(c, &CliCommand::finished, this, &CliCommandManager::commandResult);
@@ -368,21 +368,47 @@ void CancelHistoricalDataCliCommand::execute(const QStringList &params)
     emit finished("Cancelled historical data request " + QString::number(reqId));
 }
 
-OrderListCliCommand::OrderListCliCommand(account::Account &account, QObject *parent)
+OrderListCliCommand::OrderListCliCommand(account::Account &account, QSharedPointer<common::ITwsClient> client, QObject *parent)
     : CliCommand{parent}
     , _account(account)
-{
-    // No signal connection - we use cached data on demand
-}
+    , _client(client)
+    , _waiting(false)
+{}
 
 void OrderListCliCommand::execute(const QStringList &params)
 {
-    Q_UNUSED(params);
-    // Use cached orders from Account
-    onOpenOrdersReady(_account.openOrders());
+    if (_waiting) {
+        emit finished("Already waiting for orders. Please wait.");
+        return;
+    }
+
+    bool refresh = params.contains("refresh");
+    if (refresh) {
+        _waiting = true;
+        QObject::connect(_client.data(), &common::ITwsClient::openOrderSignal,
+                         this, &OrderListCliCommand::onOpenOrdersReady, Qt::UniqueConnection);
+        _client->requestOpenOrders();
+    } else {
+        // Use cached orders from Account
+        displayOrders(_account.openOrders());
+    }
 }
 
-void OrderListCliCommand::onOpenOrdersReady(const QList<common::OrderDTO> &orders)
+void OrderListCliCommand::onOpenOrdersReady(const int &requestId, const QList<common::OrderDTO> &orders)
+{
+    Q_UNUSED(requestId);
+    if (!_waiting)
+        return;
+    _waiting = false;
+
+    // Disconnect to avoid multiple calls
+    QObject::disconnect(_client.data(), &common::ITwsClient::openOrderSignal,
+                        this, &OrderListCliCommand::onOpenOrdersReady);
+
+    displayOrders(orders);
+}
+
+void OrderListCliCommand::displayOrders(const QList<common::OrderDTO> &orders)
 {
     QString s;
     if (orders.isEmpty()) {
