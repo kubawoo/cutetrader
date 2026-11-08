@@ -83,11 +83,27 @@ struct BarDTO
     double average;
 };
 
+struct OrderStatusDTO
+{
+    int orderId;
+    QString status;
+    double filled;
+    double remaining;
+    double avgFillPrice;
+    long permId;
+    int parentId;
+    double lastFillPrice;
+    int clientId;
+    QString whyHeld;
+    double mktCapPrice;
+};
+
 struct OrderDTO
 {
     int orderId;
     long contractId;
     QString symbol;
+    QString localSymbol;
     common::SecurityType securityType;
     QString currency;
     QString action; // BUY, SELL
@@ -96,12 +112,13 @@ struct OrderDTO
     double lmtPrice;
     double auxPrice;
     QString tif; // DAY, GTC, etc.
-    QString status; // PendingSubmit, Submitted, Filled, Cancelled, etc.
-    double filled;
-    double remaining;
-    double avgFillPrice;
-    QString lastFillTime;
     QString account;
+    QDate expiration;
+    // Execution status fields (updated from ORDER_STATUS messages)
+    QString status;
+    double filled = 0.0;
+    double remaining = 0.0;
+    double avgFillPrice = 0.0;
 };
 
 }

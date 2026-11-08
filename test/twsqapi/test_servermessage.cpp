@@ -1161,3 +1161,123 @@ void ServerMessageTest::testInvalidHistoricalDataUpdateMessage()
     };
     QVERIFY(!factory.create(fields));
 }
+
+void ServerMessageTest::testOpenOrderMessage()
+{
+    twsqapi::ServerMessageFactory factory;
+
+    // Simplified OPEN_ORDER message matching the parser's expected format.
+    // Field indices (after msgId=5 at index 0):
+    // [1] orderId, [2] contractId, [3] symbol, [4] securityType,
+    // [5] expiration, [6-8] padding, [9] currency, [10] localSymbol,
+    // [11] padding, [12] action, [13] totalQuantity, [14] orderType,
+    // [15] lmtPrice, [16] auxPrice, [17] tif, [18] padding, [19] account
+    QStringList fields = {QString::number(twsqapi::responses::OPEN_ORDER),
+        QString("-2"),                    // [1] orderId
+        QString("814279626"),             // [2] contractId
+        QString("F"),                     // [3] symbol
+        QString("OPT"),                   // [4] securityType
+        QString("20280121"),              // [5] expiration
+        QString(""), QString(""), QString(""), QString(""), // [6][7][8][9] padding
+        QString("USD"),                   // [10] currency
+        QString("F     280121C00015000"), // [11] localSymbol
+        QString(""),                      // [12] padding
+        QString("BUY"),                   // [13] action
+        QString("1"),                     // [14] totalQuantity
+        QString("LMT"),                   // [15] orderType
+        QString("0.05"),                  // [16] lmtPrice
+        QString("0.0"),                   // [17] auxPrice
+        QString("GTC"),                   // [18] tif
+        QString(""),                      // [19] padding
+        QString("DUE062120")              // [20] account
+    };
+
+    twsqapi::ServerMessage *sm = factory.create(fields);
+    twsqapi::OpenOrderServerMessage *msg =
+        dynamic_cast<twsqapi::OpenOrderServerMessage *>(sm);
+
+    QVERIFY(msg);
+    const common::OrderDTO &order = msg->order();
+    QCOMPARE(order.orderId, -2);
+    QCOMPARE(order.contractId, static_cast<long>(814279626));
+    QCOMPARE(order.symbol, QString("F"));
+    QCOMPARE(order.securityType, common::SecurityType::OPTION);
+    QCOMPARE(order.currency, QString("USD"));
+    QCOMPARE(order.action, QString("BUY"));
+    QCOMPARE(order.totalQuantity, 1.0);
+    QCOMPARE(order.orderType, QString("LMT"));
+    QCOMPARE(order.lmtPrice, 0.05);
+    QCOMPARE(order.auxPrice, 0.0);
+    QCOMPARE(order.tif, QString("GTC"));
+    QCOMPARE(order.account, QString("DUE062120"));
+
+    delete sm;
+}
+
+void ServerMessageTest::testInvalidOpenOrderMessage()
+{
+    twsqapi::ServerMessageFactory factory;
+
+    // Missing fields after the message id
+    QStringList fields = {QString::number(twsqapi::responses::OPEN_ORDER)};
+    QVERIFY(!factory.create(fields));
+
+    // Non-numeric order id
+    fields = {QString::number(twsqapi::responses::OPEN_ORDER), "abc"};
+    QVERIFY(!factory.create(fields));
+}
+
+void ServerMessageTest::testOrderStatusMessage()
+{
+    twsqapi::ServerMessageFactory factory;
+
+    // Captured ORDER_STATUS message (server version 198, >= 131 so no version
+    // field and mktCapPrice is present).
+    QStringList fields = {
+        QString::number(twsqapi::responses::ORDER_STATUS),
+        "-2",            // orderId
+        "Submitted",     // status
+        "0",             // filled
+        "1",             // remaining
+        "0",             // avgFillPrice
+        "1532091745",    // permId
+        "0",             // parentId
+        "0",             // lastFillPrice
+        "0",             // clientId
+        "",              // whyHeld
+        "0"              // mktCapPrice
+    };
+
+    twsqapi::ServerMessage *sm = factory.create(fields);
+    twsqapi::OrderStatusServerMessage *msg =
+        dynamic_cast<twsqapi::OrderStatusServerMessage *>(sm);
+
+    QVERIFY(msg);
+    const common::OrderStatusDTO &status = msg->orderStatus();
+    QCOMPARE(status.orderId, -2);
+    QCOMPARE(status.status, QString("Submitted"));
+    QCOMPARE(status.filled, 0.0);
+    QCOMPARE(status.remaining, 1.0);
+    QCOMPARE(status.avgFillPrice, 0.0);
+    QCOMPARE(status.permId, static_cast<long>(1532091745));
+    QCOMPARE(status.parentId, 0);
+    QCOMPARE(status.lastFillPrice, 0.0);
+    QCOMPARE(status.clientId, 0);
+    QCOMPARE(status.whyHeld, QString(""));
+    QCOMPARE(status.mktCapPrice, 0.0);
+
+    delete sm;
+}
+
+void ServerMessageTest::testInvalidOrderStatusMessage()
+{
+    twsqapi::ServerMessageFactory factory;
+
+    // Missing fields after the message id
+    QStringList fields = {QString::number(twsqapi::responses::ORDER_STATUS)};
+    QVERIFY(!factory.create(fields));
+
+    // Non-numeric order id
+    fields = {QString::number(twsqapi::responses::ORDER_STATUS), "abc"};
+    QVERIFY(!factory.create(fields));
+}

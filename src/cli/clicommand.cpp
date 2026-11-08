@@ -27,6 +27,10 @@ CliCommandManager::CliCommandManager(const QString &host,
             &common::ITwsClient::portfolioPositionUpdatedSignal,
             &_account,
             &account::Account::updatePortfolioPosition);
+    connect(client.data(),
+            &common::ITwsClient::openOrderSignal,
+            &_account,
+            &account::Account::updateOpenOrders);
     connect(client.data(), &common::ITwsClient::managedAccountsSignal, this, &CliCommandManager::onManagedAccounts);
     connect(client.data(), &common::ITwsClient::errorSignal, this, &CliCommandManager::onError);
 
@@ -108,7 +112,7 @@ void CliCommandManager::setupCommands()
     _commands["search"] = new SearchSymbolsCliCommand(_client, this);
     _commands["historical"] = new HistoricalDataCliCommand(_client, this);
     _commands["cancel-historical"] = new CancelHistoricalDataCliCommand(_client, this);
-    _commands["orders"] = new OrderListCliCommand(_client, this);
+    _commands["orders"] = new OrderListCliCommand(_account, _client, this);
 
     for (auto c : _commands.values()) {
         connect(c, &CliCommand::finished, this, &CliCommandManager::commandResult);
@@ -364,39 +368,56 @@ void CancelHistoricalDataCliCommand::execute(const QStringList &params)
     emit finished("Cancelled historical data request " + QString::number(reqId));
 }
 
-OrderListCliCommand::OrderListCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent)
+OrderListCliCommand::OrderListCliCommand(account::Account &account, QSharedPointer<common::ITwsClient> client, QObject *parent)
     : CliCommand{parent}
+    , _account(account)
     , _client(client)
-{
-    QObject::connect(_client.data(), &common::ITwsClient::openOrderSignal,
-                     this, &OrderListCliCommand::onOpenOrdersReady);
-}
+    , _waiting(false)
+{}
 
 void OrderListCliCommand::execute(const QStringList &params)
 {
-    Q_UNUSED(params);
     if (_waiting) {
         emit finished("Already waiting for orders. Please wait.");
         return;
     }
-    _waiting = true;
-    _client->requestOpenOrders();
+
+    bool refresh = params.contains("refresh");
+    if (refresh) {
+        _waiting = true;
+        QObject::connect(_client.data(), &common::ITwsClient::openOrderSignal,
+                         this, &OrderListCliCommand::onOpenOrdersReady, Qt::UniqueConnection);
+        _client->requestOpenOrders();
+    } else {
+        // Use cached orders from Account
+        displayOrders(_account.openOrders());
+    }
 }
 
 void OrderListCliCommand::onOpenOrdersReady(const int &requestId, const QList<common::OrderDTO> &orders)
 {
+    Q_UNUSED(requestId);
     if (!_waiting)
         return;
     _waiting = false;
 
+    // Disconnect to avoid multiple calls
+    QObject::disconnect(_client.data(), &common::ITwsClient::openOrderSignal,
+                        this, &OrderListCliCommand::onOpenOrdersReady);
+
+    displayOrders(orders);
+}
+
+void OrderListCliCommand::displayOrders(const QList<common::OrderDTO> &orders)
+{
     QString s;
     if (orders.isEmpty()) {
         s = "No open orders";
     } else {
-        s += "OrderId\tContractId\tSymbol\tAction\tQty\tType\tLmtPrice\tAuxPrice\tTIF\tStatus\tFilled\tRemaining\tAvgFillPrice\tLastFillTime\tAccount\n";
+        s += "OrderId\tContractId\tSymbol\tAction\tQty\tType\tLmtPrice\tAuxPrice\tTIF\tStatus\tFilled\tRemaining\tAvgFillPrice\tAccount\n";
         s += "----------------------------------------------------------------------------------------------------\n";
         for (auto const &o : orders) {
-            s += QString::number(o.orderId) + "\t" + QString::number(o.contractId) + "\t" + o.symbol + "\t" + o.action + "\t" + QString::number(o.totalQuantity) + "\t" + o.orderType + "\t" + QString::number(o.lmtPrice) + "\t" + QString::number(o.auxPrice) + "\t" + o.tif + "\t" + o.status + "\t" + QString::number(o.filled) + "\t" + QString::number(o.remaining) + "\t" + QString::number(o.avgFillPrice) + "\t" + o.lastFillTime + "\t" + o.account + "\n";
+            s += QString::number(o.orderId) + "\t" + QString::number(o.contractId) + "\t" + o.symbol + "\t" + o.action + "\t" + QString::number(o.totalQuantity) + "\t" + o.orderType + "\t" + QString::number(o.lmtPrice) + "\t" + QString::number(o.auxPrice) + "\t" + o.tif + "\t" + o.status + "\t" + QString::number(o.filled) + "\t" + QString::number(o.remaining) + "\t" + QString::number(o.avgFillPrice) + "\t" + o.account + "\n";
         }
     }
     emit finished(s);

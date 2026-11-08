@@ -93,5 +93,11 @@ void Account::updatePortfolioPosition(const common::PortfolioPositionDTO &positi
     }
 }
 
+void Account::updateOpenOrders(const int &requestId, const QList<common::OrderDTO> &orders)
+{
+    Q_UNUSED(requestId);
+    _openOrders = orders;
+    emit openOrdersUpdated(_openOrders);
+}
 
 }

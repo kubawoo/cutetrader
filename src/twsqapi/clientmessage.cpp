@@ -221,13 +221,15 @@ QStringList CancelHistoricalDataClientMessage::fields() const {
             QString::number(_reqId)};
 }
 
-RequestOpenOrdersClientMessage::RequestOpenOrdersClientMessage() {
-    qDebug() << "REQUEST: RequestOpenOrdersClientMessage";
+RequestOpenOrdersClientMessage::RequestOpenOrdersClientMessage(int reqId)
+    : _reqId(reqId) {
+    qDebug() << "REQUEST: RequestOpenOrdersClientMessage" << reqId;
 }
 
 QStringList RequestOpenOrdersClientMessage::fields() const {
     return {QString::number(requests::REQ_OPEN_ORDERS),
-            QString::number(1)};
+            QString::number(requests::REQ_OPEN_ORDERS_VERSION),
+            QString::number(_reqId)};
 }
 
 } // namespace twsqapi
