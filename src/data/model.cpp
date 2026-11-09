@@ -3,10 +3,7 @@
 namespace data {
 
 Security::Security()
-    :_id(-1), _symbol(""), _contractId(-1)
-{
-
-}
+{}
 
 int Security::id() const
 {
@@ -57,9 +54,7 @@ Security &Security::withContractId(int id)
 }
 
 Quote::Quote()
-    :_id(-1), _securityId(-1)
-{
-}
+{}
 
 int Quote::id() const
 {
