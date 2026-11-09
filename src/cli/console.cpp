@@ -1,4 +1,5 @@
 #include "console.h"
+#include <QCoreApplication>
 #include <QFile>
 #include <QTextStream>
 
@@ -26,6 +27,12 @@ void Console::print(const QString &txt)
 
 void Console::readLine()
 {
+    if (_inputStream.atEnd()) {
+        // EOF reached (e.g., stdin closed), stop reading and quit
+        _notifier->setEnabled(false);
+        QCoreApplication::quit();
+        return;
+    }
     QString input = QString(_inputStream.readLine()).trimmed();
     if (!input.isEmpty()) {
         emit newInput(input);
