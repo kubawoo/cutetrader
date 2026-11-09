@@ -94,6 +94,14 @@ void BaseClient::_processBuffer()
         }
         // qDebug() << "dataLength" << dataLength;
 
+        // Validate dataLength: must be >= 1 (at least null terminator) and reasonable
+        if (dataLength < 1 || dataLength > MAX_BUFFER_SIZE) {
+            qCritical() << "Invalid message length:" << dataLength;
+            emit error("Invalid message length: " + QString::number(dataLength), true);
+            _socketDisconnect();
+            return;
+        }
+
         if(_buffer.size() - client::MSG_LENGTH_FIELD_SIZE < dataLength) {
             //not all data arrived, wait for more
             qDebug() << "not all data arrived, wait for more"
