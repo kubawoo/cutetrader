@@ -123,18 +123,20 @@ void TwsClientMock::_timerTask()
 
 void TwsClientMock::requestContractDetails(long contractId, int * reqId)
 {
-    _setRequestId(reqId, _requestId++);
+    int reqIdValue = _requestId++;
+    _setRequestId(reqId, reqIdValue);
 
 
     if(_contractsMap.contains(contractId)) {
         qDebug() << "Yes, it's there";
-        emit contractDetailReadySignal(*reqId, {_contractsMap[contractId]});
+        emit contractDetailReadySignal(reqIdValue, {_contractsMap[contractId]});
     }
 }
 
 void TwsClientMock::requestMatchingSymbols(const QString &pattern, int * reqId)
 {
-    _setRequestId(reqId, _requestId++);
+    int reqIdValue = _requestId++;
+    _setRequestId(reqId, reqIdValue);
 
     QList<ContractDetailsDTO> dtos;
 
@@ -144,7 +146,7 @@ void TwsClientMock::requestMatchingSymbols(const QString &pattern, int * reqId)
         }
     }
 
-    emit matchingSymbolsReadySignal(*reqId, dtos);
+    emit matchingSymbolsReadySignal(reqIdValue, dtos);
 
 }
 
@@ -214,7 +216,8 @@ void TwsClientMock::requestHistoricalData(long contractId, const QString & endDa
     Q_UNUSED(whatToShow)
     Q_UNUSED(useRTH)
     Q_UNUSED(formatDate)
-    _setRequestId(reqId, _requestId++);
+    int reqIdValue = _requestId++;
+    _setRequestId(reqId, reqIdValue);
 
     QString symbol;
     QString description;
@@ -224,7 +227,7 @@ void TwsClientMock::requestHistoricalData(long contractId, const QString & endDa
     }
 
     QList<common::BarDTO> bars = generateMockBars(contractId, symbol, endDateTime, durationStr, barSizeSetting);
-    emit historicalDataReadySignal(*reqId, bars, description);
+    emit historicalDataReadySignal(reqIdValue, bars, description);
 }
 
 void TwsClientMock::requestHistoricalData(const QString & symbol, const QString & endDateTime,
@@ -235,7 +238,8 @@ void TwsClientMock::requestHistoricalData(const QString & symbol, const QString 
     Q_UNUSED(whatToShow)
     Q_UNUSED(useRTH)
     Q_UNUSED(formatDate)
-    _setRequestId(reqId, _requestId++);
+    int reqIdValue = _requestId++;
+    _setRequestId(reqId, reqIdValue);
 
     long contractId = 0;
     QString description;
@@ -248,7 +252,7 @@ void TwsClientMock::requestHistoricalData(const QString & symbol, const QString 
     }
 
     QList<common::BarDTO> bars = generateMockBars(contractId, symbol, endDateTime, durationStr, barSizeSetting);
-    emit historicalDataReadySignal(*reqId, bars, description);
+    emit historicalDataReadySignal(reqIdValue, bars, description);
 }
 
 void TwsClientMock::cancelHistoricalData(int reqId)
