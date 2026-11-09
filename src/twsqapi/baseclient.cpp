@@ -59,16 +59,21 @@ void BaseClient::_readData()
 {
     QMutexLocker locker(&_readMutex);
 
-    qint64 bytesAvailavle = _input->bytesAvailable();
-    qDebug() << "bytes available for read" << bytesAvailavle;
-    qint64 bytesRead = 0;
-    int retries = 100;
-    while(bytesRead < bytesAvailavle && retries-- > 0) {
-        QByteArray data = _input->readAll();
-        _buffer.append(data);
-        bytesRead += data.length();
+    qint64 bytesAvailable = _input->bytesAvailable();
+    qDebug() << "bytes available for read" << bytesAvailable;
+
+    // Check if adding new data would exceed max buffer size
+    if (_buffer.size() + bytesAvailable > MAX_BUFFER_SIZE) {
+        qCritical() << "Buffer size limit exceeded" << _buffer.size() << "+" << bytesAvailable << ">" << MAX_BUFFER_SIZE;
+        emit error("Buffer size limit exceeded", true);
+        _socketDisconnect();
+        return;
     }
-    qDebug() << "All data read";
+
+    // Read all available data in one go
+    QByteArray data = _input->readAll();
+    _buffer.append(data);
+    qDebug() << "Read" << data.size() << "bytes, buffer size:" << _buffer.size();
     emit _dataRead();
 }
 
@@ -168,6 +173,11 @@ int BaseClient::_getApiVersion()
     return _apiVersion;
 }
 
+void BaseClient::_socketDisconnect()
+{
+    // Emit disconnected signal - derived class handles actual disconnect
+    emit disconnected();
+}
 
 
 }

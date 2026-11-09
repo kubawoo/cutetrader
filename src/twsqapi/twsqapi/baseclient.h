@@ -47,9 +47,12 @@ private:
     void _send(const QByteArray & msg);
     void _processData(const QByteArray & data);
     void _handleHandshake(const QStringList & fields);
+    void _socketDisconnect();
 
 
 private:
+    static constexpr size_t MAX_BUFFER_SIZE = 10 * 1024 * 1024; // 10 MB
+
     QIODevice * _input;
     QIODevice * _output;
     int _clientId;
