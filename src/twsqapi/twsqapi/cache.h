@@ -3,6 +3,7 @@
 
 #include <QMap>
 #include <QList>
+#include <QMutex>
 #include <memory>
 #include "common/types.h"
 
@@ -53,7 +54,9 @@ public:
     void clear();
 private:
     QString buildKey(const QStringList & list);
+    std::shared_ptr<CacheEntry> getUnlocked(long requestId);
 
+    QMutex _mutex;
     QMap<QString, long> _requestCache;
     QMap<long, std::shared_ptr<CacheEntry>> _cache;
 };
