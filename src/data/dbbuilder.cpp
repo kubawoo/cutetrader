@@ -9,7 +9,7 @@
 namespace data {
 
 DbBuilder::DbBuilder(QSqlDatabase & db)
-    :_db(db)
+    :_db(db), _initialized(false)
 {
     if(_db.driverName() == "QSQLITE") {
         qDebug() << "Enabling foreign keys";
