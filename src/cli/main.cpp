@@ -1,3 +1,8 @@
+#ifndef GIT_COMMIT_HASH
+#define GIT_COMMIT_HASH "unknown"
+#endif
+
+
 #include <QCommandLineParser>
 #include <QCoreApplication>
 #include <QDebug>
@@ -77,9 +82,6 @@ bool setupApp(const QCommandLineParser &parser, AppConfig &appConfig)
     return setupDatabase(factory.get(), parser.value("database"));
 }
 
-#ifndef GIT_COMMIT_HASH
-#define GIT_COMMIT_HASH "unknown"
-#endif
 
 // Parse __DATE__ (format: "MMM DD YYYY" or "MMM  D YYYY") to ISO format "YYYY-MM-DD"
 static QString parseBuildDate(const char *dateStr)
