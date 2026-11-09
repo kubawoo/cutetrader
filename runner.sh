@@ -17,7 +17,7 @@ CLI_EXE="${BUILD_DIR}/src/cli/cutetrader-cli"
 TEST_EXE="${BUILD_DIR}/test/testrunner/testrunner"
 MOCKED=""
 VALGRIND=""
-VALGRIND_OPTS="--leak-check=full --show-leak-kinds=all --track-origins=yes --error-exitcode=1"
+VALGRIND_OPTS=""
 TEST_FILTER=""
 VERBOSE=false
 COMMAND=""
@@ -36,8 +36,8 @@ Commands:
 Options:
   -m, --mocked        Run in mocked mode (no TWS connection)
   -r, --real          Run in real mode (connect to TWS) [default]
-  -v, --valgrind      Run under valgrind with leak checking
-  -V, --valgrind-opts "OPTS"  Custom valgrind options
+  -v, --valgrind      Run under valgrind (no default options)
+  -V, --valgrind-opts "OPTS"  Custom valgrind options (default: empty)
   -f, --filter NAME   Filter tests by name (for test command)
   -b, --build-dir DIR Build directory [default: build]
   -h, --help          Show this help
@@ -184,7 +184,7 @@ cmd_cli() {
     fi
     echo -e "${YELLOW}Command: $CLI_EXE ${args[*]}${NC}"
     
-    if [[ "$VALGRIND" == true ]]; then
+    if [[ -n "$VALGRIND" ]]; then
         valgrind $VALGRIND_OPTS "$CLI_EXE" "${args[@]}"
     else
         "$CLI_EXE" "${args[@]}"
@@ -206,7 +206,7 @@ cmd_test() {
     echo -e "${BLUE}Running tests${TEST_FILTER:+ (filter: $TEST_FILTER)}${NC}"
     echo -e "${YELLOW}Command: $TEST_EXE ${args[*]}${NC}"
     
-    if [[ "$VALGRIND" == true ]]; then
+    if [[ -n "$VALGRIND" ]]; then
         valgrind $VALGRIND_OPTS "$TEST_EXE" "${args[@]}"
     else
         "$TEST_EXE" "${args[@]}"

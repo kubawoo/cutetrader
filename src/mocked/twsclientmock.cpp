@@ -190,7 +190,6 @@ static QList<common::BarDTO> generateMockBars(long contractId, const QString &sy
         double volume = 1000000 + QRandomGenerator::global()->generateDouble() * 5000000;
         double wap = (high + low + close) / 3.0;
         int barCount = 1000 + QRandomGenerator::global()->generate() % 5000;
-        double average = wap;
 
         bar.time = baseTime.addDays(i).toString("yyyy-MM-dd");
         bar.open = open;
@@ -200,7 +199,6 @@ static QList<common::BarDTO> generateMockBars(long contractId, const QString &sy
         bar.volume = volume;
         bar.wap = wap;
         bar.barCount = barCount;
-        bar.average = average;
 
         bars << bar;
         basePrice = close; // Next day starts near previous close

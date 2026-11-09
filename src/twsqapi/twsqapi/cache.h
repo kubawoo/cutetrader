@@ -28,7 +28,7 @@ class ContractDetailsCacheEntry : public CacheEntry
 {
 public:
     ContractDetailsCacheEntry();
-    ~ContractDetailsCacheEntry();
+    ~ContractDetailsCacheEntry() override;
 
     QList<common::ContractDetailsDTO> contractDetails;
 };
@@ -37,7 +37,7 @@ class HistoricalDataCacheEntry : public CacheEntry
 {
 public:
     HistoricalDataCacheEntry();
-    ~HistoricalDataCacheEntry();
+    ~HistoricalDataCacheEntry() override;
 
     QList<common::BarDTO> bars;
 };

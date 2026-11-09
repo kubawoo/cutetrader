@@ -162,21 +162,10 @@ RequestHistoricalDataClientMessage::RequestHistoricalDataClientMessage(
 QStringList RequestHistoricalDataClientMessage::fields() const {
     QStringList result;
     result << QString::number(requests::REQ_HISTORICAL_DATA);
-
-    // VERSION field is only sent for server versions < MIN_SERVER_VER_SYNT_REALTIME_BARS (124)
-    constexpr int MIN_SERVER_VER_SYNT_REALTIME_BARS = 124;
-    if (_serverVersion < MIN_SERVER_VER_SYNT_REALTIME_BARS) {
-        result << QString::number(requests::REQ_HISTORICAL_DATA_VERSION);
-    }
-
     result << QString::number(_reqId);
 
-    // Contract fields
-    // conId is sent for server versions >= MIN_SERVER_VER_TRADING_CLASS (68)
-    constexpr int MIN_SERVER_VER_TRADING_CLASS = 68;
-    if (_serverVersion >= MIN_SERVER_VER_TRADING_CLASS) {
-        result << QString::number(_contractId);
-    }
+    result << QString::number(_contractId);
+
     result << _symbol;
     result << _secType;
     result << _lastTradeDateOrContractMonth;
@@ -187,9 +176,8 @@ QStringList RequestHistoricalDataClientMessage::fields() const {
     result << _primaryExchange;
     result << _currency;
     result << _localSymbol;
-    if (_serverVersion >= MIN_SERVER_VER_TRADING_CLASS) {
-        result << _tradingClass;
-    }
+    result << _tradingClass;
+
     // includeExpired is sent for server versions >= 31
     result << (_includeExpired.isEmpty() ? "0" : _includeExpired);
 
