@@ -11,7 +11,7 @@ TwsClientMock::TwsClientMock(QObject *parent)
     : ITwsClient(parent),
       _connected(false),
       _requestId(0),
-      _timer{new QTimer}
+      _timer{new QTimer(this)}
 {
     qDebug() << "Constructing" << this;
     QObject::connect(_timer, &QTimer::timeout, this, &TwsClientMock::_timerTask);
@@ -39,7 +39,7 @@ TwsClientMock::~TwsClientMock()
 {
     qDebug() << "Destroying" << this;
     _timer->stop();
-    delete _timer;
+    // _timer is parented to this, Qt will delete it automatically
 }
 
 
