@@ -10,7 +10,7 @@ common::IAppFactory::~IAppFactory()
 
 }
 
-QList<common::IDbMigration *> common::IAppFactory::extraMigrations()
+QList<QSharedPointer<common::IDbMigration>> common::IAppFactory::extraMigrations()
 {
     return {};
 }

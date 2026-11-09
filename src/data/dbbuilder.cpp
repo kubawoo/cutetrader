@@ -36,18 +36,16 @@ DbBuilder::DbBuilder(QSqlDatabase & db)
 
 void DbBuilder::addMigrations()
 {
-    addMigration(new Migration_001());
-    addMigration(new Migration_002());
-    addMigration(new Migration_003());
-    addMigration(new Migration_004());
+    addMigration(QSharedPointer<Migration_001>::create());
+    addMigration(QSharedPointer<Migration_002>::create());
+    addMigration(QSharedPointer<Migration_003>::create());
+    addMigration(QSharedPointer<Migration_004>::create());
 }
 
 
 DbBuilder::~DbBuilder()
 {
-    foreach (auto migration, _migrations) {
-        delete migration;
-    }
+    // QSharedPointer automatically cleans up
     _migrations.clear();
 }
 
@@ -91,7 +89,7 @@ bool DbBuilder::runMigrations()
     return true;
 }
 
-void DbBuilder::addMigration(common::IDbMigration *migration)
+void DbBuilder::addMigration(QSharedPointer<common::IDbMigration> migration)
 {
     _migrations.append(migration);
 }
@@ -111,7 +109,7 @@ QMap<int, QString> DbBuilder::findExecutedMigrations(bool *ok)
     return migrations;
 }
 
-void DbBuilder::saveMigration(common::IDbMigration *migration)
+void DbBuilder::saveMigration(const QSharedPointer<common::IDbMigration> &migration)
 {
     QString sql = QString("INSERT INTO _migrations(id, sha256hash, timestamp) VALUES (%1, \"%2\", \"%3\");")
             .arg(QString::number(migration->id()))
