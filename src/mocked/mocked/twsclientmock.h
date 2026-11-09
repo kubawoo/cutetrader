@@ -29,7 +29,6 @@ public slots:
                                const QString & durationStr, const QString & barSizeSetting,
                                const QString & whatToShow, int useRTH, int formatDate,
                                int * reqId = nullptr) override;
-    void cancelHistoricalData(int reqId) override;
 
 public:
     bool connect(const QString& host, int port, int clientId = 0) override;

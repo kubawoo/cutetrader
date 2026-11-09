@@ -9,11 +9,13 @@
 namespace data {
 
 DbBuilder::DbBuilder(QSqlDatabase & db)
-    :_db(db)
+    :_db(db), _initialized(false)
 {
     if(_db.driverName() == "QSQLITE") {
         qDebug() << "Enabling foreign keys";
-        if(!Utils::execute(_db, "PRAGMA foreign_keys = ON;")) {
+        QSqlQuery pragmaQuery(_db);
+        pragmaQuery.prepare("PRAGMA foreign_keys = ON;");
+        if(!Utils::execute(_db, std::move(pragmaQuery))) {
             qDebug() << "Failed to enable foreign keys";
             return;
         }
@@ -25,10 +27,11 @@ DbBuilder::DbBuilder(QSqlDatabase & db)
                       "timestamp TEXT NOT NULL"
                       ");";
 
-
+    QSqlQuery createQuery(_db);
+    createQuery.prepare(initSql);
 
     qDebug() << "Creating initial structure";
-    _initialized = Utils::execute(_db, initSql);
+    _initialized = Utils::execute(_db, std::move(createQuery));
     if(_initialized) {
         addMigrations();
     }
@@ -36,18 +39,16 @@ DbBuilder::DbBuilder(QSqlDatabase & db)
 
 void DbBuilder::addMigrations()
 {
-    addMigration(new Migration_001());
-    addMigration(new Migration_002());
-    addMigration(new Migration_003());
-    addMigration(new Migration_004());
+    addMigration(std::make_shared<Migration_001>());
+    addMigration(std::make_shared<Migration_002>());
+    addMigration(std::make_shared<Migration_003>());
+    addMigration(std::make_shared<Migration_004>());
 }
 
 
 DbBuilder::~DbBuilder()
 {
-    foreach (auto migration, _migrations) {
-        delete migration;
-    }
+    // std::shared_ptr automatically cleans up
     _migrations.clear();
 }
 
@@ -80,7 +81,9 @@ bool DbBuilder::runMigrations()
 
         qDebug() << "Running migration" << migration->id();
         for(auto sql : migration->sql()) {
-            bool ok = Utils::execute(_db, sql);
+            QSqlQuery migrationQuery(_db);
+            migrationQuery.prepare(sql);
+            bool ok = Utils::execute(_db, std::move(migrationQuery));
             if(!ok) {
                 return false;
             }
@@ -91,7 +94,7 @@ bool DbBuilder::runMigrations()
     return true;
 }
 
-void DbBuilder::addMigration(common::IDbMigration *migration)
+void DbBuilder::addMigration(std::shared_ptr<common::IDbMigration> migration)
 {
     _migrations.append(migration);
 }
@@ -99,8 +102,9 @@ void DbBuilder::addMigration(common::IDbMigration *migration)
 
 QMap<int, QString> DbBuilder::findExecutedMigrations(bool *ok)
 {
-    QString sql = "SELECT id, sha256hash FROM _migrations;";
-    auto results = Utils::query(_db, sql, ok);
+    QSqlQuery query(_db);
+    query.prepare("SELECT id, sha256hash FROM _migrations;");
+    auto results = Utils::query(_db, std::move(query), ok);
 
     QMap<int, QString> migrations;
 
@@ -111,15 +115,15 @@ QMap<int, QString> DbBuilder::findExecutedMigrations(bool *ok)
     return migrations;
 }
 
-void DbBuilder::saveMigration(common::IDbMigration *migration)
+void DbBuilder::saveMigration(const std::shared_ptr<common::IDbMigration> &migration)
 {
-    QString sql = QString("INSERT INTO _migrations(id, sha256hash, timestamp) VALUES (%1, \"%2\", \"%3\");")
-            .arg(QString::number(migration->id()))
-            .arg(migration->hash())
-            .arg(QDateTime::currentDateTime().toString(Qt::ISODateWithMs));
-
     QSqlQuery query(_db);
-    Utils::execute(_db, sql);
+    query.prepare("INSERT INTO _migrations(id, sha256hash, timestamp) VALUES (?, ?, ?);");
+    query.bindValue(0, migration->id());
+    query.bindValue(1, migration->hash());
+    query.bindValue(2, QDateTime::currentDateTime().toString(Qt::ISODateWithMs));
+
+    Utils::execute(_db, std::move(query));
 }
 
 }

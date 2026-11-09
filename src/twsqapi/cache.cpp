@@ -1,9 +1,20 @@
 #include "twsqapi/cache.h"
 #include <QDateTime>
 #include <QDebug>
+#include <QMutexLocker>
 
 namespace twsqapi {
 
+
+Cache::Cache(QObject *parent)
+    : QObject(parent)
+{
+    _cleanupTimer.setInterval(60000); // 60 seconds
+    QObject::connect(&_cleanupTimer, &QTimer::timeout, this, [this]() {
+        removeExpired();
+    });
+    _cleanupTimer.start();
+}
 
 CacheEntry::CacheEntry(long ttl)
 {
@@ -30,39 +41,64 @@ void CacheEntry::setReady()
 }
 
 
-void Cache::add(long requestId, CacheEntry *entry, const QStringList &keys)
+long Cache::add(long requestId, std::shared_ptr<CacheEntry> entry, const QStringList &keys)
 {
-    _cache.insert(requestId, entry);
+    QMutexLocker locker(&_mutex);
+    
     if(!keys.empty()) {
-        _requestCache.insert(buildKey(keys), requestId);
+        QString key = buildKey(keys);
+        // Check if there's already an entry for this key
+        if (_requestCache.contains(key)) {
+            long existingRequestId = _requestCache[key];
+            auto existingEntry = getUnlocked(existingRequestId);
+            // If the existing entry is not ready, reuse it (don't replace)
+            if (existingEntry && !existingEntry->ready()) {
+                return existingRequestId;
+            }
+            // If the existing entry is ready, we can replace it (cache refresh)
+            if (existingRequestId != requestId) {
+                _cache.remove(existingRequestId);
+            }
+        }
+        _requestCache.insert(key, requestId);
     }
+    _cache.insert(requestId, entry);
+    return requestId;
 }
 
-CacheEntry *Cache::get(long requestId)
+std::shared_ptr<CacheEntry> Cache::get(long requestId)
 {
-    return _cache.value(requestId, nullptr);
+    QMutexLocker locker(&_mutex);
+    return getUnlocked(requestId);
 }
 
-QPair<long, CacheEntry *> Cache::get(const QStringList &keys)
+std::shared_ptr<CacheEntry> Cache::getUnlocked(long requestId)
 {
+    auto it = _cache.find(requestId);
+    if (it != _cache.end()) {
+        return it.value();
+    }
+    return std::shared_ptr<CacheEntry>();
+}
+
+std::pair<long, std::shared_ptr<CacheEntry>> Cache::get(const QStringList &keys)
+{
+    QMutexLocker locker(&_mutex);
     QString key = buildKey(keys);
     long requestId = _requestCache.value(key, -1L);
     if(requestId >= 0) {
-        return QPair<long, CacheEntry *> (requestId, get(requestId));
+        return std::pair<long, std::shared_ptr<CacheEntry>>(requestId, getUnlocked(requestId));
     }
-    return QPair<long, CacheEntry *>(requestId, nullptr);
+    return std::pair<long, std::shared_ptr<CacheEntry>>(requestId, std::shared_ptr<CacheEntry>());
 }
 
 void Cache::removeExpired()
 {
+    QMutexLocker locker(&_mutex);
     qDebug() << "Before cleanup" << _cache.keys() << _requestCache.keys();
     long now = QDateTime::currentSecsSinceEpoch();
-    _cache.removeIf([now](std::pair<const long &, CacheEntry *> entry) {
-        bool del = entry.second->expiry() < now;
-        if(del) {
-            delete entry.second;
-        }
-        return del;
+    _cache.removeIf([now](std::pair<const long &, std::shared_ptr<CacheEntry>> entry) {
+        return entry.second && entry.second->expiry() < now;
     });
 
     _requestCache.removeIf([this](std::pair<const QString &, const long &> entry) {
@@ -73,6 +109,7 @@ void Cache::removeExpired()
 
 void Cache::clear()
 {
+    QMutexLocker locker(&_mutex);
     _cache.clear();
     _requestCache.clear();
 }
@@ -83,26 +120,27 @@ QString Cache::buildKey(const QStringList &list)
     return list.join("_").toLower();
 }
 
+Cache::~Cache()
+{
+    clear();
+}
+
 ContractDetailsCacheEntry::ContractDetailsCacheEntry()
     : CacheEntry(300)
 {
-
 }
 
 ContractDetailsCacheEntry::~ContractDetailsCacheEntry()
 {
-
 }
 
 HistoricalDataCacheEntry::HistoricalDataCacheEntry()
     : CacheEntry(300)
 {
-
 }
 
 HistoricalDataCacheEntry::~HistoricalDataCacheEntry()
 {
-
 }
 
 }

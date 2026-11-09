@@ -24,9 +24,9 @@ public:
     Security & withContractId(int id);
 
 private:
-    int _id;
+    int _id = -1;
     QString _symbol;
-    long _contractId;
+    long _contractId = -1;
 };
 
 
@@ -67,14 +67,14 @@ public:
     Quote& withVolume(int newVolume);
 
 private:
-    int _id;
-    int _securityId;
+    int _id = -1;
+    int _securityId = -1;
     QDate _date;
-    double _open;
-    double _close;
-    double _low;
-    double _high;
-    int _volume;
+    double _open = 0.0;
+    double _close = 0.0;
+    double _low = 0.0;
+    double _high = 0.0;
+    int _volume = 0;
 };
 
 }

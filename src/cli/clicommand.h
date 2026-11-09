@@ -2,6 +2,7 @@
 #define CLICOMMAND_H
 
 #include <QObject>
+#include <memory>
 #include <account.h>
 #include <common.h>
 #include <data.h>
@@ -27,7 +28,7 @@ public:
                                int port,
                                int clientId,
                                const QString &accountId,
-                               QSharedPointer<common::ITwsClient> client,
+                               std::shared_ptr<common::ITwsClient> client,
                                QObject *parent = nullptr);
     const QMap<QString, CliCommand *> &commands() { return _commands; }
 
@@ -53,7 +54,7 @@ private:
     int _port;
     int _clientId;
     QString _accountId;
-    QSharedPointer<common::ITwsClient> _client;
+    std::shared_ptr<common::ITwsClient> _client;
     QMap<QString, CliCommand *> _commands;
     account::Account _account;
     data::DataManager _dataManager;
@@ -89,7 +90,7 @@ class ServerTimeCliCommand : public CliCommand
 {
     Q_OBJECT
 public:
-    explicit ServerTimeCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent = nullptr);
+    explicit ServerTimeCliCommand(std::shared_ptr<common::ITwsClient> client, QObject *parent = nullptr);
     QString description() override { return "Returns current server time"; }
 public slots:
     void execute(const QStringList &params) override;
@@ -97,7 +98,7 @@ private slots:
     void serverTime(const QDateTime &time);
 
 private:
-    QSharedPointer<common::ITwsClient> _client;
+    std::shared_ptr<common::ITwsClient> _client;
 };
 
 class AccountSummaryCliCommand : public CliCommand
@@ -131,7 +132,7 @@ class SearchSymbolsCliCommand : public CliCommand
 {
     Q_OBJECT
 public:
-    explicit SearchSymbolsCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent = nullptr);
+    explicit SearchSymbolsCliCommand(std::shared_ptr<common::ITwsClient> client, QObject *parent = nullptr);
     QString description() override { return "Search for symbols matching a pattern"; }
     QStringList parametersDescription() { return {"<pattern>"}; }
 public slots:
@@ -140,7 +141,7 @@ private slots:
     void onMatchingSymbolsReady(const int &requestId, const QList<common::ContractDetailsDTO> &details);
 
 private:
-    QSharedPointer<common::ITwsClient> _client;
+    std::shared_ptr<common::ITwsClient> _client;
     int _reqId = 0;
     bool _waiting = false;
 };
@@ -149,7 +150,7 @@ class HistoricalDataCliCommand : public CliCommand
 {
     Q_OBJECT
 public:
-    explicit HistoricalDataCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent = nullptr);
+    explicit HistoricalDataCliCommand(std::shared_ptr<common::ITwsClient> client, QObject *parent = nullptr);
     QString description() override { return "Request historical data for a symbol or contractId"; }
     QStringList parametersDescription() { return {"<symbol|contractId> [endDateTime] [durationStr] [barSizeSetting] [whatToShow] [useRTH] [formatDate]"}; }
 public slots:
@@ -159,31 +160,17 @@ private slots:
                                const QString &description);
 
 private:
-    QSharedPointer<common::ITwsClient> _client;
+    std::shared_ptr<common::ITwsClient> _client;
     int _reqId = 0;
     bool _waiting = false;
     QString _symbol;
-};
-
-class CancelHistoricalDataCliCommand : public CliCommand
-{
-    Q_OBJECT
-public:
-    explicit CancelHistoricalDataCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent = nullptr);
-    QString description() override { return "Cancel a historical data request by request ID"; }
-    QStringList parametersDescription() { return {"<reqId>"}; }
-public slots:
-    void execute(const QStringList &params) override;
-
-private:
-    QSharedPointer<common::ITwsClient> _client;
 };
 
 class OrderListCliCommand : public CliCommand
 {
     Q_OBJECT
 public:
-    explicit OrderListCliCommand(account::Account &account, QSharedPointer<common::ITwsClient> client, QObject *parent = nullptr);
+    explicit OrderListCliCommand(account::Account &account, std::shared_ptr<common::ITwsClient> client, QObject *parent = nullptr);
     QString description() override { return "List open orders (use 'orders refresh' to fetch from TWS)"; }
 public slots:
     void execute(const QStringList &params) override;
@@ -192,7 +179,7 @@ private slots:
 private:
     void displayOrders(const QList<common::OrderDTO> &orders);
     account::Account &_account;
-    QSharedPointer<common::ITwsClient> _client;
+    std::shared_ptr<common::ITwsClient> _client;
     bool _waiting;
 };
 

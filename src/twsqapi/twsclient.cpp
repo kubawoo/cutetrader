@@ -2,6 +2,7 @@
 
 #include "twsqapi/constants.h"
 #include "common/utils.h"
+#include <memory>
 
 namespace twsqapi {
 
@@ -67,15 +68,22 @@ void TwsClient::requestContractDetails(long contractId, int *reqId)
     auto cacheEntry = _cache.get(keys);
     if(cacheEntry.first >= 0 && cacheEntry.second && cacheEntry.second->ready()) {
         long requestId = cacheEntry.first;
-        ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(cacheEntry.second);
+        auto entry = std::dynamic_pointer_cast<ContractDetailsCacheEntry>(cacheEntry.second);
         qDebug() << "Returning from cache";
         _setRequestId(reqId, requestId);
         emit contractDetailReadySignal(requestId, entry->contractDetails);
     } else {
         qDebug() << "requestContractDetails" << _requestId;
         _setRequestId(reqId, _requestId);
-        _cache.add(_requestId, new ContractDetailsCacheEntry(), keys);
-        _client->send(RequestContractDetailsClientMessage(_requestId++, contractId));
+        long usedReqId = _cache.add(_requestId, std::make_shared<ContractDetailsCacheEntry>(), keys);
+        if (usedReqId == _requestId) {
+            // New request added, send it
+            _client->send(RequestContractDetailsClientMessage(_requestId++, contractId));
+        } else {
+            // Reusing existing in-flight request
+            _requestId++;
+            qDebug() << "Reusing in-flight contract details request" << usedReqId;
+        }
     }
 }
 
@@ -86,14 +94,19 @@ void TwsClient::requestMatchingSymbols(const QString &pattern, int *reqId)
 
     if(cacheEntry.first >= 0 && cacheEntry.second && cacheEntry.second->ready()) {
         long requestId = cacheEntry.first;
-        ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(cacheEntry.second);
+        auto entry = std::dynamic_pointer_cast<ContractDetailsCacheEntry>(cacheEntry.second);
         qDebug() << "Returning from cache" << keys;
         _setRequestId(reqId, requestId);
         emit matchingSymbolsReadySignal(requestId, entry->contractDetails);
     } else {
         _setRequestId(reqId, _requestId);
-        _cache.add(_requestId, new ContractDetailsCacheEntry(), keys);
-        _client->send(RequestMatchingSymbolsClientMessage(_requestId++, pattern));
+        long usedReqId = _cache.add(_requestId, std::make_shared<ContractDetailsCacheEntry>(), keys);
+        if (usedReqId == _requestId) {
+            _client->send(RequestMatchingSymbolsClientMessage(_requestId++, pattern));
+        } else {
+            _requestId++;
+            qDebug() << "Reusing in-flight matching symbols request" << usedReqId;
+        }
     }
 }
 
@@ -108,7 +121,7 @@ void TwsClient::requestHistoricalData(long contractId, const QString & endDateTi
 
     if(cacheEntry.first >= 0 && cacheEntry.second && cacheEntry.second->ready()) {
         long requestId = cacheEntry.first;
-        HistoricalDataCacheEntry * entry =  dynamic_cast<HistoricalDataCacheEntry*>(cacheEntry.second);
+        auto entry = std::dynamic_pointer_cast<HistoricalDataCacheEntry>(cacheEntry.second);
         qDebug() << "Returning historical data from cache" << keys;
         _setRequestId(reqId, requestId);
         emit historicalDataReadySignal(requestId, entry->bars);
@@ -124,7 +137,7 @@ void TwsClient::requestHistoricalData(long contractId, const QString & endDateTi
 
     if(contractCacheEntry.first >= 0 && contractCacheEntry.second && contractCacheEntry.second->ready()) {
         // We have contract details, use them to send historical data request
-        ContractDetailsCacheEntry * contractEntry = dynamic_cast<ContractDetailsCacheEntry*>(contractCacheEntry.second);
+        auto contractEntry = std::dynamic_pointer_cast<ContractDetailsCacheEntry>(contractCacheEntry.second);
         if(contractEntry && !contractEntry->contractDetails.isEmpty()) {
             PendingHistoricalDataRequest pending;
             pending.contractId = contractId;
@@ -137,7 +150,7 @@ void TwsClient::requestHistoricalData(long contractId, const QString & endDateTi
             pending.reqId = currentReqId;
 
             _sendHistoricalDataRequest(pending, contractEntry->contractDetails.first());
-            _cache.add(currentReqId, new HistoricalDataCacheEntry(), keys);
+            _cache.add(currentReqId, std::make_shared<HistoricalDataCacheEntry>(), keys);
             return;
         }
     }
@@ -157,8 +170,12 @@ void TwsClient::requestHistoricalData(long contractId, const QString & endDateTi
     _pendingHistoricalDataRequests[contractId].append(pending);
 
     // Request contract details
-    _cache.add(currentReqId, new ContractDetailsCacheEntry(), contractKeys);
-    _client->send(RequestContractDetailsClientMessage(currentReqId, contractId));
+    long usedReqId = _cache.add(currentReqId, std::make_shared<ContractDetailsCacheEntry>(), contractKeys);
+    if (usedReqId == currentReqId) {
+        _client->send(RequestContractDetailsClientMessage(currentReqId, contractId));
+    } else {
+        qDebug() << "Reusing in-flight contract details request for historical data" << usedReqId;
+    }
 }
 
 void TwsClient::requestHistoricalData(const QString &symbol, const QString & endDateTime,
@@ -185,7 +202,7 @@ void TwsClient::requestHistoricalData(const QString &symbol, const QString & end
 
     if(cacheEntry.first >= 0 && cacheEntry.second && cacheEntry.second->ready()) {
         // Cache hit - resolve immediately
-        ContractDetailsCacheEntry * entry = dynamic_cast<ContractDetailsCacheEntry*>(cacheEntry.second);
+        auto entry = std::dynamic_pointer_cast<ContractDetailsCacheEntry>(cacheEntry.second);
         if(entry && !entry->contractDetails.isEmpty()) {
             const auto &contract = entry->contractDetails.first();
             _historicalDataDescriptions[currentReqId] = contract.description;
@@ -203,7 +220,7 @@ void TwsClient::requestHistoricalData(const QString &symbol, const QString & end
             _sendHistoricalDataRequest(hdPending, contract);
             QStringList hdKeys = {"requestHistoricalData", QString::number(contract.contractId), pending.endDateTime,
                                   pending.durationStr, pending.barSizeSetting, pending.whatToShow};
-            _cache.add(currentReqId, new HistoricalDataCacheEntry(), hdKeys);
+            _cache.add(currentReqId, std::make_shared<HistoricalDataCacheEntry>(), hdKeys);
             return;
         }
     }
@@ -218,83 +235,75 @@ void TwsClient::requestHistoricalData(const QString &symbol, const QString & end
     _pendingSymbolHistoricalDataRequests[matchingReqId] = _pendingSymbolHistoricalDataRequests.take(currentReqId);
 }
 
-void TwsClient::cancelHistoricalData(int reqId)
-{
-    qDebug() << "Canceling historical data request" << reqId;
-    _client->send(CancelHistoricalDataClientMessage(reqId));
-    // Remove description if present
-    _historicalDataDescriptions.remove(reqId);
-}
-
-void TwsClient::onMessage(QSharedPointer<ServerMessage> msg)
+void TwsClient::onMessage(std::shared_ptr<ServerMessage> msg)
 {
     qDebug() << "TwsClient::onMessage" << msg->id();
     switch(msg->id()) {
     case responses::MANAGED_ACCOUNTS: {
-        _handleManagedAccounts(msg.dynamicCast<ManagedAccountsServerMessage>().get());
+        _handleManagedAccounts(std::dynamic_pointer_cast<ManagedAccountsServerMessage>(msg).get());
         break;
     }
     case responses::NEXT_VALID_ID: {
-        _handleNextValidId(msg.dynamicCast<NextValidIdServerMessage>().get());
+        _handleNextValidId(std::dynamic_pointer_cast<NextValidIdServerMessage>(msg).get());
         break;
     }
     case responses::ERR_MSG: {
-        _handleErrorMsg(msg.dynamicCast<ErrorServerMessage>().get());
+        _handleErrorMsg(std::dynamic_pointer_cast<ErrorServerMessage>(msg).get());
         break;
     }
     case responses::ACCT_VALUE: {
-        _handleAccountValue(msg.dynamicCast<AccountValueServerMessage>().get());
+        _handleAccountValue(std::dynamic_pointer_cast<AccountValueServerMessage>(msg).get());
         break;
     }
     case responses::ACCT_UPDATE_TIME: {
-        _handleAccountUpdateTime(msg.dynamicCast<AccountUpdateTimeServerMessage>().get());
+        _handleAccountUpdateTime(std::dynamic_pointer_cast<AccountUpdateTimeServerMessage>(msg).get());
         break;
     }
     case responses::ACCT_DOWNLOAD_END: {
         break;
     }
     case responses::CURRENT_TIME: {
-        _handleCurrentTime(msg.dynamicCast<CurrentTimeServerMessage>().get());
+        _handleCurrentTime(std::dynamic_pointer_cast<CurrentTimeServerMessage>(msg).get());
         break;
     }
     case responses::SYMBOL_SAMPLES: {
-        _handleSymbolSamples(msg.dynamicCast<SymbolSamplesServerMessage>().get());
+        _handleSymbolSamples(std::dynamic_pointer_cast<SymbolSamplesServerMessage>(msg).get());
         break;
     }
     case responses::CONTRACT_DATA: {
-        _handleContractData(msg.dynamicCast<ContractDataServerMessage>().get());
+        _handleContractData(std::dynamic_pointer_cast<ContractDataServerMessage>(msg).get());
         break;
     }
     case responses::CONTRACT_DATA_END: {
-        _handleContractDataEnd(msg.dynamicCast<ContractDataEndServerMessage>().get());
+        _handleContractDataEnd(std::dynamic_pointer_cast<ContractDataEndServerMessage>(msg).get());
         break;
     }
     case responses::PORTFOLIO_VALUE: {
-        _handlePortfolioValue(msg.dynamicCast<PortfolioValueServerMessage>().get());
+        _handlePortfolioValue(std::dynamic_pointer_cast<PortfolioValueServerMessage>(msg).get());
         break;
     }
     case responses::HISTORICAL_DATA: {
-        _handleHistoricalData(msg.dynamicCast<HistoricalDataServerMessage>().get());
+        _handleHistoricalData(std::dynamic_pointer_cast<HistoricalDataServerMessage>(msg).get());
         break;
     }
     case responses::HISTORICAL_DATA_END: {
-        _handleHistoricalDataEnd(msg.dynamicCast<HistoricalDataEndServerMessage>().get());
+        _handleHistoricalDataEnd(std::dynamic_pointer_cast<HistoricalDataEndServerMessage>(msg).get());
         break;
     }
     case responses::HISTORICAL_DATA_UPDATE: {
-        _handleHistoricalDataUpdate(msg.dynamicCast<HistoricalDataUpdateServerMessage>().get());
+        _handleHistoricalDataUpdate(std::dynamic_pointer_cast<HistoricalDataUpdateServerMessage>(msg).get());
         break;
     }
     case responses::ORDER_STATUS: {
-        _handleOrderStatus(msg.dynamicCast<OrderStatusServerMessage>().get());
+        _handleOrderStatus(std::dynamic_pointer_cast<OrderStatusServerMessage>(msg).get());
         break;
     }
     case responses::OPEN_ORDER: {
-        _handleOpenOrder(msg.dynamicCast<OpenOrderServerMessage>().get());
+        _handleOpenOrder(std::dynamic_pointer_cast<OpenOrderServerMessage>(msg).get());
         break;
     }
     case responses::OPEN_ORDER_END: {
-        _handleOpenOrderEnd(msg.dynamicCast<OpenOrderEndServerMessage>().get());
+        _handleOpenOrderEnd(std::dynamic_pointer_cast<OpenOrderEndServerMessage>(msg).get());
         break;
     }
     default:
@@ -338,7 +347,7 @@ void TwsClient::_handleCurrentTime(CurrentTimeServerMessage *msg)
 void TwsClient::_handleSymbolSamples(SymbolSamplesServerMessage *msg) {
     qDebug() << "symbolSamples";
     int reqId = msg->requestId();
-    ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(_cache.get(reqId));
+    auto entry = std::dynamic_pointer_cast<ContractDetailsCacheEntry>(_cache.get(reqId));
     if(entry) {
         entry->contractDetails.append(msg->contracts());
         entry->setReady();
@@ -367,7 +376,7 @@ void TwsClient::_handleSymbolSamples(SymbolSamplesServerMessage *msg) {
                 _sendHistoricalDataRequest(hdPending, contract);
                 QStringList hdKeys = {"requestHistoricalData", QString::number(contract.contractId), pending.endDateTime,
                                       pending.durationStr, pending.barSizeSetting, pending.whatToShow};
-                _cache.add(pending.originalReqId, new HistoricalDataCacheEntry(), hdKeys);
+                _cache.add(pending.originalReqId, std::make_shared<HistoricalDataCacheEntry>(), hdKeys);
             }
         }
     }
@@ -375,7 +384,7 @@ void TwsClient::_handleSymbolSamples(SymbolSamplesServerMessage *msg) {
 
 void TwsClient::_handleContractData(ContractDataServerMessage *msg)
 {
-    ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(_cache.get(msg->requestId()));
+    auto entry = std::dynamic_pointer_cast<ContractDetailsCacheEntry>(_cache.get(msg->requestId()));
     if(entry) {
         entry->contractDetails.append(msg->contract());
     }
@@ -383,7 +392,7 @@ void TwsClient::_handleContractData(ContractDataServerMessage *msg)
 
 void TwsClient::_handleContractDataEnd(ContractDataEndServerMessage *msg)
 {
-    ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(_cache.get(msg->requestId()));
+    auto entry = std::dynamic_pointer_cast<ContractDetailsCacheEntry>(_cache.get(msg->requestId()));
     if(entry) {
         entry->setReady();
         emit contractDetailReadySignal(msg->requestId(), entry->contractDetails);
@@ -401,7 +410,7 @@ void TwsClient::_handleContractDataEnd(ContractDataEndServerMessage *msg)
                 _sendHistoricalDataRequest(pending, entry->contractDetails.first());
                 QStringList keys = {"requestHistoricalData", QString::number(contractId), pending.endDateTime,
                                     pending.durationStr, pending.barSizeSetting, pending.whatToShow};
-                _cache.add(pending.reqId, new HistoricalDataCacheEntry(), keys);
+                _cache.add(pending.reqId, std::make_shared<HistoricalDataCacheEntry>(), keys);
             }
         }
     }
@@ -414,7 +423,7 @@ void TwsClient::_handlePortfolioValue(PortfolioValueServerMessage *msg)
 
 void TwsClient::_handleHistoricalData(HistoricalDataServerMessage *msg)
 {
-    HistoricalDataCacheEntry * entry =  dynamic_cast<HistoricalDataCacheEntry*>(_cache.get(msg->requestId()));
+    auto entry = std::dynamic_pointer_cast<HistoricalDataCacheEntry>(_cache.get(msg->requestId()));
     if(entry) {
         entry->bars.append(msg->bars());
     }
@@ -422,7 +431,7 @@ void TwsClient::_handleHistoricalData(HistoricalDataServerMessage *msg)
 
 void TwsClient::_handleHistoricalDataUpdate(HistoricalDataUpdateServerMessage *msg)
 {
-    HistoricalDataCacheEntry * entry =  dynamic_cast<HistoricalDataCacheEntry*>(_cache.get(msg->requestId()));
+    auto entry = std::dynamic_pointer_cast<HistoricalDataCacheEntry>(_cache.get(msg->requestId()));
     if(entry) {
         entry->bars.append(msg->bar());
     }
@@ -430,7 +439,12 @@ void TwsClient::_handleHistoricalDataUpdate(HistoricalDataUpdateServerMessage *m
 
 void TwsClient::_handleHistoricalDataEnd(HistoricalDataEndServerMessage *msg)
 {
-    HistoricalDataCacheEntry * entry =  dynamic_cast<HistoricalDataCacheEntry*>(_cache.get(msg->requestId()));
+    // Stop and remove the timeout timer
+    if (_historicalDataTimers.contains(msg->requestId())) {
+        _historicalDataTimers.take(msg->requestId())->stop();
+    }
+
+    auto entry = std::dynamic_pointer_cast<HistoricalDataCacheEntry>(_cache.get(msg->requestId()));
     if(entry) {
         entry->setReady();
         QString description = _historicalDataDescriptions.take(msg->requestId());
@@ -443,9 +457,39 @@ void TwsClient::onError(const QString &reason, bool fatal)
     emit errorSignal(reason, fatal);
 }
 
+void TwsClient::_onHistoricalDataTimeout(int reqId)
+{
+    qDebug() << "Historical data request timed out:" << reqId;
+    
+    // Remove the timer
+    if (_historicalDataTimers.contains(reqId)) {
+        _historicalDataTimers.take(reqId)->deleteLater();
+    }
+    
+    // Remove description if present
+    _historicalDataDescriptions.remove(reqId);
+    
+    // Emit error signal for the timeout
+    emit errorSignal(QString("Historical data request %1 timed out after 10 seconds").arg(reqId), false);
+    
+    // Emit empty historical data to unblock any waiting caller
+    emit historicalDataReadySignal(reqId, QList<common::BarDTO>(), QString());
+}
+
 void TwsClient::_sendHistoricalDataRequest(const PendingHistoricalDataRequest &pending,
                                             const common::ContractDetailsDTO &contractDetails)
 {
+    // Start 10-second timeout timer for this request
+    QTimer *timer = new QTimer(this);
+    timer->setSingleShot(true);
+    timer->setInterval(10000); // 10 seconds
+    QObject::connect(timer, &QTimer::timeout, this, [this, reqId = pending.reqId, timer]() {
+        _onHistoricalDataTimeout(reqId);
+        timer->deleteLater();
+    });
+    _historicalDataTimers.insert(pending.reqId, timer);
+    timer->start();
+
     QString secTypeStr = _securityTypeToIbString(contractDetails.securityType);
     if(secTypeStr.isEmpty()) {
         secTypeStr = "STK"; // default to stock

@@ -1,4 +1,5 @@
 #include <QSqlDatabase>
+#include <memory>
 
 #include "mocked/mockappfactory.h"
 #include "mocked/twsclientmock.h"
@@ -28,10 +29,10 @@ void MockAppFactory::setupDatabase(const QString & dbName)
     db.open();
 }
 
-QList<common::IDbMigration *> MockAppFactory::extraMigrations()
+QList<std::shared_ptr<common::IDbMigration>> MockAppFactory::extraMigrations()
 {
     return {
-        new MockMigration_1001
+        std::make_shared<MockMigration_1001>()
     };
 }
 

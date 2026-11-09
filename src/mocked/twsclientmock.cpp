@@ -11,7 +11,7 @@ TwsClientMock::TwsClientMock(QObject *parent)
     : ITwsClient(parent),
       _connected(false),
       _requestId(0),
-      _timer{new QTimer}
+      _timer{new QTimer(this)}
 {
     qDebug() << "Constructing" << this;
     QObject::connect(_timer, &QTimer::timeout, this, &TwsClientMock::_timerTask);
@@ -39,7 +39,7 @@ TwsClientMock::~TwsClientMock()
 {
     qDebug() << "Destroying" << this;
     _timer->stop();
-    delete _timer;
+    // _timer is parented to this, Qt will delete it automatically
 }
 
 
@@ -123,18 +123,20 @@ void TwsClientMock::_timerTask()
 
 void TwsClientMock::requestContractDetails(long contractId, int * reqId)
 {
-    _setRequestId(reqId, _requestId++);
+    int reqIdValue = _requestId++;
+    _setRequestId(reqId, reqIdValue);
 
 
     if(_contractsMap.contains(contractId)) {
         qDebug() << "Yes, it's there";
-        emit contractDetailReadySignal(*reqId, {_contractsMap[contractId]});
+        emit contractDetailReadySignal(reqIdValue, {_contractsMap[contractId]});
     }
 }
 
 void TwsClientMock::requestMatchingSymbols(const QString &pattern, int * reqId)
 {
-    _setRequestId(reqId, _requestId++);
+    int reqIdValue = _requestId++;
+    _setRequestId(reqId, reqIdValue);
 
     QList<ContractDetailsDTO> dtos;
 
@@ -144,7 +146,7 @@ void TwsClientMock::requestMatchingSymbols(const QString &pattern, int * reqId)
         }
     }
 
-    emit matchingSymbolsReadySignal(*reqId, dtos);
+    emit matchingSymbolsReadySignal(reqIdValue, dtos);
 
 }
 
@@ -190,7 +192,6 @@ static QList<common::BarDTO> generateMockBars(long contractId, const QString &sy
         double volume = 1000000 + QRandomGenerator::global()->generateDouble() * 5000000;
         double wap = (high + low + close) / 3.0;
         int barCount = 1000 + QRandomGenerator::global()->generate() % 5000;
-        double average = wap;
 
         bar.time = baseTime.addDays(i).toString("yyyy-MM-dd");
         bar.open = open;
@@ -200,7 +201,6 @@ static QList<common::BarDTO> generateMockBars(long contractId, const QString &sy
         bar.volume = volume;
         bar.wap = wap;
         bar.barCount = barCount;
-        bar.average = average;
 
         bars << bar;
         basePrice = close; // Next day starts near previous close
@@ -216,7 +216,8 @@ void TwsClientMock::requestHistoricalData(long contractId, const QString & endDa
     Q_UNUSED(whatToShow)
     Q_UNUSED(useRTH)
     Q_UNUSED(formatDate)
-    _setRequestId(reqId, _requestId++);
+    int reqIdValue = _requestId++;
+    _setRequestId(reqId, reqIdValue);
 
     QString symbol;
     QString description;
@@ -226,7 +227,7 @@ void TwsClientMock::requestHistoricalData(long contractId, const QString & endDa
     }
 
     QList<common::BarDTO> bars = generateMockBars(contractId, symbol, endDateTime, durationStr, barSizeSetting);
-    emit historicalDataReadySignal(*reqId, bars, description);
+    emit historicalDataReadySignal(reqIdValue, bars, description);
 }
 
 void TwsClientMock::requestHistoricalData(const QString & symbol, const QString & endDateTime,
@@ -237,7 +238,8 @@ void TwsClientMock::requestHistoricalData(const QString & symbol, const QString 
     Q_UNUSED(whatToShow)
     Q_UNUSED(useRTH)
     Q_UNUSED(formatDate)
-    _setRequestId(reqId, _requestId++);
+    int reqIdValue = _requestId++;
+    _setRequestId(reqId, reqIdValue);
 
     long contractId = 0;
     QString description;
@@ -250,12 +252,6 @@ void TwsClientMock::requestHistoricalData(const QString & symbol, const QString 
     }
 
     QList<common::BarDTO> bars = generateMockBars(contractId, symbol, endDateTime, durationStr, barSizeSetting);
-    emit historicalDataReadySignal(*reqId, bars, description);
-}
-
-void TwsClientMock::cancelHistoricalData(int reqId)
-{
-    Q_UNUSED(reqId)
-    // Mock implementation - no-op
+    emit historicalDataReadySignal(reqIdValue, bars, description);
 }
 }

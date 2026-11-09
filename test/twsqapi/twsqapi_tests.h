@@ -5,11 +5,13 @@
 #include "test_clientmessage.h"
 #include "test_servermessage.h"
 #include "test_baseclient.h"
+#include "test_cache.h"
 
 
 
 TEST_DECLARE(BaseClientTest);
 TEST_DECLARE(ClientMessageTest);
 TEST_DECLARE(ServerMessageTest);
+TEST_DECLARE(CacheTest);
 
 #endif

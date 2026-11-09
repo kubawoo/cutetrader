@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QIODevice>
 #include <QMutex>
+#include <memory>
 
 #include "clientmessage.h"
 #include "servermessage.h"
@@ -22,7 +23,7 @@ public:
     void send(ClientMessage && msg);
 
 signals:
-    void message(QSharedPointer<ServerMessage> msg);
+    void message(std::shared_ptr<ServerMessage> msg);
     void error(const QString & reason, bool fatal = false);
     void _dataRead();
     void handshakeCompleted();
@@ -46,9 +47,12 @@ private:
     void _send(const QByteArray & msg);
     void _processData(const QByteArray & data);
     void _handleHandshake(const QStringList & fields);
+    void _socketDisconnect();
 
 
 private:
+    static constexpr size_t MAX_BUFFER_SIZE = 10 * 1024 * 1024; // 10 MB
+
     QIODevice * _input;
     QIODevice * _output;
     int _clientId;

@@ -80,7 +80,6 @@ struct BarDTO
     double wap;
     double volume;
     int barCount;
-    double average;
 };
 
 struct OrderStatusDTO

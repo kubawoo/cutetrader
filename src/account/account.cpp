@@ -100,4 +100,18 @@ void Account::updateOpenOrders(const int &requestId, const QList<common::OrderDT
     emit openOrdersUpdated(_openOrders);
 }
 
+void Account::updateOrderStatus(const common::OrderStatusDTO &status)
+{
+    for (common::OrderDTO &order : _openOrders) {
+        if (order.orderId == status.orderId) {
+            order.status = status.status;
+            order.filled = status.filled;
+            order.remaining = status.remaining;
+            order.avgFillPrice = status.avgFillPrice;
+            break;
+        }
+    }
+    emit openOrdersUpdated(_openOrders);
+}
+
 }

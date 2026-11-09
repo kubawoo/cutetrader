@@ -2,6 +2,7 @@
 #define DATA_DATAMANAGER_H
 
 #include <QSqlDatabase>
+#include <QSqlQuery>
 #include "model.h"
 #include "utils.h"
 
@@ -28,7 +29,7 @@ public:
 private:
     Security toSecurity(DbResult & data);
     Quote toQuote(DbResult & data);
-    QList<Quote> doGetQuotes(const QString & sql);
+    QList<Quote> doGetQuotes(QSqlQuery && query);
 
 
     template <typename T, typename P>

@@ -4,6 +4,7 @@
 #include "itwsclient.h"
 
 #include <QList>
+#include <memory>
 #include "idbmigration.h"
 
 namespace common {
@@ -16,9 +17,8 @@ public:
 
     virtual ITwsClient * createTwsClient() = 0;
     virtual void setupDatabase(const QString & dbName) = 0;
-    virtual QList<IDbMigration *> extraMigrations();
+    virtual QList<std::shared_ptr<IDbMigration>> extraMigrations();
 };
 }
 
 #endif // COMMON_IAPPFACTORY_H
-
