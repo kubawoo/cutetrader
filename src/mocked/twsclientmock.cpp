@@ -254,10 +254,4 @@ void TwsClientMock::requestHistoricalData(const QString & symbol, const QString 
     QList<common::BarDTO> bars = generateMockBars(contractId, symbol, endDateTime, durationStr, barSizeSetting);
     emit historicalDataReadySignal(reqIdValue, bars, description);
 }
-
-void TwsClientMock::cancelHistoricalData(int reqId)
-{
-    Q_UNUSED(reqId)
-    // Mock implementation - no-op
-}
 }

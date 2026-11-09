@@ -219,14 +219,6 @@ void TwsClient::requestHistoricalData(const QString &symbol, const QString & end
     _pendingSymbolHistoricalDataRequests[matchingReqId] = _pendingSymbolHistoricalDataRequests.take(currentReqId);
 }
 
-void TwsClient::cancelHistoricalData(int reqId)
-{
-    qDebug() << "Canceling historical data request" << reqId;
-    _client->send(CancelHistoricalDataClientMessage(reqId));
-    // Remove description if present
-    _historicalDataDescriptions.remove(reqId);
-}
-
 void TwsClient::onMessage(std::shared_ptr<ServerMessage> msg)
 {
     qDebug() << "TwsClient::onMessage" << msg->id();
@@ -431,6 +423,11 @@ void TwsClient::_handleHistoricalDataUpdate(HistoricalDataUpdateServerMessage *m
 
 void TwsClient::_handleHistoricalDataEnd(HistoricalDataEndServerMessage *msg)
 {
+    // Stop and remove the timeout timer
+    if (_historicalDataTimers.contains(msg->requestId())) {
+        _historicalDataTimers.take(msg->requestId())->stop();
+    }
+
     auto entry = std::dynamic_pointer_cast<HistoricalDataCacheEntry>(_cache.get(msg->requestId()));
     if(entry) {
         entry->setReady();
@@ -444,9 +441,39 @@ void TwsClient::onError(const QString &reason, bool fatal)
     emit errorSignal(reason, fatal);
 }
 
+void TwsClient::_onHistoricalDataTimeout(int reqId)
+{
+    qDebug() << "Historical data request timed out:" << reqId;
+    
+    // Remove the timer
+    if (_historicalDataTimers.contains(reqId)) {
+        _historicalDataTimers.take(reqId)->deleteLater();
+    }
+    
+    // Remove description if present
+    _historicalDataDescriptions.remove(reqId);
+    
+    // Emit error signal for the timeout
+    emit errorSignal(QString("Historical data request %1 timed out after 10 seconds").arg(reqId), false);
+    
+    // Emit empty historical data to unblock any waiting caller
+    emit historicalDataReadySignal(reqId, QList<common::BarDTO>(), QString());
+}
+
 void TwsClient::_sendHistoricalDataRequest(const PendingHistoricalDataRequest &pending,
                                             const common::ContractDetailsDTO &contractDetails)
 {
+    // Start 10-second timeout timer for this request
+    QTimer *timer = new QTimer(this);
+    timer->setSingleShot(true);
+    timer->setInterval(10000); // 10 seconds
+    QObject::connect(timer, &QTimer::timeout, this, [this, reqId = pending.reqId, timer]() {
+        _onHistoricalDataTimeout(reqId);
+        timer->deleteLater();
+    });
+    _historicalDataTimers.insert(pending.reqId, timer);
+    timer->start();
+
     QString secTypeStr = _securityTypeToIbString(contractDetails.securityType);
     if(secTypeStr.isEmpty()) {
         secTypeStr = "STK"; // default to stock

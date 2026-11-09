@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QMap>
+#include <QTimer>
 #include <memory>
 #include "socketclient.h"
 #include "cache.h"
@@ -49,7 +50,6 @@ public slots:
                                const QString & durationStr, const QString & barSizeSetting,
                                const QString & whatToShow, int useRTH, int formatDate,
                                int * reqId = nullptr) override;
-    void cancelHistoricalData(int reqId) override;
 
 
 
@@ -73,6 +73,10 @@ private:
 
     QMap<int, PendingSymbolHistoricalDataRequest> _pendingSymbolHistoricalDataRequests;
     QMap<int, QString> _historicalDataDescriptions;
+    QMap<int, QTimer*> _historicalDataTimers;
+
+private slots:
+    void _onHistoricalDataTimeout(int reqId);
 
 private:
     void _handleManagedAccounts(ManagedAccountsServerMessage *msg);

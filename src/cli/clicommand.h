@@ -166,20 +166,6 @@ private:
     QString _symbol;
 };
 
-class CancelHistoricalDataCliCommand : public CliCommand
-{
-    Q_OBJECT
-public:
-    explicit CancelHistoricalDataCliCommand(std::shared_ptr<common::ITwsClient> client, QObject *parent = nullptr);
-    QString description() override { return "Cancel a historical data request by request ID"; }
-    QStringList parametersDescription() { return {"<reqId>"}; }
-public slots:
-    void execute(const QStringList &params) override;
-
-private:
-    std::shared_ptr<common::ITwsClient> _client;
-};
-
 class OrderListCliCommand : public CliCommand
 {
     Q_OBJECT

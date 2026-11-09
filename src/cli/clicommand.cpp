@@ -115,7 +115,6 @@ void CliCommandManager::setupCommands()
     _commands["watchlist"] = new WatchlistCliCommand(_dataManager, this);
     _commands["search"] = new SearchSymbolsCliCommand(_client, this);
     _commands["historical"] = new HistoricalDataCliCommand(_client, this);
-    _commands["cancel-historical"] = new CancelHistoricalDataCliCommand(_client, this);
     _commands["orders"] = new OrderListCliCommand(_account, _client, this);
 
     for (auto c : _commands.values()) {
@@ -349,27 +348,6 @@ void HistoricalDataCliCommand::onHistoricalDataReady(const int &requestId, const
         }
     }
     emit finished(s);
-}
-
-CancelHistoricalDataCliCommand::CancelHistoricalDataCliCommand(std::shared_ptr<common::ITwsClient> client, QObject *parent)
-    : CliCommand{parent}
-    , _client(client)
-{}
-
-void CancelHistoricalDataCliCommand::execute(const QStringList &params)
-{
-    if (params.isEmpty()) {
-        emit finished("Usage: cancel-historical <reqId>");
-        return;
-    }
-    bool ok = false;
-    int reqId = params[0].toInt(&ok);
-    if (!ok) {
-        emit finished("Invalid request ID: " + params[0]);
-        return;
-    }
-    _client->cancelHistoricalData(reqId);
-    emit finished("Cancelled historical data request " + QString::number(reqId));
 }
 
 OrderListCliCommand::OrderListCliCommand(account::Account &account, std::shared_ptr<common::ITwsClient> client, QObject *parent)
