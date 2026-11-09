@@ -5,6 +5,10 @@
 namespace twsqapi {
 
 
+Cache::Cache()
+{
+}
+
 CacheEntry::CacheEntry(long ttl)
 {
     _expiry = QDateTime::currentSecsSinceEpoch() + ttl;
@@ -30,39 +34,44 @@ void CacheEntry::setReady()
 }
 
 
-void Cache::add(long requestId, CacheEntry *entry, const QStringList &keys)
+void Cache::add(long requestId, QSharedPointer<CacheEntry> entry, const QStringList &keys)
 {
+    // If there's already an entry for this requestId, it will be replaced
     _cache.insert(requestId, entry);
     if(!keys.empty()) {
-        _requestCache.insert(buildKey(keys), requestId);
+        QString key = buildKey(keys);
+        // If there's already an entry for this key, remove the old requestId from _cache
+        if (_requestCache.contains(key)) {
+            long oldRequestId = _requestCache[key];
+            if (oldRequestId != requestId) {
+                _cache.remove(oldRequestId);
+            }
+        }
+        _requestCache.insert(key, requestId);
     }
 }
 
-CacheEntry *Cache::get(long requestId)
+QSharedPointer<CacheEntry> Cache::get(long requestId)
 {
-    return _cache.value(requestId, nullptr);
+    return _cache.value(requestId, QSharedPointer<CacheEntry>());
 }
 
-QPair<long, CacheEntry *> Cache::get(const QStringList &keys)
+QPair<long, QSharedPointer<CacheEntry>> Cache::get(const QStringList &keys)
 {
     QString key = buildKey(keys);
     long requestId = _requestCache.value(key, -1L);
     if(requestId >= 0) {
-        return QPair<long, CacheEntry *> (requestId, get(requestId));
+        return QPair<long, QSharedPointer<CacheEntry>>(requestId, get(requestId));
     }
-    return QPair<long, CacheEntry *>(requestId, nullptr);
+    return QPair<long, QSharedPointer<CacheEntry>>(requestId, QSharedPointer<CacheEntry>());
 }
 
 void Cache::removeExpired()
 {
     qDebug() << "Before cleanup" << _cache.keys() << _requestCache.keys();
     long now = QDateTime::currentSecsSinceEpoch();
-    _cache.removeIf([now](std::pair<const long &, CacheEntry *> entry) {
-        bool del = entry.second->expiry() < now;
-        if(del) {
-            delete entry.second;
-        }
-        return del;
+    _cache.removeIf([now](std::pair<const long &, QSharedPointer<CacheEntry>> entry) {
+        return entry.second && entry.second->expiry() < now;
     });
 
     _requestCache.removeIf([this](std::pair<const QString &, const long &> entry) {
@@ -83,26 +92,27 @@ QString Cache::buildKey(const QStringList &list)
     return list.join("_").toLower();
 }
 
+Cache::~Cache()
+{
+    clear();
+}
+
 ContractDetailsCacheEntry::ContractDetailsCacheEntry()
     : CacheEntry(300)
 {
-
 }
 
 ContractDetailsCacheEntry::~ContractDetailsCacheEntry()
 {
-
 }
 
 HistoricalDataCacheEntry::HistoricalDataCacheEntry()
     : CacheEntry(300)
 {
-
 }
 
 HistoricalDataCacheEntry::~HistoricalDataCacheEntry()
 {
-
 }
 
 }

@@ -2,6 +2,7 @@
 
 #include "twsqapi/constants.h"
 #include "common/utils.h"
+#include <QSharedPointer>
 
 namespace twsqapi {
 
@@ -67,14 +68,14 @@ void TwsClient::requestContractDetails(long contractId, int *reqId)
     auto cacheEntry = _cache.get(keys);
     if(cacheEntry.first >= 0 && cacheEntry.second && cacheEntry.second->ready()) {
         long requestId = cacheEntry.first;
-        ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(cacheEntry.second);
+        auto entry = cacheEntry.second.dynamicCast<ContractDetailsCacheEntry>();
         qDebug() << "Returning from cache";
         _setRequestId(reqId, requestId);
         emit contractDetailReadySignal(requestId, entry->contractDetails);
     } else {
         qDebug() << "requestContractDetails" << _requestId;
         _setRequestId(reqId, _requestId);
-        _cache.add(_requestId, new ContractDetailsCacheEntry(), keys);
+        _cache.add(_requestId, QSharedPointer<ContractDetailsCacheEntry>::create(), keys);
         _client->send(RequestContractDetailsClientMessage(_requestId++, contractId));
     }
 }
@@ -86,13 +87,13 @@ void TwsClient::requestMatchingSymbols(const QString &pattern, int *reqId)
 
     if(cacheEntry.first >= 0 && cacheEntry.second && cacheEntry.second->ready()) {
         long requestId = cacheEntry.first;
-        ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(cacheEntry.second);
+        auto entry = cacheEntry.second.dynamicCast<ContractDetailsCacheEntry>();
         qDebug() << "Returning from cache" << keys;
         _setRequestId(reqId, requestId);
         emit matchingSymbolsReadySignal(requestId, entry->contractDetails);
     } else {
         _setRequestId(reqId, _requestId);
-        _cache.add(_requestId, new ContractDetailsCacheEntry(), keys);
+        _cache.add(_requestId, QSharedPointer<ContractDetailsCacheEntry>::create(), keys);
         _client->send(RequestMatchingSymbolsClientMessage(_requestId++, pattern));
     }
 }
@@ -108,7 +109,7 @@ void TwsClient::requestHistoricalData(long contractId, const QString & endDateTi
 
     if(cacheEntry.first >= 0 && cacheEntry.second && cacheEntry.second->ready()) {
         long requestId = cacheEntry.first;
-        HistoricalDataCacheEntry * entry =  dynamic_cast<HistoricalDataCacheEntry*>(cacheEntry.second);
+        auto entry = cacheEntry.second.dynamicCast<HistoricalDataCacheEntry>();
         qDebug() << "Returning historical data from cache" << keys;
         _setRequestId(reqId, requestId);
         emit historicalDataReadySignal(requestId, entry->bars);
@@ -124,7 +125,7 @@ void TwsClient::requestHistoricalData(long contractId, const QString & endDateTi
 
     if(contractCacheEntry.first >= 0 && contractCacheEntry.second && contractCacheEntry.second->ready()) {
         // We have contract details, use them to send historical data request
-        ContractDetailsCacheEntry * contractEntry = dynamic_cast<ContractDetailsCacheEntry*>(contractCacheEntry.second);
+        auto contractEntry = contractCacheEntry.second.dynamicCast<ContractDetailsCacheEntry>();
         if(contractEntry && !contractEntry->contractDetails.isEmpty()) {
             PendingHistoricalDataRequest pending;
             pending.contractId = contractId;
@@ -137,7 +138,7 @@ void TwsClient::requestHistoricalData(long contractId, const QString & endDateTi
             pending.reqId = currentReqId;
 
             _sendHistoricalDataRequest(pending, contractEntry->contractDetails.first());
-            _cache.add(currentReqId, new HistoricalDataCacheEntry(), keys);
+            _cache.add(currentReqId, QSharedPointer<HistoricalDataCacheEntry>::create(), keys);
             return;
         }
     }
@@ -157,7 +158,7 @@ void TwsClient::requestHistoricalData(long contractId, const QString & endDateTi
     _pendingHistoricalDataRequests[contractId].append(pending);
 
     // Request contract details
-    _cache.add(currentReqId, new ContractDetailsCacheEntry(), contractKeys);
+    _cache.add(currentReqId, QSharedPointer<ContractDetailsCacheEntry>::create(), contractKeys);
     _client->send(RequestContractDetailsClientMessage(currentReqId, contractId));
 }
 
@@ -185,7 +186,7 @@ void TwsClient::requestHistoricalData(const QString &symbol, const QString & end
 
     if(cacheEntry.first >= 0 && cacheEntry.second && cacheEntry.second->ready()) {
         // Cache hit - resolve immediately
-        ContractDetailsCacheEntry * entry = dynamic_cast<ContractDetailsCacheEntry*>(cacheEntry.second);
+        auto entry = cacheEntry.second.dynamicCast<ContractDetailsCacheEntry>();
         if(entry && !entry->contractDetails.isEmpty()) {
             const auto &contract = entry->contractDetails.first();
             _historicalDataDescriptions[currentReqId] = contract.description;
@@ -203,7 +204,7 @@ void TwsClient::requestHistoricalData(const QString &symbol, const QString & end
             _sendHistoricalDataRequest(hdPending, contract);
             QStringList hdKeys = {"requestHistoricalData", QString::number(contract.contractId), pending.endDateTime,
                                   pending.durationStr, pending.barSizeSetting, pending.whatToShow};
-            _cache.add(currentReqId, new HistoricalDataCacheEntry(), hdKeys);
+            _cache.add(currentReqId, QSharedPointer<HistoricalDataCacheEntry>::create(), hdKeys);
             return;
         }
     }
@@ -338,7 +339,7 @@ void TwsClient::_handleCurrentTime(CurrentTimeServerMessage *msg)
 void TwsClient::_handleSymbolSamples(SymbolSamplesServerMessage *msg) {
     qDebug() << "symbolSamples";
     int reqId = msg->requestId();
-    ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(_cache.get(reqId));
+    auto entry = _cache.get(reqId).dynamicCast<ContractDetailsCacheEntry>();
     if(entry) {
         entry->contractDetails.append(msg->contracts());
         entry->setReady();
@@ -367,7 +368,7 @@ void TwsClient::_handleSymbolSamples(SymbolSamplesServerMessage *msg) {
                 _sendHistoricalDataRequest(hdPending, contract);
                 QStringList hdKeys = {"requestHistoricalData", QString::number(contract.contractId), pending.endDateTime,
                                       pending.durationStr, pending.barSizeSetting, pending.whatToShow};
-                _cache.add(pending.originalReqId, new HistoricalDataCacheEntry(), hdKeys);
+                _cache.add(pending.originalReqId, QSharedPointer<HistoricalDataCacheEntry>::create(), hdKeys);
             }
         }
     }
@@ -375,7 +376,7 @@ void TwsClient::_handleSymbolSamples(SymbolSamplesServerMessage *msg) {
 
 void TwsClient::_handleContractData(ContractDataServerMessage *msg)
 {
-    ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(_cache.get(msg->requestId()));
+    auto entry = _cache.get(msg->requestId()).dynamicCast<ContractDetailsCacheEntry>();
     if(entry) {
         entry->contractDetails.append(msg->contract());
     }
@@ -383,7 +384,7 @@ void TwsClient::_handleContractData(ContractDataServerMessage *msg)
 
 void TwsClient::_handleContractDataEnd(ContractDataEndServerMessage *msg)
 {
-    ContractDetailsCacheEntry * entry =  dynamic_cast<ContractDetailsCacheEntry*>(_cache.get(msg->requestId()));
+    auto entry = _cache.get(msg->requestId()).dynamicCast<ContractDetailsCacheEntry>();
     if(entry) {
         entry->setReady();
         emit contractDetailReadySignal(msg->requestId(), entry->contractDetails);
@@ -401,7 +402,7 @@ void TwsClient::_handleContractDataEnd(ContractDataEndServerMessage *msg)
                 _sendHistoricalDataRequest(pending, entry->contractDetails.first());
                 QStringList keys = {"requestHistoricalData", QString::number(contractId), pending.endDateTime,
                                     pending.durationStr, pending.barSizeSetting, pending.whatToShow};
-                _cache.add(pending.reqId, new HistoricalDataCacheEntry(), keys);
+                _cache.add(pending.reqId, QSharedPointer<HistoricalDataCacheEntry>::create(), keys);
             }
         }
     }
@@ -414,7 +415,7 @@ void TwsClient::_handlePortfolioValue(PortfolioValueServerMessage *msg)
 
 void TwsClient::_handleHistoricalData(HistoricalDataServerMessage *msg)
 {
-    HistoricalDataCacheEntry * entry =  dynamic_cast<HistoricalDataCacheEntry*>(_cache.get(msg->requestId()));
+    auto entry = _cache.get(msg->requestId()).dynamicCast<HistoricalDataCacheEntry>();
     if(entry) {
         entry->bars.append(msg->bars());
     }
@@ -422,7 +423,7 @@ void TwsClient::_handleHistoricalData(HistoricalDataServerMessage *msg)
 
 void TwsClient::_handleHistoricalDataUpdate(HistoricalDataUpdateServerMessage *msg)
 {
-    HistoricalDataCacheEntry * entry =  dynamic_cast<HistoricalDataCacheEntry*>(_cache.get(msg->requestId()));
+    auto entry = _cache.get(msg->requestId()).dynamicCast<HistoricalDataCacheEntry>();
     if(entry) {
         entry->bars.append(msg->bar());
     }
@@ -430,7 +431,7 @@ void TwsClient::_handleHistoricalDataUpdate(HistoricalDataUpdateServerMessage *m
 
 void TwsClient::_handleHistoricalDataEnd(HistoricalDataEndServerMessage *msg)
 {
-    HistoricalDataCacheEntry * entry =  dynamic_cast<HistoricalDataCacheEntry*>(_cache.get(msg->requestId()));
+    auto entry = _cache.get(msg->requestId()).dynamicCast<HistoricalDataCacheEntry>();
     if(entry) {
         entry->setReady();
         QString description = _historicalDataDescriptions.take(msg->requestId());
