@@ -15,10 +15,11 @@ QByteArray ClientMessage::encode() const {
         str += '\0';
     }
 
+    auto payload = str.toUtf8();
     QByteArray msg;
-    msg.reserve(64); // TODO: allocate exact size?
-    _writeSize(msg, str.size());
-    msg.append(str.toUtf8());
+    msg.reserve(payload.size() + 8);
+    _writeSize(msg, payload.size());
+    msg.append(payload);
     // TODO return pointer / smart pointer instead
     return msg;
 }

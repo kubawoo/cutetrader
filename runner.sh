@@ -21,6 +21,7 @@ VALGRIND_OPTS=""
 TEST_FILTER=""
 VERBOSE=false
 COMMAND=""
+REBUILD=""
 
 # Help function
 show_help() {
