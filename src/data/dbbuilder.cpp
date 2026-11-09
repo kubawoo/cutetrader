@@ -39,16 +39,16 @@ DbBuilder::DbBuilder(QSqlDatabase & db)
 
 void DbBuilder::addMigrations()
 {
-    addMigration(QSharedPointer<Migration_001>::create());
-    addMigration(QSharedPointer<Migration_002>::create());
-    addMigration(QSharedPointer<Migration_003>::create());
-    addMigration(QSharedPointer<Migration_004>::create());
+    addMigration(std::make_shared<Migration_001>());
+    addMigration(std::make_shared<Migration_002>());
+    addMigration(std::make_shared<Migration_003>());
+    addMigration(std::make_shared<Migration_004>());
 }
 
 
 DbBuilder::~DbBuilder()
 {
-    // QSharedPointer automatically cleans up
+    // std::shared_ptr automatically cleans up
     _migrations.clear();
 }
 
@@ -94,7 +94,7 @@ bool DbBuilder::runMigrations()
     return true;
 }
 
-void DbBuilder::addMigration(QSharedPointer<common::IDbMigration> migration)
+void DbBuilder::addMigration(std::shared_ptr<common::IDbMigration> migration)
 {
     _migrations.append(migration);
 }
@@ -115,7 +115,7 @@ QMap<int, QString> DbBuilder::findExecutedMigrations(bool *ok)
     return migrations;
 }
 
-void DbBuilder::saveMigration(const QSharedPointer<common::IDbMigration> &migration)
+void DbBuilder::saveMigration(const std::shared_ptr<common::IDbMigration> &migration)
 {
     QSqlQuery query(_db);
     query.prepare("INSERT INTO _migrations(id, sha256hash, timestamp) VALUES (?, ?, ?);");

@@ -5,7 +5,7 @@ CliCommandManager::CliCommandManager(const QString &host,
                                      int port,
                                      int clientId,
                                      const QString &accountId,
-                                     QSharedPointer<common::ITwsClient> client,
+                                     std::shared_ptr<common::ITwsClient> client,
                                      QObject *parent)
     : QObject{parent}
     , _host(host)
@@ -19,20 +19,20 @@ CliCommandManager::CliCommandManager(const QString &host,
 
     setupCommands();
 
-    connect(client.data(),
+    connect(_client.get(),
             &common::ITwsClient::accountValueUpdatedSignal,
             &_account,
             &account::Account::updateAccountValue);
-    connect(client.data(),
+    connect(_client.get(),
             &common::ITwsClient::portfolioPositionUpdatedSignal,
             &_account,
             &account::Account::updatePortfolioPosition);
-    connect(client.data(),
+    connect(_client.get(),
             &common::ITwsClient::openOrderSignal,
             &_account,
             &account::Account::updateOpenOrders);
-    connect(client.data(), &common::ITwsClient::managedAccountsSignal, this, &CliCommandManager::onManagedAccounts);
-    connect(client.data(), &common::ITwsClient::errorSignal, this, &CliCommandManager::onError);
+    connect(_client.get(), &common::ITwsClient::managedAccountsSignal, this, &CliCommandManager::onManagedAccounts);
+    connect(_client.get(), &common::ITwsClient::errorSignal, this, &CliCommandManager::onError);
 
     QTimer::singleShot(0, this, &CliCommandManager::start);
 }
@@ -122,11 +122,11 @@ void CliCommandManager::setupCommands()
     connect(_commands["quit"], &QuitCommand::finished, this, &CliCommandManager::quitCommand);
 }
 
-ServerTimeCliCommand::ServerTimeCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent)
+ServerTimeCliCommand::ServerTimeCliCommand(std::shared_ptr<common::ITwsClient> client, QObject *parent)
     : CliCommand{parent}
     , _client(client)
 {
-    QObject::connect(_client.data(), &common::ITwsClient::currentTimeSignal, this, &ServerTimeCliCommand::serverTime);
+    QObject::connect(_client.get(), &common::ITwsClient::currentTimeSignal, this, &ServerTimeCliCommand::serverTime);
 }
 
 void ServerTimeCliCommand::execute(const QStringList &params)
@@ -239,11 +239,11 @@ void WatchlistCliCommand::execute(const QStringList &params)
     }
 }
 
-SearchSymbolsCliCommand::SearchSymbolsCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent)
+SearchSymbolsCliCommand::SearchSymbolsCliCommand(std::shared_ptr<common::ITwsClient> client, QObject *parent)
     : CliCommand{parent}
     , _client{client}
 {
-    QObject::connect(_client.data(), &common::ITwsClient::matchingSymbolsReadySignal,
+    QObject::connect(_client.get(), &common::ITwsClient::matchingSymbolsReadySignal,
                      this, &SearchSymbolsCliCommand::onMatchingSymbolsReady);
 }
 
@@ -280,11 +280,11 @@ void SearchSymbolsCliCommand::onMatchingSymbolsReady(const int &requestId, const
     emit finished(s);
 }
 
-HistoricalDataCliCommand::HistoricalDataCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent)
+HistoricalDataCliCommand::HistoricalDataCliCommand(std::shared_ptr<common::ITwsClient> client, QObject *parent)
     : CliCommand{parent}
     , _client(client)
 {
-    QObject::connect(_client.data(), &common::ITwsClient::historicalDataReadySignal,
+    QObject::connect(_client.get(), &common::ITwsClient::historicalDataReadySignal,
                      this, &HistoricalDataCliCommand::onHistoricalDataReady);
 }
 
@@ -347,7 +347,7 @@ void HistoricalDataCliCommand::onHistoricalDataReady(const int &requestId, const
     emit finished(s);
 }
 
-CancelHistoricalDataCliCommand::CancelHistoricalDataCliCommand(QSharedPointer<common::ITwsClient> client, QObject *parent)
+CancelHistoricalDataCliCommand::CancelHistoricalDataCliCommand(std::shared_ptr<common::ITwsClient> client, QObject *parent)
     : CliCommand{parent}
     , _client(client)
 {}
@@ -368,7 +368,7 @@ void CancelHistoricalDataCliCommand::execute(const QStringList &params)
     emit finished("Cancelled historical data request " + QString::number(reqId));
 }
 
-OrderListCliCommand::OrderListCliCommand(account::Account &account, QSharedPointer<common::ITwsClient> client, QObject *parent)
+OrderListCliCommand::OrderListCliCommand(account::Account &account, std::shared_ptr<common::ITwsClient> client, QObject *parent)
     : CliCommand{parent}
     , _account(account)
     , _client(client)
@@ -385,7 +385,7 @@ void OrderListCliCommand::execute(const QStringList &params)
     bool refresh = params.contains("refresh");
     if (refresh) {
         _waiting = true;
-        QObject::connect(_client.data(), &common::ITwsClient::openOrderSignal,
+        QObject::connect(_client.get(), &common::ITwsClient::openOrderSignal,
                          this, &OrderListCliCommand::onOpenOrdersReady, Qt::UniqueConnection);
         _client->requestOpenOrders();
     } else {
@@ -402,7 +402,7 @@ void OrderListCliCommand::onOpenOrdersReady(const int &requestId, const QList<co
     _waiting = false;
 
     // Disconnect to avoid multiple calls
-    QObject::disconnect(_client.data(), &common::ITwsClient::openOrderSignal,
+    QObject::disconnect(_client.get(), &common::ITwsClient::openOrderSignal,
                         this, &OrderListCliCommand::onOpenOrdersReady);
 
     displayOrders(orders);

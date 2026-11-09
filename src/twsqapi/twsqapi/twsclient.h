@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QMap>
+#include <memory>
 #include "socketclient.h"
 #include "cache.h"
 
@@ -53,7 +54,7 @@ public slots:
 
 
 private slots:
-    void onMessage(QSharedPointer<ServerMessage> msg);
+    void onMessage(std::shared_ptr<ServerMessage> msg);
     void onError(const QString & reason, bool fatal = false);
     void onHandshakeCompleted();
     void onDisconnected();

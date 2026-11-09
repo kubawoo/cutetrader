@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QTimeZone>
 #include "common/utils.h"
+#include <memory>
 
 #define CHECK_VALID(x, msg) \
     { \
@@ -47,7 +48,7 @@ ServerMessage::~ServerMessage()
 }
 
 
-QSharedPointer<ServerMessage> ServerMessageFactory::create(const QStringList & fields)
+std::shared_ptr<ServerMessage> ServerMessageFactory::create(const QStringList & fields)
 {
     bool ok = !fields.empty();
     int id;
@@ -57,79 +58,79 @@ QSharedPointer<ServerMessage> ServerMessageFactory::create(const QStringList & f
 
     if(!ok) {
         qDebug() << "Failed to parse msg" << fields;
-        return QSharedPointer<ServerMessage>();
+        return std::shared_ptr<ServerMessage>();
     }
 
-    QSharedPointer<ServerMessage> msg;
+    std::shared_ptr<ServerMessage> msg;
 
     switch(id) {
     case responses::MANAGED_ACCOUNTS:
         qDebug() << "RESPONSE: ManagedAccountsServerMessage";
-        msg = QSharedPointer<ManagedAccountsServerMessage>::create(fields);
+        msg = std::make_shared<ManagedAccountsServerMessage>(fields);
         break;
     case responses::NEXT_VALID_ID:
         qDebug() << "RESPONSE: NextValidIdServerMessage";
-        msg = QSharedPointer<NextValidIdServerMessage>::create(fields);
+        msg = std::make_shared<NextValidIdServerMessage>(fields);
         break;
     case responses::ERR_MSG:
         qDebug() << "RESPONSE: ErrorServerMessage";
-        msg = QSharedPointer<ErrorServerMessage>::create(fields);
+        msg = std::make_shared<ErrorServerMessage>(fields);
         break;
     case responses::ACCT_VALUE:
         qDebug() << "RESPONSE: AccountValueServerMessage";
-        msg = QSharedPointer<AccountValueServerMessage>::create(fields);
+        msg = std::make_shared<AccountValueServerMessage>(fields);
         break;
     case responses::ACCT_UPDATE_TIME:
         qDebug() << "RESPONSE: AccountUpdateTimeServerMessage";
-        msg = QSharedPointer<AccountUpdateTimeServerMessage>::create(fields);
+        msg = std::make_shared<AccountUpdateTimeServerMessage>(fields);
         break;
     case responses::ACCT_DOWNLOAD_END:
         qDebug() << "RESPONSE: AccountDownloadEndServerMessage";
-        msg = QSharedPointer<AccountDownloadEndServerMessage>::create(fields);
+        msg = std::make_shared<AccountDownloadEndServerMessage>(fields);
         break;
     case responses::CURRENT_TIME:
         qDebug() << "RESPONSE: CurrentTimeServerMessage";
-        msg = QSharedPointer<CurrentTimeServerMessage>::create(fields);
+        msg = std::make_shared<CurrentTimeServerMessage>(fields);
         break;
     case responses::SYMBOL_SAMPLES:
         qDebug() << "RESPONSE: SymbolSamplesServerMessage";
-        msg = QSharedPointer<SymbolSamplesServerMessage>::create(fields);
+        msg = std::make_shared<SymbolSamplesServerMessage>(fields);
         break;
     case responses::CONTRACT_DATA:
         qDebug() << "RESPONSE: ContractDataServerMessage";
-        msg = QSharedPointer<ContractDataServerMessage>::create(fields);
+        msg = std::make_shared<ContractDataServerMessage>(fields);
         break;
     case responses::CONTRACT_DATA_END:
         qDebug() << "RESPONSE: ContractDataEndServerMessage";
-        msg = QSharedPointer<ContractDataEndServerMessage>::create(fields);
+        msg = std::make_shared<ContractDataEndServerMessage>(fields);
         break;
     case responses::PORTFOLIO_VALUE:
         qDebug() << "RESPONSE: PortfolioValueServerMessage";
-        msg = QSharedPointer<PortfolioValueServerMessage>::create(fields);
+        msg = std::make_shared<PortfolioValueServerMessage>(fields);
         break;
     case responses::HISTORICAL_DATA:
         qDebug() << "RESPONSE: HistoricalDataServerMessage";
-        msg = QSharedPointer<HistoricalDataServerMessage>::create(fields);
+        msg = std::make_shared<HistoricalDataServerMessage>(fields);
         break;
     case responses::HISTORICAL_DATA_END:
         qDebug() << "RESPONSE: HistoricalDataEndServerMessage";
-        msg = QSharedPointer<HistoricalDataEndServerMessage>::create(fields);
+        msg = std::make_shared<HistoricalDataEndServerMessage>(fields);
         break;
     case responses::HISTORICAL_DATA_UPDATE:
         qDebug() << "RESPONSE: HistoricalDataUpdateServerMessage";
-        msg = QSharedPointer<HistoricalDataUpdateServerMessage>::create(fields);
+        msg = std::make_shared<HistoricalDataUpdateServerMessage>(fields);
         break;
     case responses::ORDER_STATUS:
         qDebug() << "RESPONSE: OrderStatusServerMessage";
-        msg = QSharedPointer<OrderStatusServerMessage>::create(fields);
+        msg = std::make_shared<OrderStatusServerMessage>(fields);
         break;
     case responses::OPEN_ORDER:
         qDebug() << "RESPONSE: OpenOrderServerMessage";
-        msg = QSharedPointer<OpenOrderServerMessage>::create(fields);
+        msg = std::make_shared<OpenOrderServerMessage>(fields);
         break;
     case responses::OPEN_ORDER_END:
         qDebug() << "RESPONSE: OpenOrderEndServerMessage";
-        msg = QSharedPointer<OpenOrderEndServerMessage>::create(fields);
+        msg = std::make_shared<OpenOrderEndServerMessage>(fields);
         break;
     default:
         qDebug() << "Unsupported server msg" << id;
@@ -144,7 +145,7 @@ QSharedPointer<ServerMessage> ServerMessageFactory::create(const QStringList & f
         for(int i = 0; i < fields.length(); i++) {
             qDebug() << i << fields[i];
         }
-        return QSharedPointer<ServerMessage>();
+        return std::shared_ptr<ServerMessage>();
     }
     return msg;
 }

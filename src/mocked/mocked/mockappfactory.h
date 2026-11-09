@@ -13,7 +13,7 @@ public:
 
     common::ITwsClient * createTwsClient() override;
     void setupDatabase(const QString & dbName) override;
-    QList<QSharedPointer<common::IDbMigration>> extraMigrations() override;
+    QList<std::shared_ptr<common::IDbMigration>> extraMigrations() override;
 };
 }
 

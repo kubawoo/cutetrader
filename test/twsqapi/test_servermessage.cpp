@@ -2,14 +2,13 @@
 #include <twsqapi/servermessage.h>
 #include <twsqapi/constants.h>
 #include <QTimeZone>
-#include <QSharedPointer>
 
 void ServerMessageTest::testServerMessageFactory()
 {
     twsqapi::ServerMessageFactory factory;
-    QVERIFY(factory.create({}).isNull());
-    QVERIFY(factory.create({QString::number(9999999999)}).isNull());
-    QVERIFY(factory.create({"123a"}).isNull());
+    QVERIFY(!factory.create({}));
+    QVERIFY(!factory.create({QString::number(9999999999)}));
+    QVERIFY(!factory.create({"123a"}));
 }
 
 void ServerMessageTest::testManagedAccountsMessage()
@@ -19,8 +18,8 @@ void ServerMessageTest::testManagedAccountsMessage()
                           QString::number(twsqapi::responses::MANAGED_ACCOUNTS_VERSION),
                           "U12345678"};
     auto sm = factory.create(fields);
-    QVERIFY(!sm.isNull());
-    auto msg = sm.dynamicCast<twsqapi::ManagedAccountsServerMessage>();
+    QVERIFY(sm);
+    auto msg = std::dynamic_pointer_cast<twsqapi::ManagedAccountsServerMessage>(sm);
     QVERIFY(msg);
     QVERIFY(msg->accounts().size() == 1);
     QVERIFY(msg->accounts()[0] == "U12345678");
@@ -29,8 +28,8 @@ void ServerMessageTest::testManagedAccountsMessage()
               QString::number(twsqapi::responses::MANAGED_ACCOUNTS_VERSION),
               "U12345678, U87654321"};
     sm = factory.create(fields);
-    QVERIFY(!sm.isNull());
-    msg = sm.dynamicCast<twsqapi::ManagedAccountsServerMessage>();
+    QVERIFY(sm);
+    msg = std::dynamic_pointer_cast<twsqapi::ManagedAccountsServerMessage>(sm);
     QVERIFY(msg);
     QVERIFY(msg->accounts().size() == 2);
     QVERIFY(msg->accounts()[0] == "U12345678");
@@ -43,21 +42,21 @@ void ServerMessageTest::testInvalidManagedAccountsMessage()
     QStringList fields = {QString::number(twsqapi::responses::MANAGED_ACCOUNTS),
                           QString::number(twsqapi::responses::MANAGED_ACCOUNTS_VERSION - 1),
                           "U12345678"};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     fields = {QString::number(twsqapi::responses::MANAGED_ACCOUNTS),
               QString::number(twsqapi::responses::MANAGED_ACCOUNTS_VERSION),
               ""};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     fields = {QString::number(twsqapi::responses::MANAGED_ACCOUNTS),
               QString::number(twsqapi::responses::MANAGED_ACCOUNTS_VERSION)};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     fields = {QString::number(twsqapi::responses::MANAGED_ACCOUNTS),
               QString::number(twsqapi::responses::MANAGED_ACCOUNTS_VERSION),
               "U12345678,"};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 }
 
 void ServerMessageTest::testNextValidIdMessage()
@@ -68,8 +67,8 @@ void ServerMessageTest::testNextValidIdMessage()
                           QString::number(123)};
 
     auto sm = factory.create(fields);
-    QVERIFY(!sm.isNull());
-    auto msg = sm.dynamicCast<twsqapi::NextValidIdServerMessage>();
+    QVERIFY(sm);
+    auto msg = std::dynamic_pointer_cast<twsqapi::NextValidIdServerMessage>(sm);
     QVERIFY(msg);
     QVERIFY(msg->nextId() == 123);
 }
@@ -80,22 +79,22 @@ void ServerMessageTest::testInvalidNextValidIdMessage()
     QStringList fields = {QString::number(twsqapi::responses::NEXT_VALID_ID),
                           QString::number(twsqapi::responses::NEXT_VALID_ID_VERSION - 1),
                           QString::number(123)};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     fields = {QString::number(twsqapi::responses::NEXT_VALID_ID),
               QString::number(twsqapi::responses::NEXT_VALID_ID_VERSION)};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     fields = {QString::number(twsqapi::responses::NEXT_VALID_ID),
               QString::number(twsqapi::responses::NEXT_VALID_ID_VERSION),
               "123a"};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     fields = {QString::number(twsqapi::responses::NEXT_VALID_ID),
               QString::number(twsqapi::responses::NEXT_VALID_ID_VERSION),
               QString::number(123),
               QString::number(123)};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 }
 
 void ServerMessageTest::testErrorMessage()
@@ -108,8 +107,8 @@ void ServerMessageTest::testErrorMessage()
                           "no details",
                           "1759078947"};
     auto sm = factory.create(fields);
-    QVERIFY(!sm.isNull());
-    auto msg = sm.dynamicCast<twsqapi::ErrorServerMessage>();
+    QVERIFY(sm);
+    auto msg = std::dynamic_pointer_cast<twsqapi::ErrorServerMessage>(sm);
     QVERIFY(msg);
     QDateTime expected(QDate(2025, 9, 28), QTime(17, 2, 27), QTimeZone::UTC);
     QCOMPARE(msg->errorTime(), expected);
@@ -123,7 +122,7 @@ void ServerMessageTest::testInvalidErrorMessage()
 {
     twsqapi::ServerMessageFactory factory;
     QStringList fields = {QString::number(twsqapi::responses::ERR_MSG)};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     fields = {QString::number(twsqapi::responses::ERR_MSG),
               "123a",
@@ -131,7 +130,7 @@ void ServerMessageTest::testInvalidErrorMessage()
               "msg"
               "",
               "1759078947"};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     fields = {QString::number(twsqapi::responses::ERR_MSG),
               "123",
@@ -139,7 +138,7 @@ void ServerMessageTest::testInvalidErrorMessage()
               "msg"
               "",
               "1759078947"};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     fields = {QString::number(twsqapi::responses::ERR_MSG),
               "123",
@@ -147,7 +146,7 @@ void ServerMessageTest::testInvalidErrorMessage()
               "msg"
               "",
               "1759078947a"};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 }
 
 void ServerMessageTest::testAccountValueMessage()
@@ -160,8 +159,8 @@ void ServerMessageTest::testAccountValueMessage()
                           "USD",
                           "U12345678"};
     auto sm = factory.create(fields);
-    QVERIFY(!sm.isNull());
-    auto msg = sm.dynamicCast<twsqapi::AccountValueServerMessage>();
+    QVERIFY(sm);
+    auto msg = std::dynamic_pointer_cast<twsqapi::AccountValueServerMessage>(sm);
     QVERIFY(msg);
     QCOMPARE(msg->key(), "key");
     QCOMPARE(msg->value(), "value");
@@ -178,17 +177,17 @@ void ServerMessageTest::testInvalidAccountValueMessage()
                           "value",
                           "USD",
                           "U12345678"};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     fields = {QString::number(twsqapi::responses::ACCT_VALUE),
               QString::number(twsqapi::responses::ACCT_VALUE_VERSION),
               "key",
               "value",
               "USD"};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     fields = {QString::number(twsqapi::responses::ACCT_VALUE), "123a", "key", "value", "USD", "U12345678"};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 }
 
 void ServerMessageTest::testCurrentTimeMessage()
@@ -200,8 +199,8 @@ void ServerMessageTest::testCurrentTimeMessage()
         "1759078947"
     };
     auto sm = factory.create(fields);
-    QVERIFY(!sm.isNull());
-    auto msg = sm.dynamicCast<twsqapi::CurrentTimeServerMessage>();
+    QVERIFY(sm);
+    auto msg = std::dynamic_pointer_cast<twsqapi::CurrentTimeServerMessage>(sm);
     QVERIFY(msg);
     QVERIFY(msg->dateTime().isValid());
     QDateTime expected(QDate(2025, 9, 28), QTime(17, 2, 27), QTimeZone::UTC);
@@ -217,14 +216,14 @@ void ServerMessageTest::testInvalidCurrentTimeMessage()
         QString::number(twsqapi::responses::CURRENT_TIME_VERSION-1),
         "1759078947"
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     fields = {
         QString::number(twsqapi::responses::CURRENT_TIME),
         QString::number(twsqapi::responses::CURRENT_TIME_VERSION),
         "1234abc"
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
 }
 
@@ -259,8 +258,8 @@ void ServerMessageTest::testSymbolSamplesServerMessage()
                           "54321"};
 
     auto sm = factory.create(fields);
-    QVERIFY(!sm.isNull());
-    auto msg = sm.dynamicCast<twsqapi::SymbolSamplesServerMessage>();
+    QVERIFY(sm);
+    auto msg = std::dynamic_pointer_cast<twsqapi::SymbolSamplesServerMessage>(sm);
 
     QVERIFY(msg);
     QCOMPARE(msg->requestId(), 123);
@@ -308,7 +307,7 @@ void ServerMessageTest::testInvalidSymbolSamplesServerMessage()
         "Apple Inc.",       // description
         "12345"             // issuer id
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Invalid count of contracts (non-numeric)
     fields = {
@@ -324,7 +323,7 @@ void ServerMessageTest::testInvalidSymbolSamplesServerMessage()
         "Apple Inc.",         // description
         "12345"               // issuer id
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Invalid contract id (non-numeric)
     fields = {
@@ -340,7 +339,7 @@ void ServerMessageTest::testInvalidSymbolSamplesServerMessage()
         "Apple Inc.",         // description
         "12345"               // issuer id
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Invalid security type
     fields = {
@@ -356,7 +355,7 @@ void ServerMessageTest::testInvalidSymbolSamplesServerMessage()
         "Apple Inc.",         // description
         "12345"               // issuer id
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Invalid derivatives count (non-numeric)
     fields = {
@@ -372,7 +371,7 @@ void ServerMessageTest::testInvalidSymbolSamplesServerMessage()
         "Apple Inc.",         // description
         "12345"               // issuer id
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Invalid derivative type (non-numeric)
     fields = {QString::number(twsqapi::responses::SYMBOL_SAMPLES),
@@ -387,7 +386,7 @@ void ServerMessageTest::testInvalidSymbolSamplesServerMessage()
               "abc",                // derivative type
               "Apple Inc",
               "issuerId"};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // missing description and issuer id
     fields = {
@@ -402,7 +401,7 @@ void ServerMessageTest::testInvalidSymbolSamplesServerMessage()
         QString::number(1),   // derivatives count (one)
         "OPT"                 // derivative type
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 }
 
 void ServerMessageTest::testContractDataServerMessage()
@@ -436,8 +435,8 @@ void ServerMessageTest::testContractDataServerMessage()
     };
 
     auto sm = factory.create(fields);
-    QVERIFY(!sm.isNull());
-    auto msg = sm.dynamicCast<twsqapi::ContractDataServerMessage>();
+    QVERIFY(sm);
+    auto msg = std::dynamic_pointer_cast<twsqapi::ContractDataServerMessage>(sm);
 
     QVERIFY(msg);
     QCOMPARE(msg->requestId(), 123);
@@ -479,7 +478,7 @@ void ServerMessageTest::testInvalidContractDataServerMessage()
         "Apple Inc.", // description (field index 20)
         "NASDAQ"      // primary exchange (field index 21)
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Invalid contract id (non-numeric)
     fields = {
@@ -506,7 +505,7 @@ void ServerMessageTest::testInvalidContractDataServerMessage()
         "Apple Inc.", // description (field index 20)
         "NASDAQ"      // primary exchange (field index 21)
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Invalid primary exchange (non-numeric)
     fields = {QString::number(twsqapi::responses::CONTRACT_DATA),
@@ -526,7 +525,7 @@ void ServerMessageTest::testInvalidContractDataServerMessage()
               "Apple Inc.",
               "NASDAQ",
               QString::number(1)};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Invalid security type
     fields = {
@@ -553,7 +552,7 @@ void ServerMessageTest::testInvalidContractDataServerMessage()
         "Apple Inc.", // description (field index 20)
         "NASDAQ"      // primary exchange (field index 21)
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 }
 
 #include <QDebug>
@@ -571,8 +570,8 @@ void ServerMessageTest::testContractDataEndServerMessage()
     };
 
     auto sm = factory.create(fields);
-    QVERIFY(!sm.isNull());
-    auto msg = sm.dynamicCast<twsqapi::ContractDataEndServerMessage>();
+    QVERIFY(sm);
+    auto msg = std::dynamic_pointer_cast<twsqapi::ContractDataEndServerMessage>(sm);
 
     QVERIFY(msg);
     QCOMPARE(msg->requestId(), 123);
@@ -588,7 +587,7 @@ void ServerMessageTest::testInvalidContractDataEndServerMessage()
         "abc",               // version
         QString::number(123) // request id
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Invalid request id test case (non-numeric)
     fields = {
@@ -596,7 +595,7 @@ void ServerMessageTest::testInvalidContractDataEndServerMessage()
         QString::number(twsqapi::responses::CONTRACT_DATA_END_VERSION),
         "abc" // request id
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 }
 
 void ServerMessageTest::testPortfolioValueServerMessage()
@@ -626,8 +625,8 @@ void ServerMessageTest::testPortfolioValueServerMessage()
                           ""};
 
     auto sm = factory.create(fields);
-    QVERIFY(!sm.isNull());
-    auto msg = sm.dynamicCast<twsqapi::PortfolioValueServerMessage>();
+    QVERIFY(sm);
+    auto msg = std::dynamic_pointer_cast<twsqapi::PortfolioValueServerMessage>(sm);
 
     QVERIFY(msg);
     const common::PortfolioPositionDTO &position = msg->position();
@@ -667,7 +666,7 @@ void ServerMessageTest::testInvalidPortfolioValueServerMessage()
                           "30.00",            // unrealized PNL
                           "10.00",            // realized PNL
                           ""};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Invalid position (non-numeric)
     fields = {QString::number(twsqapi::responses::PORTFOLIO_VALUE),
@@ -690,7 +689,7 @@ void ServerMessageTest::testInvalidPortfolioValueServerMessage()
               "30.00",  // unrealized PNL
               "10.00",  // realized PNL
               ""};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Invalid market price (non-numeric)
     fields = {QString::number(twsqapi::responses::PORTFOLIO_VALUE),
@@ -713,7 +712,7 @@ void ServerMessageTest::testInvalidPortfolioValueServerMessage()
               "30.00",            // unrealized PNL
               "10.00",            // realized PNL
               ""};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Invalid market value (non-numeric)
     fields = {QString::number(twsqapi::responses::PORTFOLIO_VALUE),
@@ -736,7 +735,7 @@ void ServerMessageTest::testInvalidPortfolioValueServerMessage()
               "30.00",            // unrealized PNL
               "10.00",            // realized PNL
               ""};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Invalid average cost (non-numeric)
     fields = {QString::number(twsqapi::responses::PORTFOLIO_VALUE),
@@ -759,7 +758,7 @@ void ServerMessageTest::testInvalidPortfolioValueServerMessage()
               "30.00",            // unrealized PNL
               "10.00",            // realized PNL
               ""};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Invalid unrealized PNL (non-numeric)
     fields = {QString::number(twsqapi::responses::PORTFOLIO_VALUE),
@@ -782,7 +781,7 @@ void ServerMessageTest::testInvalidPortfolioValueServerMessage()
               "abc",              // unrealized PNL
               "10.00",            // realized PNL
               ""};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Invalid realized PNL (non-numeric)
     fields = {QString::number(twsqapi::responses::PORTFOLIO_VALUE),
@@ -805,7 +804,7 @@ void ServerMessageTest::testInvalidPortfolioValueServerMessage()
               "30.00",            // unrealized PNL
               "abc",              // realized PNL
               ""};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Invalid expiration date (incorrect format)
     fields = {QString::number(twsqapi::responses::PORTFOLIO_VALUE),
@@ -828,7 +827,7 @@ void ServerMessageTest::testInvalidPortfolioValueServerMessage()
               "30.00",            // unrealized PNL
               "10.00",            // realized PNL
               ""};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Invalid strike price (non-numeric)
     fields = {QString::number(twsqapi::responses::PORTFOLIO_VALUE),
@@ -851,7 +850,7 @@ void ServerMessageTest::testInvalidPortfolioValueServerMessage()
               "30.00",            // unrealized PNL
               "10.00",            // realized PNL
               ""};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Invalid multiplier (non-numeric)
     fields = {QString::number(twsqapi::responses::PORTFOLIO_VALUE),
@@ -874,7 +873,7 @@ void ServerMessageTest::testInvalidPortfolioValueServerMessage()
               "30.00",            // unrealized PNL
               "10.00",            // realized PNL
               ""};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 }
 
 void ServerMessageTest::testAccountUpdateTimeMessage()
@@ -889,8 +888,8 @@ void ServerMessageTest::testAccountUpdateTimeMessage()
     };
 
     auto sm = factory.create(fields);
-    QVERIFY(!sm.isNull());
-    auto msg = sm.dynamicCast<twsqapi::AccountUpdateTimeServerMessage>();
+    QVERIFY(sm);
+    auto msg = std::dynamic_pointer_cast<twsqapi::AccountUpdateTimeServerMessage>(sm);
 
     QVERIFY(msg);
     QCOMPARE(msg->time().hour(), 14);
@@ -907,14 +906,14 @@ void ServerMessageTest::testInvalidAccountUpdateTimeMessage()
         QString::number(twsqapi::responses::ACCT_UPDATE_TIME_VERSION - 1),
         "14:30"
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Missing time field
     fields = {
         QString::number(twsqapi::responses::ACCT_UPDATE_TIME),
         QString::number(twsqapi::responses::ACCT_UPDATE_TIME_VERSION)
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 }
 
 void ServerMessageTest::testAccountDownloadEndMessage()
@@ -929,8 +928,8 @@ void ServerMessageTest::testAccountDownloadEndMessage()
     };
 
     auto sm = factory.create(fields);
-    QVERIFY(!sm.isNull());
-    auto msg = sm.dynamicCast<twsqapi::AccountDownloadEndServerMessage>();
+    QVERIFY(sm);
+    auto msg = std::dynamic_pointer_cast<twsqapi::AccountDownloadEndServerMessage>(sm);
 
     QVERIFY(msg);
     QCOMPARE(msg->account(), "U12345678");
@@ -946,14 +945,14 @@ void ServerMessageTest::testInvalidAccountDownloadEndMessage()
         QString::number(twsqapi::responses::ACCT_DOWNLOAD_END_VERSION - 1),
         "U12345678"
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Missing account field
     fields = {
         QString::number(twsqapi::responses::ACCT_DOWNLOAD_END),
         QString::number(twsqapi::responses::ACCT_DOWNLOAD_END_VERSION)
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 }
 
 void ServerMessageTest::testHistoricalDataMessage()
@@ -988,8 +987,8 @@ void ServerMessageTest::testHistoricalDataMessage()
     };
 
     auto sm = factory.create(fields);
-    QVERIFY(!sm.isNull());
-    auto msg = sm.dynamicCast<twsqapi::HistoricalDataServerMessage>();
+    QVERIFY(sm);
+    auto msg = std::dynamic_pointer_cast<twsqapi::HistoricalDataServerMessage>(sm);
 
     QVERIFY(msg);
     QCOMPARE(msg->requestId(), 100);
@@ -1033,7 +1032,7 @@ void ServerMessageTest::testInvalidHistoricalDataMessage()
         "100.25",               // wap
         "1"                     // barCount
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Non-numeric itemCount
     fields = {
@@ -1041,7 +1040,7 @@ void ServerMessageTest::testInvalidHistoricalDataMessage()
         QString::number(100),   // reqId
         "abc",                // itemCount
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 }
 
 void ServerMessageTest::testHistoricalDataEndMessage()
@@ -1057,8 +1056,8 @@ void ServerMessageTest::testHistoricalDataEndMessage()
     };
 
     auto sm = factory.create(fields);
-    QVERIFY(!sm.isNull());
-    auto msg = sm.dynamicCast<twsqapi::HistoricalDataEndServerMessage>();
+    QVERIFY(sm);
+    auto msg = std::dynamic_pointer_cast<twsqapi::HistoricalDataEndServerMessage>(sm);
 
     QVERIFY(msg);
     QCOMPARE(msg->requestId(), 100);
@@ -1077,7 +1076,7 @@ void ServerMessageTest::testInvalidHistoricalDataEndMessage()
         "20230101",
         "20230131"
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 }
 
 void ServerMessageTest::testHistoricalDataUpdateMessage()
@@ -1099,8 +1098,8 @@ void ServerMessageTest::testHistoricalDataUpdateMessage()
     };
 
     auto sm = factory.create(fields);
-    QVERIFY(!sm.isNull());
-    auto msg = sm.dynamicCast<twsqapi::HistoricalDataUpdateServerMessage>();
+    QVERIFY(sm);
+    auto msg = std::dynamic_pointer_cast<twsqapi::HistoricalDataUpdateServerMessage>(sm);
 
     QVERIFY(msg);
     QCOMPARE(msg->requestId(), 100);
@@ -1131,7 +1130,7 @@ void ServerMessageTest::testInvalidHistoricalDataUpdateMessage()
         "100.25",
         "1000"
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Non-numeric barCount
     fields = {
@@ -1146,7 +1145,7 @@ void ServerMessageTest::testInvalidHistoricalDataUpdateMessage()
         "100.25",
         "1000"
     };
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 }
 
 void ServerMessageTest::testOpenOrderMessage()
@@ -1180,8 +1179,8 @@ void ServerMessageTest::testOpenOrderMessage()
     };
 
     auto sm = factory.create(fields);
-    QVERIFY(!sm.isNull());
-    auto msg = sm.dynamicCast<twsqapi::OpenOrderServerMessage>();
+    QVERIFY(sm);
+    auto msg = std::dynamic_pointer_cast<twsqapi::OpenOrderServerMessage>(sm);
 
     QVERIFY(msg);
     const common::OrderDTO &order = msg->order();
@@ -1205,11 +1204,11 @@ void ServerMessageTest::testInvalidOpenOrderMessage()
 
     // Missing fields after the message id
     QStringList fields = {QString::number(twsqapi::responses::OPEN_ORDER)};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Non-numeric order id
     fields = {QString::number(twsqapi::responses::OPEN_ORDER), "abc"};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 }
 
 void ServerMessageTest::testOrderStatusMessage()
@@ -1234,8 +1233,8 @@ void ServerMessageTest::testOrderStatusMessage()
     };
 
     auto sm = factory.create(fields);
-    QVERIFY(!sm.isNull());
-    auto msg = sm.dynamicCast<twsqapi::OrderStatusServerMessage>();
+    QVERIFY(sm);
+    auto msg = std::dynamic_pointer_cast<twsqapi::OrderStatusServerMessage>(sm);
 
     QVERIFY(msg);
     const common::OrderStatusDTO &status = msg->orderStatus();
@@ -1258,9 +1257,9 @@ void ServerMessageTest::testInvalidOrderStatusMessage()
 
     // Missing fields after the message id
     QStringList fields = {QString::number(twsqapi::responses::ORDER_STATUS)};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 
     // Non-numeric order id
     fields = {QString::number(twsqapi::responses::ORDER_STATUS), "abc"};
-    QVERIFY(factory.create(fields).isNull());
+    QVERIFY(!factory.create(fields));
 }

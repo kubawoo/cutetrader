@@ -3,7 +3,7 @@
 
 #include <QMap>
 #include <QList>
-#include <QSharedPointer>
+#include <memory>
 #include "common/types.h"
 
 namespace twsqapi {
@@ -46,16 +46,16 @@ class Cache
 public:
     Cache();
     ~Cache();
-    void add(long requestId, QSharedPointer<CacheEntry> entry, const QStringList& keys);
-    QSharedPointer<CacheEntry> get(long requestId);
-    QPair<long, QSharedPointer<CacheEntry>> get(const QStringList& keys);
+    void add(long requestId, std::shared_ptr<CacheEntry> entry, const QStringList& keys);
+    std::shared_ptr<CacheEntry> get(long requestId);
+    std::pair<long, std::shared_ptr<CacheEntry>> get(const QStringList& keys);
     void removeExpired();
     void clear();
 private:
     QString buildKey(const QStringList & list);
 
     QMap<QString, long> _requestCache;
-    QMap<long, QSharedPointer<CacheEntry>> _cache;
+    QMap<long, std::shared_ptr<CacheEntry>> _cache;
 };
 
 }

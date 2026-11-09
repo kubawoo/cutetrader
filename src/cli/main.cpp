@@ -6,6 +6,7 @@
 #include <QMap>
 #include <QSqlDatabase>
 #include <QThread>
+#include <memory>
 #include "cliappfactory.h"
 #include "clicommand.h"
 #include "console.h"
@@ -20,7 +21,7 @@ struct AppConfig
     int port;
     int clientId;
     QString accountId;
-    QSharedPointer<common::ITwsClient> client;
+    std::shared_ptr<common::ITwsClient> client;
 };
 
 void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app)
@@ -65,11 +66,14 @@ bool setupApp(const QCommandLineParser &parser, AppConfig &appConfig)
     }
     appConfig.accountId = parser.value("account-id");
 
-    QScopedPointer<common::IAppFactory> factory = parser.isSet("mocked")
-                                                      ? QScopedPointer<common::IAppFactory>(new mocked::MockAppFactory)
-                                                      : QScopedPointer<common::IAppFactory>(new AppFactory());
+    std::unique_ptr<common::IAppFactory> factory;
+    if (parser.isSet("mocked")) {
+        factory = std::make_unique<mocked::MockAppFactory>();
+    } else {
+        factory = std::make_unique<AppFactory>();
+    }
 
-    appConfig.client.reset(factory->createTwsClient());
+    appConfig.client = std::shared_ptr<common::ITwsClient>(factory->createTwsClient());
     return setupDatabase(factory.get(), parser.value("database"));
 }
 
