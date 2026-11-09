@@ -41,22 +41,29 @@ void CacheEntry::setReady()
 }
 
 
-void Cache::add(long requestId, std::shared_ptr<CacheEntry> entry, const QStringList &keys)
+long Cache::add(long requestId, std::shared_ptr<CacheEntry> entry, const QStringList &keys)
 {
     QMutexLocker locker(&_mutex);
-    // If there's already an entry for this requestId, it will be replaced
-    _cache.insert(requestId, entry);
+    
     if(!keys.empty()) {
         QString key = buildKey(keys);
-        // If there's already an entry for this key, remove the old requestId from _cache
+        // Check if there's already an entry for this key
         if (_requestCache.contains(key)) {
-            long oldRequestId = _requestCache[key];
-            if (oldRequestId != requestId) {
-                _cache.remove(oldRequestId);
+            long existingRequestId = _requestCache[key];
+            auto existingEntry = getUnlocked(existingRequestId);
+            // If the existing entry is not ready, reuse it (don't replace)
+            if (existingEntry && !existingEntry->ready()) {
+                return existingRequestId;
+            }
+            // If the existing entry is ready, we can replace it (cache refresh)
+            if (existingRequestId != requestId) {
+                _cache.remove(existingRequestId);
             }
         }
         _requestCache.insert(key, requestId);
     }
+    _cache.insert(requestId, entry);
+    return requestId;
 }
 
 std::shared_ptr<CacheEntry> Cache::get(long requestId)

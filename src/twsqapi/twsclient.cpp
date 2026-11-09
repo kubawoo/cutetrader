@@ -75,8 +75,15 @@ void TwsClient::requestContractDetails(long contractId, int *reqId)
     } else {
         qDebug() << "requestContractDetails" << _requestId;
         _setRequestId(reqId, _requestId);
-        _cache.add(_requestId, std::make_shared<ContractDetailsCacheEntry>(), keys);
-        _client->send(RequestContractDetailsClientMessage(_requestId++, contractId));
+        long usedReqId = _cache.add(_requestId, std::make_shared<ContractDetailsCacheEntry>(), keys);
+        if (usedReqId == _requestId) {
+            // New request added, send it
+            _client->send(RequestContractDetailsClientMessage(_requestId++, contractId));
+        } else {
+            // Reusing existing in-flight request
+            _requestId++;
+            qDebug() << "Reusing in-flight contract details request" << usedReqId;
+        }
     }
 }
 
@@ -93,8 +100,13 @@ void TwsClient::requestMatchingSymbols(const QString &pattern, int *reqId)
         emit matchingSymbolsReadySignal(requestId, entry->contractDetails);
     } else {
         _setRequestId(reqId, _requestId);
-        _cache.add(_requestId, std::make_shared<ContractDetailsCacheEntry>(), keys);
-        _client->send(RequestMatchingSymbolsClientMessage(_requestId++, pattern));
+        long usedReqId = _cache.add(_requestId, std::make_shared<ContractDetailsCacheEntry>(), keys);
+        if (usedReqId == _requestId) {
+            _client->send(RequestMatchingSymbolsClientMessage(_requestId++, pattern));
+        } else {
+            _requestId++;
+            qDebug() << "Reusing in-flight matching symbols request" << usedReqId;
+        }
     }
 }
 
@@ -158,8 +170,12 @@ void TwsClient::requestHistoricalData(long contractId, const QString & endDateTi
     _pendingHistoricalDataRequests[contractId].append(pending);
 
     // Request contract details
-    _cache.add(currentReqId, std::make_shared<ContractDetailsCacheEntry>(), contractKeys);
-    _client->send(RequestContractDetailsClientMessage(currentReqId, contractId));
+    long usedReqId = _cache.add(currentReqId, std::make_shared<ContractDetailsCacheEntry>(), contractKeys);
+    if (usedReqId == currentReqId) {
+        _client->send(RequestContractDetailsClientMessage(currentReqId, contractId));
+    } else {
+        qDebug() << "Reusing in-flight contract details request for historical data" << usedReqId;
+    }
 }
 
 void TwsClient::requestHistoricalData(const QString &symbol, const QString & endDateTime,

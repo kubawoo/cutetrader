@@ -136,12 +136,41 @@ void CacheTest::testAddReplacesExistingEntry()
 
     twsqapi::Cache cache;
 
-    // Add first entry
-    cache.add(200, std::make_shared<TrackingCacheEntry>(300), {"replace", "test"});
+    // Add first entry (not ready by default)
+    long reqId1 = cache.add(200, std::make_shared<TrackingCacheEntry>(300), {"replace", "test"});
+    QCOMPARE(reqId1, 200L);
 
-    // Add second entry with same key - should replace first
-    cache.add(201, std::make_shared<TrackingCacheEntry>(300), {"replace", "test"});
+    // Add second entry with same key - should reuse first (not ready)
+    long reqId2 = cache.add(201, std::make_shared<TrackingCacheEntry>(300), {"replace", "test"});
+    QCOMPARE(reqId2, 200L); // Returns existing requestId
 
-    // The first entry should have been deleted (not leaked)
+    // Second entry's destructor called because it wasn't stored
     QCOMPARE(g_destructorCallCount, 1);
+
+    // Verify the entry is the first one (release reference immediately)
+    {
+        auto entry = cache.get({"replace", "test"});
+        QCOMPARE(entry.first, 200L);
+        QVERIFY(entry.second != nullptr);
+        QVERIFY(!entry.second->ready());
+    } // entry goes out of scope here
+
+    // Now test with ready entry - should replace
+    g_destructorCallCount = 0;
+    {
+        auto entry = cache.get({"replace", "test"});
+        QVERIFY(entry.second != nullptr);
+        entry.second->setReady();
+    } // Release reference before replace
+
+    long reqId3 = cache.add(202, std::make_shared<TrackingCacheEntry>(300), {"replace", "test"});
+    QCOMPARE(reqId3, 202L); // Returns new requestId
+
+    // The old ready entry should have been deleted
+    QCOMPARE(g_destructorCallCount, 1);
+
+    // Verify the entry is the new one
+    auto newEntry = cache.get({"replace", "test"});
+    QCOMPARE(newEntry.first, 202L);
+    QVERIFY(newEntry.second != nullptr);
 }

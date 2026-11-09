@@ -49,7 +49,10 @@ class Cache : public QObject
 public:
     explicit Cache(QObject *parent = nullptr);
     ~Cache();
-    void add(long requestId, std::shared_ptr<CacheEntry> entry, const QStringList& keys);
+    // Returns the requestId to use. If an in-flight (non-ready) entry exists for the key,
+    // returns the existing requestId and does not add the new entry.
+    // Otherwise, adds the new entry and returns the passed requestId.
+    long add(long requestId, std::shared_ptr<CacheEntry> entry, const QStringList& keys);
     std::shared_ptr<CacheEntry> get(long requestId);
     std::pair<long, std::shared_ptr<CacheEntry>> get(const QStringList& keys);
     void removeExpired();
