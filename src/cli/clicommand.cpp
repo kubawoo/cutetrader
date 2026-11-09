@@ -341,7 +341,7 @@ void HistoricalDataCliCommand::onHistoricalDataReady(const int &requestId, const
             s += b.time + "\t" + QString::number(b.open) + "\t" + QString::number(b.high) + "\t"
                  + QString::number(b.low) + "\t" + QString::number(b.close) + "\t"
                  + QString::number(b.volume) + "\t" + QString::number(b.wap) + "\t"
-                 + QString::number(b.barCount) + "\t" + QString::number(b.average) + "\n";
+                 + QString::number(b.barCount) + "\n";
         }
     }
     emit finished(s);

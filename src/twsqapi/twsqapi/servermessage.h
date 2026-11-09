@@ -3,6 +3,7 @@
 
 #include <QStringList>
 #include <QTime>
+#include <QSharedPointer>
 #include "common/types.h"
 
 namespace twsqapi {
@@ -29,7 +30,7 @@ protected:
 class ServerMessageFactory
 {
 public:
-    ServerMessage * create(const QStringList & fields);
+    QSharedPointer<ServerMessage> create(const QStringList & fields);
 };
 
 class ManagedAccountsServerMessage : public ServerMessage

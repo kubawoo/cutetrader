@@ -112,7 +112,7 @@ void BaseClient::_processData(const QByteArray &data)
 
     QStringList fields = QString(data).split(QChar('\0'));
     if(_handshakeDone) {
-        QSharedPointer<ServerMessage> msg = QSharedPointer<ServerMessage>(serverMessageFactory.create(fields));
+        QSharedPointer<ServerMessage> msg = serverMessageFactory.create(fields);
         if(!msg.isNull()) {
             emit message(msg);
         }
