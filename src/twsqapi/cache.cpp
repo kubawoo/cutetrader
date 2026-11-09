@@ -6,8 +6,14 @@
 namespace twsqapi {
 
 
-Cache::Cache()
+Cache::Cache(QObject *parent)
+    : QObject(parent)
 {
+    _cleanupTimer.setInterval(60000); // 60 seconds
+    QObject::connect(&_cleanupTimer, &QTimer::timeout, this, [this]() {
+        removeExpired();
+    });
+    _cleanupTimer.start();
 }
 
 CacheEntry::CacheEntry(long ttl)

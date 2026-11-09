@@ -4,6 +4,7 @@
 #include <QMap>
 #include <QList>
 #include <QMutex>
+#include <QTimer>
 #include <memory>
 #include "common/types.h"
 
@@ -42,10 +43,11 @@ public:
     QList<common::BarDTO> bars;
 };
 
-class Cache
+class Cache : public QObject
 {
+    Q_OBJECT
 public:
-    Cache();
+    explicit Cache(QObject *parent = nullptr);
     ~Cache();
     void add(long requestId, std::shared_ptr<CacheEntry> entry, const QStringList& keys);
     std::shared_ptr<CacheEntry> get(long requestId);
@@ -59,6 +61,7 @@ private:
     QMutex _mutex;
     QMap<QString, long> _requestCache;
     QMap<long, std::shared_ptr<CacheEntry>> _cache;
+    QTimer _cleanupTimer;
 };
 
 }
