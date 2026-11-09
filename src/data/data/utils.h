@@ -13,11 +13,12 @@ class Utils
 private:
     Utils();
 public:
-    static bool execute(QSqlDatabase &db, const QString & sql);
-    static QList<DbResult> query(QSqlDatabase &db, const QString & sql, bool *ok = nullptr);
+    // Prepared statement API (prevents SQL injection)
+    static bool execute(QSqlDatabase &db, QSqlQuery && query);
+    static QList<DbResult> query(QSqlDatabase &db, QSqlQuery && query, bool *ok = nullptr);
 
 private:
-    static bool doExecute(QSqlDatabase &db, QSqlQuery & query, const QString & sql);
+    static bool doExecute(QSqlDatabase &db, QSqlQuery & query);
 };
 }
 

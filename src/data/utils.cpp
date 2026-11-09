@@ -9,34 +9,37 @@ Utils::Utils()
 
 }
 
-bool Utils::execute(QSqlDatabase &db, const QString &sql)
+bool Utils::execute(QSqlDatabase &db, QSqlQuery && query)
 {
-    qDebug() << "Executing SQL"<< sql;
-    QSqlQuery query(db);
-    bool ok = doExecute(db, query, sql);
-    query.finish();
-    return ok;
+    qDebug() << "Executing prepared query:" << query.lastQuery();
+    if (!query.exec()) {
+        qDebug() << "Failed to execute" << query.lastQuery()
+                 << "Error:" << query.lastError().text();
+        return false;
+    }
+    return true;
 }
 
-QList<DbResult> Utils::query(QSqlDatabase &db, const QString &sql, bool *ok)
+QList<DbResult> Utils::query(QSqlDatabase &db, QSqlQuery && query, bool *ok)
 {
-    qDebug() << "Executing SQL"<< sql;
+    qDebug() << "Executing prepared query:" << query.lastQuery();
 
     QList<DbResult> results;
-    QSqlQuery query(db);
 
     if(ok) {
         *ok = false;
     }
 
-    bool ret = doExecute(db, query, sql);
-    if(!ret) {
+    if (!query.exec()) {
+        qDebug() << "Failed to execute" << query.lastQuery()
+                 << "Error:" << query.lastError().text();
         return results;
     }
 
     int columns = query.record().count();
     if(columns <= 0) {
-        qDebug() << "No columns returned for" <<sql;
+        qDebug() << "No columns returned";
+        if(ok) *ok = true;
         return results;
     }
 
@@ -48,17 +51,15 @@ QList<DbResult> Utils::query(QSqlDatabase &db, const QString &sql, bool *ok)
         }
     }
 
-    query.finish();
-
     if(ok) {
         *ok = true;
     }
     return results;
 }
 
-bool Utils::doExecute(QSqlDatabase &db, QSqlQuery & query, const QString & sql)
+bool Utils::doExecute(QSqlDatabase &db, QSqlQuery & query)
 {
-    bool ok = query.exec(sql);
+    bool ok = query.exec();
     if(!ok) {
         qDebug() << "Failed to execute" << query.lastQuery()
                  << "Error:" << query.lastError().text();

@@ -18,17 +18,20 @@ void DataManager::close()
 
 bool DataManager::createSecurity(const Security &security)
 {
-    QString sql = QString("INSERT INTO securities(symbol, contractId) VALUES (\"%1\", %2);")
-            .arg(security.symbol())
-            .arg(security.contractId());
+    QSqlQuery query(_db);
+    query.prepare("INSERT INTO securities(symbol, contractId) VALUES (?, ?);");
+    query.bindValue(0, security.symbol());
+    query.bindValue(1, security.contractId());
 
-    return Utils::execute(_db, sql);
+    return Utils::execute(_db, std::move(query));
 }
 
 Security DataManager::getSecurity(int id)
 {
-    QString sql = QString("SELECT id, symbol, contractId FROM securities WHERE id=%1;").arg(id);
-    auto results = Utils::query(_db, sql);
+    QSqlQuery query(_db);
+    query.prepare("SELECT id, symbol, contractId FROM securities WHERE id=?;");
+    query.bindValue(0, id);
+    auto results = Utils::query(_db, std::move(query));
     if(results.size() != 1) {
         return Security().withId(-1);
     }
@@ -37,8 +40,10 @@ Security DataManager::getSecurity(int id)
 
 Security DataManager::getSecurity(const QString &symbol)
 {
-    QString sql = QString("SELECT id, symbol, contractId FROM securities WHERE symbol=\"%1\";").arg(symbol);
-    auto results = Utils::query(_db, sql);
+    QSqlQuery query(_db);
+    query.prepare("SELECT id, symbol, contractId FROM securities WHERE symbol=?;");
+    query.bindValue(0, symbol);
+    auto results = Utils::query(_db, std::move(query));
     if(results.size() != 1) {
         return Security();
     }
@@ -47,13 +52,17 @@ Security DataManager::getSecurity(const QString &symbol)
 
 bool DataManager::removeSecurity(int id)
 {
-    QString sql = QString("DELETE FROM securities WHERE id=%1;").arg(id);
-    return Utils::execute(_db, sql);
+    QSqlQuery query(_db);
+    query.prepare("DELETE FROM securities WHERE id=?;");
+    query.bindValue(0, id);
+    return Utils::execute(_db, std::move(query));
 }
 
 QList<Security> DataManager::getAllSecurities()
 {
-    auto results = Utils::query(_db, "SELECT id, symbol, contractId FROM securities ORDER BY symbol;");
+    QSqlQuery query(_db);
+    query.prepare("SELECT id, symbol, contractId FROM securities ORDER BY symbol;");
+    auto results = Utils::query(_db, std::move(query));
     QList<Security> securities;
     for(auto result: results) {
         securities.append(toSecurity(result));
@@ -63,44 +72,48 @@ QList<Security> DataManager::getAllSecurities()
 
 bool DataManager::createQuote(const Quote &quote)
 {
-    QString sql = QString("INSERT INTO quotes(security_id, date, open, high, low, close, volume) "
-                          "VALUES (%1, \"%2\", %3, %4, %5, %6, %7);")
-            .arg(quote.securityId())
-            .arg(quote.date().toString(Qt::DateFormat::ISODate))
-            .arg(quote.open())
-            .arg(quote.high())
-            .arg(quote.low())
-            .arg(quote.close())
-            .arg(quote.volume());
+    QSqlQuery query(_db);
+    query.prepare("INSERT INTO quotes(security_id, date, open, high, low, close, volume) "
+                  "VALUES (?, ?, ?, ?, ?, ?, ?);");
+    query.bindValue(0, quote.securityId());
+    query.bindValue(1, quote.date().toString(Qt::DateFormat::ISODate));
+    query.bindValue(2, quote.open());
+    query.bindValue(3, quote.high());
+    query.bindValue(4, quote.low());
+    query.bindValue(5, quote.close());
+    query.bindValue(6, quote.volume());
 
-    return Utils::execute(_db, sql);
+    return Utils::execute(_db, std::move(query));
 }
 
 QList<Quote> DataManager::getQuotes(const Security &security)
 {
-    QString sql = QString("SELECT id, security_id, date, open, high, low, close, volume "
-                          "FROM quotes WHERE security_id=%1 ORDER BY date;")
-            .arg(security.id());
-    return doGetQuotes(sql);
+    QSqlQuery query(_db);
+    query.prepare("SELECT id, security_id, date, open, high, low, close, volume "
+                  "FROM quotes WHERE security_id=? ORDER BY date;");
+    query.bindValue(0, security.id());
+    return doGetQuotes(std::move(query));
 }
 
 QList<Quote> DataManager::getQuotes(const Security &security, const QDate &from)
 {
-    QString sql = QString("SELECT id, security_id, date, open, high, low, close, volume "
-                          "FROM quotes WHERE security_id=%1 AND date >= \"%2\" ORDER BY date;")
-            .arg(security.id())
-            .arg(from.toString(Qt::DateFormat::ISODate));
-    return doGetQuotes(sql);
+    QSqlQuery query(_db);
+    query.prepare("SELECT id, security_id, date, open, high, low, close, volume "
+                  "FROM quotes WHERE security_id=? AND date >= ? ORDER BY date;");
+    query.bindValue(0, security.id());
+    query.bindValue(1, from.toString(Qt::DateFormat::ISODate));
+    return doGetQuotes(std::move(query));
 }
 
 QList<Quote> DataManager::getQuotes(const Security &security, const QDate &from, const QDate &to)
 {
-    QString sql = QString("SELECT id, security_id, date, open, high, low, close, volume "
-                          "FROM quotes WHERE security_id=%1 AND date >= \"%2\" AND date < \"%3\" ORDER BY date;")
-            .arg(security.id())
-            .arg(from.toString(Qt::DateFormat::ISODate))
-            .arg(to.toString(Qt::DateFormat::ISODate));
-    return doGetQuotes(sql);
+    QSqlQuery query(_db);
+    query.prepare("SELECT id, security_id, date, open, high, low, close, volume "
+                  "FROM quotes WHERE security_id=? AND date >= ? AND date < ? ORDER BY date;");
+    query.bindValue(0, security.id());
+    query.bindValue(1, from.toString(Qt::DateFormat::ISODate));
+    query.bindValue(2, to.toString(Qt::DateFormat::ISODate));
+    return doGetQuotes(std::move(query));
 }
 
 Security DataManager::toSecurity(DbResult &data)
@@ -137,9 +150,9 @@ Quote DataManager::toQuote(DbResult &data)
     return quote;
 }
 
-QList<Quote> DataManager::doGetQuotes(const QString &sql)
+QList<Quote> DataManager::doGetQuotes(QSqlQuery &&query)
 {
-    auto results = Utils::query(_db, sql);
+    auto results = Utils::query(_db, std::move(query));
 
     QList<Quote> quotes;
     for(auto r : results) {
@@ -147,8 +160,5 @@ QList<Quote> DataManager::doGetQuotes(const QString &sql)
     }
     return quotes;
 }
-
-
-
 
 }

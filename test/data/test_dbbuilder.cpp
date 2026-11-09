@@ -14,7 +14,9 @@ void DbBuilderTest::test()
 
     //check foreign keys support
     bool ok;
-    auto results = data::Utils::query(db, "PRAGMA foreign_keys;", &ok);
+    QSqlQuery pragmaQuery(db);
+    pragmaQuery.prepare("PRAGMA foreign_keys;");
+    auto results = data::Utils::query(db, std::move(pragmaQuery), &ok);
     QVERIFY(ok);
     QCOMPARE(results[0][0].toInt(&ok), 1);
     QVERIFY(ok);
@@ -22,7 +24,9 @@ void DbBuilderTest::test()
     ok = dbBuilder.runMigrations();
     QVERIFY(ok);
 
-    results = data::Utils::query(db, "SELECT id FROM _migrations;");
+    QSqlQuery selectQuery(db);
+    selectQuery.prepare("SELECT id FROM _migrations;");
+    results = data::Utils::query(db, std::move(selectQuery));
     QCOMPARE(results.size(), 4);
 
     QList<int> ids;
@@ -36,12 +40,14 @@ void DbBuilderTest::test()
     }
 
     //mess up with migrations hash
-    ok = data::Utils::execute(db, "UPDATE _migrations SET sha256hash = \"123\" WHERE id=1;");
+    QSqlQuery updateQuery(db);
+    updateQuery.prepare("UPDATE _migrations SET sha256hash = ? WHERE id=?;");
+    updateQuery.bindValue(0, "123");
+    updateQuery.bindValue(1, 1);
+    ok = data::Utils::execute(db, std::move(updateQuery));
     QVERIFY(ok);
     ok = dbBuilder.runMigrations();
     QVERIFY(!ok);
 
     db.close();
 }
-
-
