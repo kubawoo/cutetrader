@@ -22,6 +22,7 @@ public slots:
     void updateAccountValue(const QString & key, const QString & value, const QString & currency);
     void updatePortfolioPosition(const common::PortfolioPositionDTO & position);
     void updateOpenOrders(const int &requestId, const QList<common::OrderDTO> & orders);
+    void updateOrderStatus(const common::OrderStatusDTO & status);
     void setBaseCurrency(const QString & currency);
 
 signals:

@@ -31,6 +31,10 @@ CliCommandManager::CliCommandManager(const QString &host,
             &common::ITwsClient::openOrderSignal,
             &_account,
             &account::Account::updateOpenOrders);
+    connect(_client.get(),
+            &common::ITwsClient::orderStatusSignal,
+            &_account,
+            &account::Account::updateOrderStatus);
     connect(_client.get(), &common::ITwsClient::managedAccountsSignal, this, &CliCommandManager::onManagedAccounts);
     connect(_client.get(), &common::ITwsClient::errorSignal, this, &CliCommandManager::onError);
 
